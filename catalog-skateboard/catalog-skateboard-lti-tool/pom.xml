@@ -14,4 +14,10 @@
   <description>JAX-RS/WebEngine app implementing an LTI tool enabling search
     and acquisition from the Nuxeo repository.</description>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.nuxeo.ecm.webengine</groupId>
+      <artifactId>nuxeo-webengine-core</artifactId>
+    </dependency>
+  </dependencies>
 </project>
