@@ -11,6 +11,10 @@
     <version>7.3</version>
   </parent>
 
+  <properties>
+    <nuxeo.distribution.version>7.3</nuxeo.distribution.version>
+  </properties>
+
   <groupId>org.unizin</groupId>
   <artifactId>catalog-skateboard-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -23,6 +27,7 @@
   <modules>
     <module>catalog-skateboard-schemas</module>
     <module>catalog-skateboard-lti-tool</module>
+    <module>catalog-skateboard-marketplace-package</module>
   </modules>
 
   <repositories>
