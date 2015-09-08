@@ -4,6 +4,6 @@
 <link rel="stylesheet" href="${skinPath}/css/main.css" type="text/css">
 </@block>
 <@block name="content">
-<p>This is placeholder text.</p>
+<p>This is placeholder text. Still pretty cool. Even cooler.</p>
 </@block>
 </@extends>
