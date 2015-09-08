@@ -15,10 +15,16 @@
   Nuxeo's Marketplace packaging mechanism.</description>
 
   <packaging>zip</packaging>
+
   <dependencies>
     <dependency>
       <groupId>org.unizin</groupId>
       <artifactId>catalog-skateboard-lti-tool</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.unizin</groupId>
+      <artifactId>catalog-skateboard-schemas</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>
