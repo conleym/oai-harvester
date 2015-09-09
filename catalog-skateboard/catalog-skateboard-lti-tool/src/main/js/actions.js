@@ -1,13 +1,15 @@
+import 'babel-core/polyfill'
+
 export const SEARCH_FOR = 'SEARCH_FOR'
 export const SEARCH_RESULTS = 'SEARCH_RESULTS'
 
 function json(response) {
     return response.json()
 }
-function httpGET(url) {
-    const options = {
+function httpGET(url, options) {
+    options = Object.assign({
         credentials: 'include',
-    }
+    }, options)
 
     return fetch(url, options)
 }
@@ -33,7 +35,13 @@ export function searchFor(text) {
             payload: { text },
         })
 
-        httpGET(url).then(json).then((results) => {
+        const options = {
+            headers: {
+                'X-NXDocumentProperties': '*'
+            }
+        }
+
+        httpGET(url, options).then(json).then((results) => {
             dispatch({
                 type: SEARCH_RESULTS,
                 payload: { results }

@@ -4,9 +4,19 @@ export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
 
     renderResult(result, index) {
+        const { properties } = result
+
+        let thumb
+        if (properties && properties['thumb:thumbnail']) {
+            thumb = (
+                <img src={properties['thumb:thumbnail'].data} />
+            )
+        }
+
         return (
             <li key={result.uid}>
-                {result.title}
+                <h2>{result.title}</h2>
+                {thumb}
             </li>
         )
     }
