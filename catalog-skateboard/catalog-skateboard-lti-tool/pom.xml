@@ -8,7 +8,6 @@
     <groupId>org.unizin</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  
   <artifactId>catalog-skateboard-lti-tool</artifactId>
   <name>Unizin Catalog: Skateboard Edition LTI Tool</name>
   <description>JAX-RS/WebEngine app implementing an LTI tool enabling search
@@ -27,4 +26,28 @@
     </dependency>
 
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.4.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>compile</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>npm</executable>
+          <arguments>
+            <argument>run</argument>
+            <argument>build</argument>
+          </arguments>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
