@@ -83,6 +83,7 @@ module.exports = {
     },
     devServer: {
         // contentBase: 'dist/release/',
+        port: 9595,
         inline: true,
     },
 }
