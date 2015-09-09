@@ -6,4 +6,4 @@ if (window.Promise == null) {
 // itself to window.
 //
 // https://github.com/github/fetch
-require('fetch')
+require('whatwg-fetch')
