@@ -1,3 +1,4 @@
+/* eslint no-var: [0] */
 var path = require('path')
 var webpack = require('webpack')
 
@@ -75,7 +76,7 @@ module.exports = {
         new webpack.NoErrorsPlugin(),
     ].concat(optionalPlugins),
     output: {
-        path: path.join(__dirname, 'target', 'classes', 'skin'),
+        path: path.join(__dirname, 'target', 'classes', 'skin', 'resources'),
         filename: '[name].js',
         sourceMapFilename: "[hash].[file].map",
         chunkFilename: '[hash].[id].engage.js',

@@ -6,9 +6,8 @@
 <@block name="content">
 
 <div id="root">
-    <p>This is placeholder text. Still pretty cool. Even cooler.</p>
 </div>
 
-<script src="http://localhost:8080/catalog_search.js"></script>
+<script src="${jsPath!skinPath}/catalog_search.js"></script>
 </@block>
 </@extends>
