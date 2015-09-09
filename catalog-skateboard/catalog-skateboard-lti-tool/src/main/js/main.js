@@ -1,3 +1,4 @@
+import './setup_fetch.js'
 import React from 'react'
 import Root from './containers/app.jsx'
 import configureStore from './configure_store.js'
