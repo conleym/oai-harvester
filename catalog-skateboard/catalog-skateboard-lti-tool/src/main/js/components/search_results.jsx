@@ -1,10 +1,20 @@
 import React from 'react'
+import { encodeURL } from '../actions.js'
+
+function resultUrl(url, title) {
+    const query = encodeURL`?return_type=url&url=${url}&title=${title}&target=_blank`
+    return window.lti_data.ext_content_return_url + query
+}
 
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
 
     renderResult(result, index) {
-        const { properties } = result
+        const { path, title, properties } = result
+
+        const target = location.protocol + '//' + location.hostname + path
+
+        const url = resultUrl(target, title)
 
         let thumb
         if (properties && properties['thumb:thumbnail']) {
@@ -15,7 +25,9 @@ export default class SearchResults extends React.Component {
 
         return (
             <li key={result.uid}>
-                <h2>{result.title}</h2>
+                <h2>
+                    <a href={url}>{title}</a>
+                </h2>
                 {thumb}
             </li>
         )
