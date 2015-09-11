@@ -1,4 +1,3 @@
-import 'babel-core/polyfill'
 
 export const SEARCH_FOR = 'SEARCH_FOR'
 export const SEARCH_RESULTS = 'SEARCH_RESULTS'

@@ -4,7 +4,7 @@ Developing JavaScript Client
 
 1. in `/etc/nuxeo/nuxeo.conf` add:
 
-    org.unizin.catalogSearch.jsPath=http://localhost:9595
+    org.unizin.catalogSearch.jsPath=https://localhost:9595
 
 2. Restart Nuxeo
 3. `npm install`

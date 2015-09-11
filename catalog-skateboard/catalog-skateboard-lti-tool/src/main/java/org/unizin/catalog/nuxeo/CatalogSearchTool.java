@@ -21,11 +21,30 @@ import java.util.Map;
 @WebObject(type="CatalogSearchTool")
 public class CatalogSearchTool extends ModuleRoot {
 
+    // Most of the development work can be done without involving Canvas and the
+    // LTI process. This function is for working on the UI
     @GET
     public Object doGet() {
+        String ext_content_return_url = "https://unizin.instructure.com/courses/31/external_content/success/external_tool_dialog";
+
         return getView("index").arg("jsPath",
                                     Framework.getProperty(
-                                            "org.unizin.catalogSearch.jsPath"));
+                                            "org.unizin.catalogSearch.jsPath"))
+                               .arg("ext_content_return_url",
+                                    ext_content_return_url);
+    }
+
+    // This is the real way that Canvas will LTI over
+    @POST
+    public Object doPost(@Context HttpServletRequest request) {
+    	Map<String, String[]> params = request.getParameterMap();
+    	String ext_content_return_url = params.get("ext_content_return_url")[0];
+
+    	return getView("index").arg("jsPath",
+    			Framework.getProperty(
+    					"org.unizin.catalogSearch.jsPath"))
+    			.arg("ext_content_return_url",
+    					ext_content_return_url);
     }
 
     @POST

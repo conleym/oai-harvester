@@ -1,4 +1,3 @@
-import 'babel-core/polyfill'
 import { createStore, applyMiddleware } from 'redux'
 import * as reducers from './reducers'
 import { combineReducers } from 'redux'
