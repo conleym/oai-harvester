@@ -47,7 +47,7 @@ public class CatalogSearchTool extends ModuleRoot {
         try {
             URI nuxeoURI = new URI(Framework.getProperty("nuxeo.url"));
             URI nuxeoNoPath = new URI(
-                    nuxeoURI.getScheme(), nuxeoURI.getHost(), null, null);
+                    nuxeoURI.getScheme(), null, nuxeoURI.getHost(), nuxeoURI.getPort(), null, null, null);
             return getView("showConfig").arg("nuxeoHost", nuxeoURI.getHost())
                     .arg("nuxeoURL", nuxeoNoPath.toString());
         } catch (URISyntaxException e) {
