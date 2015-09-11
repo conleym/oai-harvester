@@ -23,9 +23,10 @@ for (var key in env) {
 
 var optionalPlugins = []
 if (process.env.NODE_ENV === 'production') {
-    devtool = 'hidden-source-map'
+    devtool = 'cheap-source-map'
     optionalPlugins.push(
         new webpack.optimize.UglifyJsPlugin({
+            sourceMap: false,
             compress: { warnings: false }
         })
     )
