@@ -14,6 +14,15 @@
   <description>OAI-PMH and Nuxeo API client code to harvest and ingest
     metadata from OAI-PMH-compliant repositories.</description>
 
+
+  <dependencies>
+    <dependency>
+      <groupId>org.nuxeo.ecm.automation</groupId>
+      <artifactId>nuxeo-automation-client</artifactId>
+      <version>7.3</version>
+    </dependency>
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
