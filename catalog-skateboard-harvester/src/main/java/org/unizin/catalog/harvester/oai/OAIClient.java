@@ -7,6 +7,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
@@ -28,6 +30,8 @@ import static org.apache.http.util.TextUtils.isEmpty;
 import static org.unizin.catalog.harvester.oai.OAIConstants.*;
 
 public class OAIClient {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(OAIClient.class);
 
     private final HttpClient httpClient;
     private final XMLInputFactory xmlInputFactory;
@@ -90,7 +94,7 @@ public class OAIClient {
                     entity = response.getEntity();
                     content = entity.getContent();
                     resumptionToken = parseResponse(content, outputStream);
-                    System.out.println(resumptionToken.toString());
+                    LOGGER.info(baseURI.toString() + ": " + resumptionToken.toString());
                 }
             }
         } catch (URISyntaxException e) {
