@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<repositories>
+
+  <repository>
+    <name>The Knowledge Bank at OSU</name>
+    <institution>Ohio State University</institution>
+    <url>http://kb.osu.edu/oai/request</url>
+  </repository>
+
+  <repository>
+    <name>Deep Blue</name>
+    <institution>University of Michigan</institution>
+    <url>http://deepblue.lib.umich.edu/dspace-oai/request</url>
+  </repository>
+
+  <repository>
+    <name>Digital Collections of Colorado</name>
+    <institution>Colorado State University</institution>
+    <url>https://dspace.library.colostate.edu/oai/request</url>
+  </repository>
+
+  <repository>
+    <name>University of Florida Digital Collections</name>
+    <institution>University of Florida</institution>
+    <url>http://ufdc.ufl.edu/sobekcm_oai.aspx</url>
+  </repository>
+
+  <repository>
+    <name>IUScholarWorks Repository</name>
+    <institution>Indiana University</institution>
+    <url>http://scholarworks.iu.edu/dspace-oai/request</url>
+  </repository>
+
+  <repository>
+    <name>ScholarsArchive@OSU</name>
+    <institution>Oregon State University</institution>
+    <url>http://ir.library.oregonstate.edu/oai/request</url>
+  </repository>
+
+  <repository>
+    <name>Iowa Research Online</name>
+    <institution>University of Iowa</institution>
+    <url>http://ir.uiowa.edu/do/oai/</url>
+  </repository>
+
+  <repository>
+    <name>MINDS@UW</name>
+    <institution>University of Wisconsin</institution>
+    <url>http://minds.wisconsin.edu/oai/request</url>
+  </repository>
+
+  <repository>
+    <name>University of Minnesota Digital Conservancy</name>
+    <institution>University of Minnesota</institution>
+    <url>http://conservancy.umn.edu/oai/request</url>
+  </repository>
+
+  <repository>
+    <name>DigitalCommons@University of Nebraska - Lincoln</name>
+    <institution>University of Nebraska</institution>
+    <url>http://digitalcommons.unl.edu/do/oai/</url>
+  </repository>
+
+
+</repositories>
