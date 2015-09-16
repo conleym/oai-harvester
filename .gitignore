@@ -225,3 +225,4 @@ target/
 hs_err_pid*
 log/
 catalog-skateboard/catalog-skateboard-lti-tool/node_modules/
+.vagrant/
