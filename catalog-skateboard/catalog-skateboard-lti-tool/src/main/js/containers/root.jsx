@@ -13,11 +13,26 @@ export default class Root extends React.Component {
         )
     }
 
+    renderDevtools() {
+        if (process.env.NODE_ENV !== 'production') {
+            const { DevTools, DebugPanel, LogMonitor } = require('redux-devtools/lib/react')
+
+            return (
+                <DebugPanel top right bottom>
+                    <DevTools store={this.props.store} monitor={LogMonitor}  visibleOnLoad={false} />
+                </DebugPanel>
+            )
+        }
+    }
+
     render() {
         return (
-            <Provider store={this.props.store}>
-                {this.providerContent}
-            </Provider>
+            <div>
+                <Provider store={this.props.store}>
+                    {this.providerContent}
+                </Provider>
+                {this.renderDevtools()}
+            </div>
         )
     }
 }
