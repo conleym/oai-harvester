@@ -27,7 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static org.apache.http.util.TextUtils.isEmpty;
-import static org.unizin.catalog.harvester.oai.OAIConstants.*;
+import static org.unizin.catalog.OAIConstants.*;
 
 public class OAIClient {
 
