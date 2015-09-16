@@ -1,9 +1,5 @@
 class java8 {
   include apt
-
-  exec { 'apt-get update':
-    command => '/usr/bin/apt-get update'
-  }
   
   file { '/tmp/acceptlicense.txt':
     source => 'puppet:///modules/java8/acceptlicense.txt',
@@ -12,7 +8,7 @@ class java8 {
   }
   
   apt::ppa { 'ppa:webupd8team/java':
-    before => Exec['apt-get update']
+    before => Exec['apt_update']
   }
 
   package { 'oracle-java8-installer':
@@ -20,7 +16,7 @@ class java8 {
     ensure   => installed,
     require  => [ Apt::Ppa['ppa:webupd8team/java'],
                   File['/tmp/acceptlicense.txt'],
-                  Exec['apt-get update'] ]
+                  Exec['apt_update'] ]
   }
 
 }
