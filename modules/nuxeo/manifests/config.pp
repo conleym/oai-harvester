@@ -7,7 +7,7 @@ class nuxeo::config inherits nuxeo {
   
   file_line { 'nuxeo url':
     path => '/etc/nuxeo/nuxeo.conf',
-    line => "nuxeo.url=https://${ipaddress_eth1}/nuxeo"
+    line => "nuxeo.url=https://${fqdn}/nuxeo"
   }
   
   file_line { 'disable elasticsearch':

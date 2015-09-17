@@ -20,7 +20,7 @@ apache::vhost { 'nuxeo':
     }
   ],
   request_headers => [
-    "append nuxeo-virtual-host \"https://${ipaddress_eth1}/\"",
+    "append nuxeo-virtual-host \"https://${fqdn}/\"",
     'append X-Forwarded-Proto "https"'
   ],
   proxy_preserve_host => true
