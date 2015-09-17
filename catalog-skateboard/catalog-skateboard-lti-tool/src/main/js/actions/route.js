@@ -1,5 +1,5 @@
 import { ROUTE } from '../middleware/routing.js'
-// import { encodeURL } from './search.js'
+import { encodeURL } from './search.js'
 
 export const LOCATION_CHANGED = 'LOCATION_CHANGED'
 export let history
@@ -45,4 +45,18 @@ export function route(route, query) {
 
 export function routeSearchFor(search) {
     return route('/search', { search })
+}
+
+export function routeResult(item) {
+    return route(encodeURL`/result/${item.uid}`)
+}
+
+export function routeReturnUrl(item) {
+    const { path, title } = item
+    const url = location.protocol + '//' + location.hostname + path
+
+    const query = encodeURL`?return_type=url&url=${url}&title=${title}&target=_blank`
+    return {
+        url: window.lti_data.ext_content_return_url + query
+    }
 }

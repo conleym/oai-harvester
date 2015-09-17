@@ -2,6 +2,7 @@ import { routeSearchFor } from './route.js'
 
 export const SEARCH_FOR = 'SEARCH_FOR'
 export const SEARCH_RESULTS = 'SEARCH_RESULTS'
+export const CHANGE_CATALOG = 'CHANGE_CATALOG'
 
 function json(response) {
     return response.json()
@@ -51,4 +52,11 @@ export function searchFor(text) {
 
     }
 
+}
+
+export function changeCatalog(key, enabled) {
+    return {
+        type: CHANGE_CATALOG,
+        payload: { key, enabled }
+    }
 }

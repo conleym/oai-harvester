@@ -1,22 +1,30 @@
 import React from 'react'
-import { encodeURL } from '../actions/search.js'
+import { Link } from 'react-router'
+import { routeResult, routeReturnUrl } from '../actions/route.js'
 
-function resultUrl(url, title) {
-    const query = encodeURL`?return_type=url&url=${url}&title=${title}&target=_blank`
-    return window.lti_data.ext_content_return_url + query
-}
+const noCover = (
+    <div style={{
+        border: '1px black solid',
+        width: '100px',
+    }}>
+        No
+        <br/>
+        Cover
+        <br/>
+        Available
+        <br/>
+    </div>
+)
 
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
 
     renderResult(result, index) {
-        const { path, title, properties } = result
+        const { title, properties } = result
+        const returnUrl = routeReturnUrl(result).url
+        const resultRoute = routeResult(result).route
 
-        const target = location.protocol + '//' + location.hostname + path
-
-        const url = resultUrl(target, title)
-
-        let thumb
+        let thumb = noCover
         if (properties && properties['thumb:thumbnail']) {
             thumb = (
                 <img src={properties['thumb:thumbnail'].data} />
@@ -25,10 +33,16 @@ export default class SearchResults extends React.Component {
 
         return (
             <li key={result.uid}>
-                <h2>
-                    <a href={url}>{title}</a>
-                </h2>
                 {thumb}
+                <h2>
+                    <Link to={resultRoute}>
+                        {title}
+                    </Link>
+                </h2>
+
+                <a href={returnUrl}>
+                    + Insert
+                </a>
             </li>
         )
     }
@@ -42,9 +56,7 @@ export default class SearchResults extends React.Component {
 
         return (
             <div>
-                <h1>Results for {criteria.text}</h1>
-
-                totalSize: {results.totalSize}
+                {results.totalSize} Results
 
                 <ul>
                     {results.entries.map(this.renderResult.bind(this))}

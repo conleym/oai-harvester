@@ -2,6 +2,8 @@ import React from 'react'
 import { Router, Route } from 'react-router'
 import { Provider } from 'react-redux'
 import App from './app.jsx'
+import Search from './search.jsx'
+import Result from './result.jsx'
 
 export default class Root extends React.Component {
     static displayName = 'Root'
@@ -12,7 +14,9 @@ export default class Root extends React.Component {
         return (
             <Router history={this.props.history}>
                 <Route component={App}>
-                    <Route path="*" />
+                    <Route path="/result/:uid" component={Result} />
+                    <Route path="/search" component={Search} />
+                    <Route path="/" component={Search} />
                 </Route>
             </Router>
         )
