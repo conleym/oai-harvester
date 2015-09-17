@@ -4,14 +4,11 @@ class nuxeo::service inherits nuxeo {
     fail('service_ensure parameter must be running or stopped')
   }
   
-  if $service_manage == true {
-    service { 'nuxeo':
-      ensure     => $service_ensure,
-      enable     => $service_enable,
-      name       => $service_name,
-      hasstatus  => true,
-      hasrestart => true
-    }
+  service { 'nuxeo':
+    ensure     => $service_ensure,
+    enable     => $service_enable,
+    name       => $service_name,
+    hasstatus  => true,
+    hasrestart => true
   }
-
 }

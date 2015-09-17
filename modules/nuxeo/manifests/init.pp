@@ -3,10 +3,8 @@ class nuxeo ($service_enable = $nuxeo::params::service_enable,
              $service_name   = $nuxeo::params::service_name) inherits nuxeo::params
 {
 
-  class { 'nuxeo::install': } ->
-  class { 'nuxeo::service': } ->
-  class { 'nuxeo::config': } ->
-  exec { 'restart nuxeo':
-    command => "/usr/sbin/service nuxeo restart"
-  } # ~> Service['nuxeo'] doesn't work!
+  class { '::nuxeo::install': } ->
+  class { '::nuxeo::config': } ~>
+  class { '::nuxeo::service': }
+  
 }
