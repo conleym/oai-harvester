@@ -15,14 +15,19 @@ let createStoreWithMiddleware
 if (process.env.NODE_ENV !== 'production') {
     const { devTools, persistState } = require('redux-devtools')
 
-    // `window` would refer to the page inside the iframe where `top` will refer
-    // to the location outside the iframe
-    const location = top.location
+    let key
+    try {
+        // `window` would refer to the page inside the iframe where `top` will refer
+        // to the location outside the iframe
+        key = top.location.href.match(/[?&]debug_session=([^&]+)\b/)
+    } catch (e) {
+        key = undefined
+    }
 
     createStoreWithMiddleware = compose(
         applyMiddleware(...middleware),
         devTools(),
-        persistState(location.href.match(/[?&]debug_session=([^&]+)\b/))
+        persistState(key)
     )(createStore)
 } else {
     createStoreWithMiddleware = applyMiddleware(...middleware)(createStore)

@@ -55,7 +55,8 @@ export function routeReturnUrl(item) {
     const { path, title } = item
     const url = location.protocol + '//' + location.hostname + path
 
-    const query = encodeURL`?return_type=url&url=${url}&title=${title}&target=_blank`
+    const query = encodeURL`?return_type=url&url=${url}&text=${title}&target=_blank`
+
     return {
         url: window.lti_data.ext_content_return_url + query
     }
