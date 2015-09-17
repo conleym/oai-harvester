@@ -32,5 +32,6 @@
 
   <!-- Store the source OAI repository URL -->
   <xs:element name="sourceRepository" type="xs:string"/>
+  <xs:element name="oaiIdentifier" type="xs:string"/>
 
 </xs:schema>
