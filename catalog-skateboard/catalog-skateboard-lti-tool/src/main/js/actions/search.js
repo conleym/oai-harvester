@@ -4,15 +4,20 @@ export const SEARCH_FOR = 'SEARCH_FOR'
 export const SEARCH_RESULTS = 'SEARCH_RESULTS'
 export const CHANGE_CATALOG = 'CHANGE_CATALOG'
 
-function json(response) {
+export function json(response) {
     return response.json()
 }
-function httpGET(url, options) {
+
+export function httpGET(url, options) {
     options = Object.assign({
         credentials: 'include',
     }, options)
 
-    return fetch(url, options)
+    return fetch(url, options).catch(e => {
+        console.warn('ERROR', e) // eslint-disable-line no-console
+        console.warn(e.stack) // eslint-disable-line no-console
+        throw e
+    })
 }
 
 export function encodeURL(strings, ...values) {
@@ -24,7 +29,6 @@ export function encodeURL(strings, ...values) {
         return out
     }, '')
 }
-
 
 const PATH = 'default-domain'
 export function searchFor(text) {

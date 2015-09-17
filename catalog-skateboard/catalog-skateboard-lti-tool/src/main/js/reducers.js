@@ -1,5 +1,17 @@
 import { CHANGE_CATALOG, SEARCH_FOR, SEARCH_RESULTS } from './actions/search.js'
 import { LOCATION_CHANGED } from './actions/route.js'
+import { DOCUMENT } from './actions/documents.js'
+
+export function documents(state = {}, action) {
+    if (action.type === DOCUMENT) {
+        return {
+            ...state,
+            [action.payload.uid]: action.payload
+        }
+    }
+
+    return state
+}
 
 const defaultResults = {
     entries: [],

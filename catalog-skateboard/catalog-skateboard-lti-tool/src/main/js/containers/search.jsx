@@ -42,19 +42,24 @@ class Search extends React.Component {
         return (
             <div>
                 <form onSubmit={this.onSearch.bind(this)}>
-                    <label htmlFor="searchInput">
-                        Enter Search Term
-                    </label>
+
+                    { criteria.text == null ? (
+                        <label htmlFor="searchInput">
+                            Enter Search Term
+                        </label>
+                    ) : null}
+
+
                     <input id="searchInput" ref="searchInput" />
                     <input type="submit" value="Search" />
                 </form>
 
-                { criteria ? (
+                { criteria.text != null ? (
                     <CatalogSelector
                         onChange={this.props.changeCatalog}
                         catalogs={catalogs} />
                 ) : null}
-                { criteria ? (
+                { criteria.text != null ? (
                     <SearchResults criteria={criteria} results={searchResults} />
                 ) : null}
             </div>

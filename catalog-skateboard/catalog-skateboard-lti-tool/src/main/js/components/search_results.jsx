@@ -1,39 +1,20 @@
 import React from 'react'
 import { Link } from 'react-router'
 import { routeResult, routeReturnUrl } from '../actions/route.js'
-
-const noCover = (
-    <div style={{
-        border: '1px black solid',
-        width: '100px',
-    }}>
-        No
-        <br/>
-        Cover
-        <br/>
-        Available
-        <br/>
-    </div>
-)
+import Cover from './cover.jsx'
 
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
 
     renderResult(result, index) {
-        const { title, properties } = result
+        const { title } = result
         const returnUrl = routeReturnUrl(result).url
         const resultRoute = routeResult(result).route
 
-        let thumb = noCover
-        if (properties && properties['thumb:thumbnail']) {
-            thumb = (
-                <img src={properties['thumb:thumbnail'].data} />
-            )
-        }
 
         return (
             <li key={result.uid}>
-                {thumb}
+                <Cover document={result} />
                 <h2>
                     <Link to={resultRoute}>
                         {title}
