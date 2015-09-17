@@ -1,4 +1,5 @@
 import React from 'react'
+import { Router, Route } from 'react-router'
 import { Provider } from 'react-redux'
 import App from './app.jsx'
 
@@ -9,7 +10,11 @@ export default class Root extends React.Component {
     // in React 0.13, but will be able to pass the content starting in 0.14
     providerContent() {
         return (
-            <App />
+            <Router history={this.props.history}>
+                <Route component={App}>
+                    <Route path="*" />
+                </Route>
+            </Router>
         )
     }
 
@@ -29,7 +34,7 @@ export default class Root extends React.Component {
         return (
             <div>
                 <Provider store={this.props.store}>
-                    {this.providerContent}
+                    {this.providerContent.bind(this)}
                 </Provider>
                 {this.renderDevtools()}
             </div>

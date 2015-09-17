@@ -1,4 +1,5 @@
-import { SEARCH_FOR, SEARCH_RESULTS } from './actions.js'
+import { SEARCH_FOR, SEARCH_RESULTS } from './actions/search.js'
+import { LOCATION_CHANGED } from './actions/route.js'
 
 const defaultResults = {
     entries: [],
@@ -28,5 +29,13 @@ export function criteria(state = {}, action) {
         }
     }
 
+    return state
+}
+
+export function location(state = {}, action) {
+    const { type, payload } = action
+    if (type === LOCATION_CHANGED) {
+        return payload
+    }
     return state
 }

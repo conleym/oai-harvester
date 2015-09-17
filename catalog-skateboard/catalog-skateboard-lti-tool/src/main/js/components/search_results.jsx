@@ -1,5 +1,5 @@
 import React from 'react'
-import { encodeURL } from '../actions.js'
+import { encodeURL } from '../actions/search.js'
 
 function resultUrl(url, title) {
     const query = encodeURL`?return_type=url&url=${url}&title=${title}&target=_blank`

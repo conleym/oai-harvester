@@ -1,20 +1,15 @@
 import { compose, createStore, applyMiddleware } from 'redux'
 import * as reducers from './reducers'
 import { combineReducers } from 'redux'
+import routing from './middleware/routing.js'
 import thunk from 'redux-thunk'
 
 const rootReducer = combineReducers(reducers)
 
 const middleware = [
-    thunk
+    thunk,
+    routing,
 ]
-if (process.env.NODE_ENV !== 'production') {
-    const loggerMiddleware = require('redux-logger')
-    middleware.push(
-        loggerMiddleware()
-    )
-}
-
 let createStoreWithMiddleware
 
 if (process.env.NODE_ENV !== 'production') {
