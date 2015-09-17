@@ -1,27 +1,12 @@
-class nuxeo {
-  include apt
-  include java8
-  
-  apt::source { 'nuxeo':
-    location => 'http://apt.nuxeo.org/',
-    release => 'trusty',
-    repos => 'fasttracks',
-    key => {
-      source => 'http://apt.nuxeo.org/nuxeo.key',
-      id => '0F3BCCFE175E96EE42FB77DD5E2FAE6BDD1BF5E4'
-    },
-    include => {
-      'src' => true,
-      'deb' => true,
-    },
-    before => Exec['apt_update']
-  }
+class nuxeo ($service_enable = $nuxeo::params::service_enable,
+             $service_ensure = $nuxeo::params::service_ensure,
+             $service_name   = $nuxeo::params::service_name) inherits nuxeo::params
+{
 
-  package { 'nuxeo':
-    ensure  => installed,
-    install_options => ['--install-suggests', '--ignore-missing'],
-    require => [ Apt::Source['nuxeo'],
-                 Exec['apt_update'],
-                 Package['oracle-java8-installer'] ]
-  }
+  class { 'nuxeo::install': } ->
+  class { 'nuxeo::service': } ->
+  class { 'nuxeo::config': } ->
+  exec { 'restart nuxeo':
+    command => "/usr/sbin/service nuxeo restart"
+  } # ~> Service['nuxeo'] doesn't work!
 }

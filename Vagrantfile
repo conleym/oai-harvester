@@ -8,6 +8,9 @@ Vagrant.configure(2) do |config|
     config.cache.scope = :box
   end
 
+  config.vm.hostname = "catskateboard.local"
+  config.vm.network "private_network", ip: "10.10.20.20"
+  
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "2048"
   end

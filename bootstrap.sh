@@ -10,5 +10,6 @@ then
     wget https://s3.amazonaws.com/courseload-public/debs/ffmpeg-nuxeo_2.7.2-1_amd64.deb
     dpkg -i ffmpeg-nuxeo_2.7.2-1_amd64.deb
     puppet module install puppetlabs-apt
+    puppet module install puppetlabs-apache
     touch /home/vagrant/upgraded
 fi
