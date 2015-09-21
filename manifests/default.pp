@@ -48,8 +48,3 @@ class { 'elasticsearch':
 elasticsearch::instance { 'es-01':
   require => Class['elasticsearch']
 }
-
-exec { 'create_nuxeo_index':
-  command => 'curl -XPUT localhost:9200/nuxeo',
-  require => Class['elasticsearch']
-}
