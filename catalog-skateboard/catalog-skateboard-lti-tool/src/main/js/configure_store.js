@@ -19,7 +19,7 @@ if (process.env.NODE_ENV !== 'production') {
     try {
         // `window` would refer to the page inside the iframe where `top` will refer
         // to the location outside the iframe
-        key = top.location.href.match(/[?&]debug_session=([^&]+)\b/)
+        key = top.location.href.match(/[?&]debug_session=([^#&]+)\b/)[1]
     } catch (e) {
         key = undefined
     }
