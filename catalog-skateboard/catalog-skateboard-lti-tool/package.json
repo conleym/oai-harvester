@@ -6,6 +6,7 @@
   "scripts": {
     "build": "NODE_ENV=production webpack",
     "start": "webpack-dev-server --https",
+    "start-cert": "webpack-dev-server --https  --key server.key --cert server.crt --cacert server.crt",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -27,6 +28,6 @@
     "eslint-plugin-react": "^3.3.1",
     "redux-logger": "^1.0.6",
     "webpack": "^1.12.1",
-    "webpack-dev-server": "^1.10.1"
+    "webpack-dev-server": "^1.11.0"
   }
 }
