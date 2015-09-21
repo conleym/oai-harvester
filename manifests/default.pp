@@ -1,5 +1,11 @@
 include nuxeo
 
+Exec {
+  path      => $::path,
+  logoutput => on_failure,
+  cwd       => '/',
+}
+
 apt::source { 'ubuntu':
   location => 'http://archive.ubuntu.com/ubuntu',
   release  => 'trusty',
@@ -33,6 +39,17 @@ apt::source { 'elasticsearch':
     id     => '46095ACC8548582C1A2699A9D27D666CD88E42B4',
     source => 'https://packages.elastic.co/GPG-KEY-elasticsearch'
   }
-  } ->
-  class { 'elasticsearch': } ->
-  elasticsearch::instance { 'es-01': }
+}
+
+class { 'elasticsearch':
+  require => Apt::Source['elasticsearch']
+}
+
+elasticsearch::instance { 'es-01':
+  require => Class['elasticsearch']
+}
+
+exec { 'create_nuxeo_index':
+  command => 'curl -XPUT localhost:9200/nuxeo',
+  require => Class['elasticsearch']
+}
