@@ -2,13 +2,13 @@
 Developing JavaScript Client
 ============================
 
-1. in `/etc/nuxeo/nuxeo.conf` add:
+1. (inside VM) in `/etc/nuxeo/nuxeo.conf` add:
 
     org.unizin.catalogSearch.jsPath=https://localhost:9595
 
-2. Restart Nuxeo
-3. `npm install`
-4. `npm start`
+2. (inside VM) Restart Nuxeo
+3. (outside VM) `npm install`
+4. (outside VM) `npm start`
 
 As long as `npm start` is running, `/nuxeo/site/catalog/` will load JS from your
 webpack server. It will auto-reload any time you change some JS.
