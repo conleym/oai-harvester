@@ -1,6 +1,8 @@
 /* eslint no-var: [0] */
 var path = require('path')
 var webpack = require('webpack')
+var ExtractTextPlugin = require("extract-text-webpack-plugin")
+var extractText = new ExtractTextPlugin("catalog_search.css")
 
 var devtool = 'source-map'
 var env = {
@@ -45,19 +47,19 @@ module.exports = {
         loaders: [
             {
                 test: /\.css$/,
-                loaders: [
-                    "style",
-                    'css?localIdentName=' + css,
-                ]
-            }, {
+                loader: extractText.extract(
+                    'css-loader?localIdentName=' + css
+                )
+            },
+            {
                 test   : /\.scss$/,
-                loaders: [
-                    'style',
-                    'css?localIdentName=' + css,
+                loader: extractText.extract([
+                    'css-loader?sourceMap&localIdentName=' + css,
                     'resolve-url',
                     'sass?sourceMap'
-                ]
-            }, {
+                ])
+            },
+            {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
                 loader: 'babel',
@@ -92,6 +94,7 @@ module.exports = {
             'process.env': env
         }),
         new webpack.NoErrorsPlugin(),
+        extractText
     ].concat(optionalPlugins),
     output: {
         path: path.join(__dirname, 'target', 'classes', 'skin', 'resources'),

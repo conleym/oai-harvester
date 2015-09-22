@@ -13,11 +13,12 @@
   "private": true,
   "dependencies": {
     "babel-runtime": "^5.8.20",
+    "css-loader": "^0.18.0",
     "dataloader": "^1.0.0",
     "es6-map": "^0.1.1",
     "es6-promise": "^3.0.2",
+    "extract-text-webpack-plugin": "^0.8.2",
     "history": "^1.9.1",
-    "css-loader": "^0.18.0",
     "native-promise-only": "^0.8.1",
     "node-sass": "^3.3.3",
     "react": "^0.13.3",
