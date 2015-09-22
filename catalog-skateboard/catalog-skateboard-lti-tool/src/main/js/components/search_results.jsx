@@ -1,3 +1,4 @@
+import styles from './search_result.scss'
 import React from 'react'
 import { Link } from 'react-router'
 import { routeResult, routeReturnUrl } from '../actions/route.js'
@@ -32,7 +33,7 @@ export default class SearchResults extends React.Component {
 
 
         return (
-            <li key={result.uid}>
+            <li key={result.uid} className={styles.result}>
                 <Cover document={result} />
                 <h2>
                     <Link to={resultRoute}>

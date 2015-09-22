@@ -21,8 +21,10 @@ for (var key in env) {
     env[key] = JSON.stringify(value)
 }
 
+var css = '[path][name]---[local]---[hash:base64:5]'
 var optionalPlugins = []
 if (process.env.NODE_ENV === 'production') {
+    css = '[hash:base64]'
     devtool = 'cheap-source-map'
     optionalPlugins.push(
         new webpack.optimize.UglifyJsPlugin({
@@ -31,6 +33,7 @@ if (process.env.NODE_ENV === 'production') {
         })
     )
 }
+
 
 module.exports = {
     context: path.join(__dirname, 'src', 'main', 'js'),
@@ -41,6 +44,20 @@ module.exports = {
     module: {
         loaders: [
             {
+                test: /\.css$/,
+                loaders: [
+                    "style",
+                    'css?localIdentName=' + css,
+                ]
+            }, {
+                test   : /\.scss$/,
+                loaders: [
+                    'style',
+                    'css?localIdentName=' + css,
+                    'resolve-url',
+                    'sass?sourceMap'
+                ]
+            }, {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
                 loader: 'babel',

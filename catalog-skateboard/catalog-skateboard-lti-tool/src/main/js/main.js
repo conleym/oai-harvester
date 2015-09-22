@@ -1,3 +1,4 @@
+import '../resources/skin/resources/css/main.css'
 import './setup_fetch.js'
 import React from 'react'
 import Root from './containers/root.jsx'
