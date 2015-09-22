@@ -34,6 +34,12 @@ public class CatalogSearchTool extends ModuleRoot {
                                     ext_content_return_url);
     }
 
+    @GET
+    @Path("frame")
+    public Object showFrame() {
+        return getView("frame");
+    }
+
     // This is the real way that Canvas will LTI over
     @POST
     public Object doPost(@Context HttpServletRequest request) {

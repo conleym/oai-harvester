@@ -1,43 +1,24 @@
 import './setup_fetch.js'
 import React from 'react'
-import Root from './containers/app.jsx'
+import Root from './containers/root.jsx'
 import configureStore from './configure_store.js'
+import { useQueries } from 'history'
+import createHistory from 'history/lib/createHashHistory'
+import { setupHistory } from './actions/route.js'
 
-const SNAPSHOT_KEY = '_snapshot_'
-let snapshot
-
-if (process.env.NODE_ENV !== 'production') {
-    try {
-        if (localStorage.getItem(SNAPSHOT_KEY)) {
-            console.warn('Restoring store from snapshot') // eslint-disable-line no-console
-            snapshot = JSON.parse(localStorage.getItem(SNAPSHOT_KEY))
-        }
-    } catch (e) {
-        console.log("Couldn't restore snapshot") // eslint-disable-line no-console
-        console.error(e.message) // eslint-disable-line no-console
-    }
-}
-
-const store = configureStore(snapshot)
+const store = configureStore()
+const history = useQueries(createHistory)({
+    // queryKey: false
+})
+setupHistory(history, store)
 
 if (process.env.NODE_ENV !== 'production') {
-    window.React = React
     window.store = store
-
-    window.snapshot = {
-        save() {
-            const snapshot = JSON.stringify(store.getState())
-            localStorage.setItem(SNAPSHOT_KEY, snapshot)
-            location.reload()
-        },
-        clear() {
-            localStorage.removeItem(SNAPSHOT_KEY)
-            location.reload()
-        }
-    }
+    window.rHistory = history
+    window.reactRouter = require('react-router')
 }
 
 React.render(
-    React.createElement(Root, { store }),
+    React.createElement(Root, { store, history }),
     document.getElementById('root')
 )
