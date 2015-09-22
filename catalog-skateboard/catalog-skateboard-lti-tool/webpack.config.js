@@ -1,6 +1,8 @@
 /* eslint no-var: [0] */
 var path = require('path')
 var webpack = require('webpack')
+var ExtractTextPlugin = require("extract-text-webpack-plugin")
+var extractText = new ExtractTextPlugin("catalog_search.css")
 
 var devtool = 'source-map'
 var env = {
@@ -21,8 +23,10 @@ for (var key in env) {
     env[key] = JSON.stringify(value)
 }
 
+var css = '[path][name]---[local]---[hash:base64:5]'
 var optionalPlugins = []
 if (process.env.NODE_ENV === 'production') {
+    css = '[hash:base64]'
     devtool = 'cheap-source-map'
     optionalPlugins.push(
         new webpack.optimize.UglifyJsPlugin({
@@ -32,6 +36,7 @@ if (process.env.NODE_ENV === 'production') {
     )
 }
 
+
 module.exports = {
     context: path.join(__dirname, 'src', 'main', 'js'),
     devtool: devtool,
@@ -40,6 +45,20 @@ module.exports = {
     },
     module: {
         loaders: [
+            {
+                test: /\.css$/,
+                loader: extractText.extract(
+                    'css-loader?localIdentName=' + css
+                )
+            },
+            {
+                test   : /\.scss$/,
+                loader: extractText.extract([
+                    'css-loader?sourceMap&localIdentName=' + css,
+                    'resolve-url',
+                    'sass?sourceMap'
+                ])
+            },
             {
                 test: /\.jsx?$/,
                 exclude: /(node_modules|bower_components)/,
@@ -75,6 +94,7 @@ module.exports = {
             'process.env': env
         }),
         new webpack.NoErrorsPlugin(),
+        extractText
     ].concat(optionalPlugins),
     output: {
         path: path.join(__dirname, 'target', 'classes', 'skin', 'resources'),
