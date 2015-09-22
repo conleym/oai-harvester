@@ -6,5 +6,6 @@ class nuxeo ($service_enable = $nuxeo::params::service_enable,
   class { '::nuxeo::install': } ->
   class { '::nuxeo::config': } ~>
   class { '::nuxeo::service': }
-  
+
 }
+
