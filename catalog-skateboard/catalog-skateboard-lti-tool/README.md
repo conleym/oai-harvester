@@ -6,7 +6,7 @@ Developing JavaScript Client
 
     org.unizin.catalogSearch.jsPath=https://localhost:9595
 
-2. (inside VM) Restart Nuxeo
+2. (inside VM) Restart Nuxeo `sudo nuxeoctl restart`
 3. (outside VM) `npm install`
 4. (outside VM) `npm start`
 5. visit https://localhost:9595 directly so you can tell your browser to accept webpack's self signed cert
