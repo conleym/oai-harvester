@@ -51,7 +51,7 @@ export default class SearchResults extends React.Component {
         }
 
         return (
-            <main className={styles.results}>
+            <main className={styles.results} role="main">
                 <h1>{results.totalSize} Results</h1>
 
                 <Pager
