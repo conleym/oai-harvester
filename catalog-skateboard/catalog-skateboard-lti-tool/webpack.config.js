@@ -57,7 +57,7 @@ module.exports = {
                     'css-loader?sourceMap&localIdentName=' + css,
                     'resolve-url',
                     'sass?sourceMap'
-                ])
+                ].join("!"))
             },
             {
                 test: /\.jsx?$/,

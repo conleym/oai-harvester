@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from './search.scss'
 import { connect } from 'react-redux'
 import { changeCatalog, searchFor } from '../actions/search.js'
 import { routeSearchFor } from '../actions/route.js'
@@ -40,8 +41,8 @@ class Search extends React.Component {
         }
 
         return (
-            <div>
-                <form onSubmit={this.onSearch.bind(this)}>
+            <div className="search-container">
+                <form className="search-form" onSubmit={this.onSearch.bind(this)}>
 
                     { criteria.text == null ? (
                         <label htmlFor="searchInput">
@@ -53,15 +54,16 @@ class Search extends React.Component {
                     <input id="searchInput" ref="searchInput" />
                     <input type="submit" value="Search" />
                 </form>
-
-                { criteria.text != null ? (
-                    <CatalogSelector
-                        onChange={this.props.changeCatalog}
-                        catalogs={catalogs} />
-                ) : null}
-                { criteria.text != null ? (
-                    <SearchResults criteria={criteria} results={searchResults} />
-                ) : null}
+                <div className="results-container">
+                  { criteria.text != null ? (
+                      <CatalogSelector
+                          onChange={this.props.changeCatalog}
+                          catalogs={catalogs} />
+                  ) : null}
+                  { criteria.text != null ? (
+                      <SearchResults criteria={criteria} results={searchResults} />
+                  ) : null}
+                </div>
             </div>
         )
     }

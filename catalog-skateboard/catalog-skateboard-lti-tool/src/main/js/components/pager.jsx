@@ -1,3 +1,4 @@
+import styles from './pager.scss'
 import React from 'react'
 
 const { number } = React.PropTypes
@@ -74,7 +75,7 @@ export default class Pager extends React.Component {
         }
 
         return (
-            <div>
+            <div className={styles.pagination}>
                 {buttons.map(({label, i}) => (
                     <button
                         value={i}

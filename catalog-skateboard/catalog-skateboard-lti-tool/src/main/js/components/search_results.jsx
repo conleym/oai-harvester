@@ -62,7 +62,7 @@ export default class SearchResults extends React.Component {
         }
 
         return (
-            <div>
+            <div className={styles.results}>
                 {results.totalSize} Results
 
                 <Pager
