@@ -7,7 +7,7 @@ $result_left_padding: $cover_width + $global_padding;
   padding: $global_padding;
 }
 
-.result {
+:local .result {
   position: relative;
   padding: 0 5rem 0 $result_left_padding;
   margin-bottom: 2rem;
