@@ -1,0 +1,41 @@
+@import '../variables.scss';
+$result_left_padding: $cover_width + $global_padding + 1rem;
+
+.result-details {
+  padding: $global_padding;
+
+  header {
+    position: relative;
+    padding: $global_padding;
+    min-height: $cover_height + ($global_padding * 2);
+    padding: 0 13rem 0 $result_left_padding;
+
+    h1 {
+      padding-top: $global_padding;
+      font-size: 1.75rem;
+    }
+
+    .cover {
+      position: absolute;
+      left: $global_padding;
+      top: $global_padding;
+    }
+
+    .controls {
+      display: inline-block;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translate(0,-50%);
+
+      li {
+        display: inline-block;
+        margin: 0 $global_margin;
+      }
+    }
+  }
+
+  section {
+    padding: $global_padding;
+  }
+}
