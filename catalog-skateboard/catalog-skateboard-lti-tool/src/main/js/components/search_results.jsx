@@ -33,7 +33,7 @@ export default class SearchResults extends React.Component {
 
 
         return (
-            <li key={result.uid} className={styles.result}>
+            <li key={result.uid} className='result'>
                 <Cover document={result} />
                 <h2>
                     <Link to={resultRoute}>
@@ -41,7 +41,7 @@ export default class SearchResults extends React.Component {
                     </Link>
                 </h2>
 
-                <a href={returnUrl}>
+                <a href={returnUrl} className="btn">
                     + Insert
                 </a>
             </li>
@@ -62,8 +62,8 @@ export default class SearchResults extends React.Component {
         }
 
         return (
-            <div className={styles.results}>
-                {results.totalSize} Results
+            <main className={styles.results}>
+                <h1>{results.totalSize} Results</h1>
 
                 <Pager
                     current={this.state.page}
@@ -73,7 +73,12 @@ export default class SearchResults extends React.Component {
                 <ul>
                     {results.entries.map(this.renderResult)}
                 </ul>
-            </div>
+
+                <Pager
+                    current={this.state.page}
+                    max={50}
+                    onChange={this.onPage} />
+                </main>
         )
     }
 }

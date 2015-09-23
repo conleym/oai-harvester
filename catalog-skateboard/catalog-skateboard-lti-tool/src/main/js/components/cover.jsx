@@ -1,16 +1,14 @@
+import styles from './cover.scss'
 import React from 'react'
+import classNames from 'classnames'
+
+const classes = classNames(styles.cover, 'cover')
 
 const noCover = (
-    <div style={{
-        border: '1px black solid',
-        width: '100px',
-    }}>
+    <div className={classes}>
         No
-        <br/>
         Cover
-        <br/>
         Available
-        <br/>
     </div>
 )
 

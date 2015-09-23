@@ -29,12 +29,12 @@ export default class CatalogSelector extends React.Component {
     render() {
 
         return (
-            <div className={styles.filters}>
+            <aside className={styles.filters}>
                 Show results from these catalogs
                 <ul>
                     {this.renderCatalogs()}
                 </ul>
-            </div>
+            </aside>
         )
     }
 }
