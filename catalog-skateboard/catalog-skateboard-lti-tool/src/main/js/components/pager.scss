@@ -1,3 +1,19 @@
-.pagination {
-  background: purple;
+:local .pagination {
+  li {
+    display: inline-block;
+    margin: .5rem;
+
+    &:first-of-type {
+      margin-left: 0;
+    }
+
+    &:last-of-type {
+      margin-right: 0;
+    }
+
+    .active {
+      background: transparent;
+      border: none;
+    }
+  }
 }
