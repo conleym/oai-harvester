@@ -33,15 +33,15 @@ export default class SearchResults extends React.Component {
 
 
         return (
-            <li key={result.uid} className='result'>
-                <Cover document={result} />
+            <li key={result.uid} className={styles.result}>
+                <Cover className={styles.cover} document={result} />
                 <h2>
                     <Link to={resultRoute}>
                         {title}
                     </Link>
                 </h2>
 
-                <a href={returnUrl} className='btn'>
+                <a href={returnUrl} className={styles.btn}>
                     + Insert
                 </a>
             </li>
