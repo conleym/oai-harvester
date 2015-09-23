@@ -81,7 +81,7 @@ export default class Pager extends React.Component {
 
         return (
           <navigation>
-            <p id={pager_id}>Pagination</p>
+            <p id={pager_id} className="aural">Pagination</p>
             <ul className={styles.pagination} role="navigation" aria-labelledby={pager_id}>
                 {buttons.map(({label, i}) => (
                     <li key={label}>
