@@ -41,7 +41,7 @@ export default class SearchResults extends React.Component {
                     </Link>
                 </h2>
 
-                <a href={returnUrl} className="btn">
+                <a href={returnUrl} className='btn'>
                     + Insert
                 </a>
             </li>
