@@ -1,10 +1,12 @@
 @import '../variables.scss';
 $result_left_padding: $cover_width + $global_padding;
 
-:local .results {
-  float: left;
-  width: $results_width;
-  padding: $global_padding;
+:local {
+    .results {
+        float: left;
+        width: $results_width;
+        padding: $global_padding;
+    }
 }
 
 :local .result {
@@ -14,28 +16,28 @@ $result_left_padding: $cover_width + $global_padding;
   min-height: $cover_height;
 
   h2 {
-    a {
-      font-size: 1rem;
-      line-height: 1.3rem;
-      text-decoration: none;
+      a {
+          font-size: 1rem;
+          line-height: 1.3rem;
+          text-decoration: none;
 
-      &:hover {
-        text-decoration: underline;
+          &:hover {
+              text-decoration: underline;
+          }
       }
-    }
   }
 
   .cover {
-    position: absolute;
-    left: 0;
-    top: 0;
+      position: absolute;
+      left: 0;
+      top: 0;
   }
 
   .btn {
-    display: inline-block;
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translate(0,-50%);
+      display: inline-block;
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translate(0,-50%);
   }
 }

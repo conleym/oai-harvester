@@ -34,7 +34,9 @@ export default class SearchResults extends React.Component {
 
         return (
             <li key={result.uid} className={styles.result}>
-                <Cover document={result} className={styles.cover} />
+
+                <Cover className={styles.cover} document={result} />
+
                 <h2>
                     <Link to={resultRoute}>
                         {title}
