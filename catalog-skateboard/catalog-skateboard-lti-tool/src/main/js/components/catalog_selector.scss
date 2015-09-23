@@ -1,0 +1,7 @@
+@import '../variables.scss';
+
+:local .filters {
+  float: left;
+  width: 100% - $results_width;
+  padding: $global_padding;
+}

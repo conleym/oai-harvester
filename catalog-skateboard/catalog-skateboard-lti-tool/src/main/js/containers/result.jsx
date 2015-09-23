@@ -3,6 +3,7 @@ import Cover from '../components/cover.jsx'
 import { connect } from 'react-redux'
 import { ensureDocument } from '../actions/documents.js'
 import { routeReturnUrl } from '../actions/route.js'
+import styles from './result.scss'
 
 class Result extends React.Component {
     static displayName = 'Result'
@@ -20,25 +21,41 @@ class Result extends React.Component {
         const returnUrl = routeReturnUrl(document).url
 
         return (
-            <div>
+            <main className="result-details">
+              <navigation>
                 <button onClick={this.props.history.goBack}>
                     &lt; Back to results
                 </button>
+              </navigation>
 
-                <a href={returnUrl}>
-                    + Insert
-                </a>
-                <hr/>
+              <article>
+                <header>
+                  <ul className='controls'>
+                    <li>
+                      <a href={returnUrl} className="btn">
+                        o Preview
+                      </a>
+                    </li>
+                    <li>
+                      <a href={returnUrl} className="btn">
+                        + Insert
+                      </a>
+                    </li>
+                  </ul>
 
-                <Cover document={document} />
+                  <Cover document={document} />
 
-                <h1>{document.title}</h1>
+                  <h1>{document.title}</h1>
+                </header>
 
-                Metadata:
-                <pre>
-                    {JSON.stringify(document, null, 2)}
-                </pre>
-            </div>
+                <section>
+                  Metadata:
+                  <pre>
+                      {JSON.stringify(document, null, 2)}
+                  </pre>
+                </section>
+              </article>
+            </main>
         )
     }
 }

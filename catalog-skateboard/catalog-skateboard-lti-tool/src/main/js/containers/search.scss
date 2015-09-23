@@ -1,0 +1,22 @@
+@import '../variables.scss';
+
+.search-form {
+  padding: $global_padding;
+  border-bottom: 1px solid $border_color;
+}
+
+.results-container {
+  background-image: linear-gradient(
+    to right,
+    darken(white, 2.5%) 100%-$results_width,
+    $border_color 100%-$results_width,
+    $border_color 100%-$results_width+.1%,
+    white 100%-$results_width+.1%
+  );
+
+  &:after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+}

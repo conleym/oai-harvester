@@ -1,32 +1,28 @@
+import styles from './cover.scss'
 import React from 'react'
-
-const noCover = (
-    <div style={{
-        border: '1px black solid',
-        width: '100px',
-    }}>
-        No
-        <br/>
-        Cover
-        <br/>
-        Available
-        <br/>
-    </div>
-)
-
+import classNames from 'classnames'
 
 export default class Cover extends React.Component {
     static displayName = 'Cover'
 
     render() {
         const { properties } = this.props.document
+        const classes = classNames(this.props.className, styles.cover)
 
         if (properties && properties['thumb:thumbnail']) {
             return (
-                <img src={properties['thumb:thumbnail'].data} />
+                <img
+                    className={classes}
+                    src={properties['thumb:thumbnail'].data} />
             )
         }
 
-        return noCover
+        return (
+            <div className={classes}>
+                No
+                Cover
+                Available
+            </div>
+        )
     }
 }

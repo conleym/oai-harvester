@@ -1,6 +1,9 @@
+import styles from './pager.scss'
 import React from 'react'
 
 const { number } = React.PropTypes
+
+let nextId = 1
 
 export default class Pager extends React.Component {
     static displayName = 'Pager'
@@ -14,6 +17,7 @@ export default class Pager extends React.Component {
         super(props, context)
 
         this.onClick = this.onClick.bind(this)
+        this.state = {uniqueId: nextId++ }
     }
 
     onClick(e) {
@@ -24,7 +28,9 @@ export default class Pager extends React.Component {
 
     render() {
         const { max, current } = this.props
+        const { uniqueId } = this.state
         const buttons = []
+        const pager_id = "pagination-label-" + uniqueId
 
         let from = current - 2
         let to = current + 2
@@ -74,18 +80,22 @@ export default class Pager extends React.Component {
         }
 
         return (
-            <div>
+          <navigation>
+            <p id={pager_id}>Pagination</p>
+            <ul className={styles.pagination} role="navigation" aria-labelledby={pager_id}>
                 {buttons.map(({label, i}) => (
-                    <button
+                    <li key={label}>
+                      <button
                         value={i}
                         onClick={this.onClick}
-                        key={label}
                         disabled={i == current}
-                        className={i == current ? 'active' : undefined}>
+                        className={i == current ? styles.active : undefined}>
                         {label}
-                    </button>
+                      </button>
+                    </li>
                 ))}
-            </div>
+            </ul>
+          </navigation>
         )
     }
 }
