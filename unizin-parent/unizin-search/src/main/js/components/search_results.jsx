@@ -32,6 +32,11 @@ export default class SearchResults extends React.Component {
                     </Link>
                 </h2>
 
+                <ul className={styles.metadata}>
+                  <li>Type: {result.type}</li>
+                  <li>Entity: {result['entity-type']}</li>
+                </ul>
+
                 <a href={returnUrl} className={styles.btn} aria-label={insertLabel}>
                     + Insert
                 </a>
@@ -54,7 +59,7 @@ export default class SearchResults extends React.Component {
         }
 
         return (
-            <div className={styles.results} role="main">
+            <main className={styles.results} role="main">
                 <h1>{results.totalSize}{resultsString}</h1>
 
                 <Pager
@@ -70,7 +75,7 @@ export default class SearchResults extends React.Component {
                     current={this.props.page}
                     max={50}
                     onChange={this.onPage} />
-            </div>
+              </main>
         )
     }
 }

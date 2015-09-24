@@ -16,21 +16,37 @@ $result_left_padding: $cover_width + $global_padding;
   min-height: $cover_height;
 
   h2 {
-      a {
-          font-size: 1rem;
-          line-height: 1.3rem;
-          text-decoration: none;
+    margin-bottom: .75rem;
 
-          &:hover {
-              text-decoration: underline;
-          }
+    a {
+      font-size: 1rem;
+      line-height: 1.3rem;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
       }
+    }
   }
 
   .cover {
       position: absolute;
       left: 0;
       top: 0;
+  }
+
+  .metadata {
+    font-size: .8em;
+    color: lighten($font_color, 20%);
+
+    li {
+      display: inline-block;
+      margin-right: 1rem;
+
+      &:last-of-type {
+        margin-right: 0;
+      }
+    }
   }
 
   .btn {
