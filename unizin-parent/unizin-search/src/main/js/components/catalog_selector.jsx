@@ -29,11 +29,20 @@ export default class CatalogSelector extends React.Component {
     render() {
 
         return (
-            <aside className={styles.filters}>
-                Show results from these catalogs
-                <ul>
-                    {this.renderCatalogs()}
-                </ul>
+            <aside className={styles.filters} aria-label="Filter search results">
+                <h1>Filter search results</h1>
+                <form role="form">
+                  <fieldset>
+                    <legend>
+                      <span className="aural">Show results from these Catalogs</span>
+                      <span aria-hidden="true">Content Catalogs</span>
+                    </legend>
+
+                    <ul>
+                        {this.renderCatalogs()}
+                    </ul>
+                  </fieldset>
+                </form>
             </aside>
         )
     }
