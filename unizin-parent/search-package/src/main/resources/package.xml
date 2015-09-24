@@ -1,5 +1,5 @@
 <!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
-<package type="addon" name="unizin" version="@VERSION@">
+<package type="addon" name="unizin-search" version="@VERSION@">
   <title>Unizin Catalog</title>
   <description>
     <p>An LTI tool enabling search of the Unizin Catalog</p>
