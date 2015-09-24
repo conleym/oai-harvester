@@ -9,10 +9,10 @@ import CatalogSelector from '../components/catalog_selector.jsx'
 
 function loadData(props) {
     const { criteria } = props
-    const { search } = props.location.query
+    const { search, page } = props.location.query
 
     if (criteria == null || search !== criteria.text) {
-        props.searchFor(search)
+        props.searchFor(search, page)
     }
 }
 
@@ -35,10 +35,8 @@ class Search extends React.Component {
 
     render() {
         const { catalogs, criteria, searchResults } = this.props
-
-        if (process.env.NODE_ENV !== 'production') {
-            window.appHistory = this.props.history
-        }
+        let { page } = this.props.location.query
+        if (page) { page = parseInt(page, 10) }
 
         return (
             <div className="search-container">
@@ -61,7 +59,11 @@ class Search extends React.Component {
                           catalogs={catalogs} />
                   ) : null}
                   { criteria.text != null ? (
-                      <SearchResults criteria={criteria} results={searchResults} />
+                      <SearchResults
+                          searchFor={this.props.searchFor}
+                          page={page}
+                          criteria={criteria}
+                          results={searchResults} />
                   ) : null}
                 </div>
             </div>
