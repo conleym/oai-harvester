@@ -39,8 +39,8 @@ class Search extends React.Component {
         if (page) { page = parseInt(page, 10) }
 
         return (
-            <div className="search-container">
-              <header>
+            <main className="search-container" role="main">
+              <div class="header">
                 <form className="search-form" onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
@@ -48,8 +48,8 @@ class Search extends React.Component {
                     <label for="searchInput" className="aural">Enter search criteria</label>
                     <input type="submit" value="Search" />
                 </form>
-              </header>
-              <div className="results-container" role="main">
+              </div>
+              <div className="results-container">
                 { criteria.text != null ? (
                     <CatalogSelector
                         onChange={this.props.changeCatalog}
@@ -63,7 +63,7 @@ class Search extends React.Component {
                         results={searchResults} />
                 ) : null}
               </div>
-            </div>
+            </main>
         )
     }
 }

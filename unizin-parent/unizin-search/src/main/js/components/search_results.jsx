@@ -59,7 +59,7 @@ export default class SearchResults extends React.Component {
         }
 
         return (
-            <main className={styles.results} role="main">
+            <div className={styles.results}>
                 <h1>{results.totalSize}{resultsString}</h1>
 
                 <Pager
@@ -75,7 +75,7 @@ export default class SearchResults extends React.Component {
                     current={this.props.page}
                     max={50}
                     onChange={this.onPage} />
-              </main>
+              </div>
         )
     }
 }
