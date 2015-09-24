@@ -45,4 +45,8 @@
       </directory>
   </extension>
 
+  <extension target="org.nuxeo.ecm.directory.ui.DirectoryUIManager" point="directories">
+    <directory name="sourceRepositories" layout="vocabulary" sortField="label"/>
+  </extension>
+
 </component>
