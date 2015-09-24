@@ -40,7 +40,9 @@ class Search extends React.Component {
 
         return (
             <div className="search-container">
-                <form className="search-form" onSubmit={this.onSearch.bind(this)}>
+              <header>
+                <form className="search-form" onSubmit={this.onSearch.bind(this)} role="search"
+                      aria-label="Search for catalog items">
 
                     { criteria.text == null ? (
                         <label htmlFor="searchInput">
@@ -50,22 +52,24 @@ class Search extends React.Component {
 
 
                     <input id="searchInput" ref="searchInput" />
+                    <label for="searchInput" className="aural">Enter search criteria</label>
                     <input type="submit" value="Search" />
                 </form>
-                <div className="results-container">
-                  { criteria.text != null ? (
-                      <CatalogSelector
-                          onChange={this.props.changeCatalog}
-                          catalogs={catalogs} />
-                  ) : null}
-                  { criteria.text != null ? (
-                      <SearchResults
-                          searchFor={this.props.searchFor}
-                          page={page}
-                          criteria={criteria}
-                          results={searchResults} />
-                  ) : null}
-                </div>
+              </header>
+              <main className="results-container" role="main">
+                { criteria.text != null ? (
+                    <CatalogSelector
+                        onChange={this.props.changeCatalog}
+                        catalogs={catalogs} />
+                ) : null}
+                { criteria.text != null ? (
+                    <SearchResults
+                        searchFor={this.props.searchFor}
+                        page={page}
+                        criteria={criteria}
+                        results={searchResults} />
+                ) : null}
+              </main>
             </div>
         )
     }
