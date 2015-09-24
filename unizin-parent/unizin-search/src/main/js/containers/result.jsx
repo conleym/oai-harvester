@@ -21,40 +21,38 @@ class Result extends React.Component {
         const returnUrl = routeReturnUrl(document).url
 
         return (
-            <main className="result-details">
+            <main className={styles['result-details']}>
               <navigation>
                 <button onClick={this.props.history.goBack}>
                     &lt; Back to results
                 </button>
               </navigation>
 
-              <article>
-                <header>
-                  <ul className='controls'>
-                    <li>
-                      <a href={returnUrl} className="btn">
-                        o Preview
-                      </a>
-                    </li>
-                    <li>
-                      <a href={returnUrl} className="btn">
-                        + Insert
-                      </a>
-                    </li>
-                  </ul>
+              <header>
+                <ul className={styles.controls}>
+                  <li>
+                    <a href={returnUrl} className={styles.btn}>
+                      o Preview
+                    </a>
+                  </li>
+                  <li>
+                    <a href={returnUrl} className={styles.btn}>
+                      + Insert
+                    </a>
+                  </li>
+                </ul>
 
-                  <Cover document={document} />
+                <Cover document={document} className={styles.cover} />
 
-                  <h1>{document.title}</h1>
-                </header>
+                <h1>{document.title}</h1>
+              </header>
 
-                <section>
-                  Metadata:
-                  <pre>
-                      {JSON.stringify(document, null, 2)}
-                  </pre>
-                </section>
-              </article>
+              <section>
+                Metadata:
+                <pre>
+                    {JSON.stringify(document, null, 2)}
+                </pre>
+              </section>
             </main>
         )
     }
