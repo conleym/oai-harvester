@@ -30,7 +30,7 @@ export default class Pager extends React.Component {
         const { max, current } = this.props
         const { uniqueId } = this.state
         const buttons = []
-        const pager_id = "pagination-label-" + uniqueId
+        const pager_name = "Pagination " + uniqueId
 
         let from = current - 2
         let to = current + 2
@@ -80,7 +80,7 @@ export default class Pager extends React.Component {
         }
 
         return (
-          <navigation role="navigation" aria-label="Pagination">
+          <nav role="navigation" aria-label={pager_name}>
             <ul className={styles.pagination}>
               {buttons.map(({label, i}) => (
                   <li key={label}>
@@ -95,7 +95,7 @@ export default class Pager extends React.Component {
                   </li>
               ))}
             </ul>
-          </navigation>
+          </nav>
         )
     }
 }
