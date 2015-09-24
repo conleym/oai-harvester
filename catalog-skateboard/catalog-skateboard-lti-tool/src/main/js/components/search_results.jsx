@@ -10,7 +10,6 @@ export default class SearchResults extends React.Component {
 
     constructor(props, context) {
         super(props, context)
-        this.state = { page: 1 }
 
         this.onPage = this.onPage.bind(this)
         this.renderResult = this.renderResult.bind(this)
@@ -42,7 +41,6 @@ export default class SearchResults extends React.Component {
 
     onPage(page) {
         const { criteria, searchFor } = this.props
-        console.log('onPage', page)
         searchFor(criteria.text, page)
     }
 
@@ -66,7 +64,7 @@ export default class SearchResults extends React.Component {
                 </ul>
 
                 <Pager
-                    current={this.state.page}
+                    current={this.props.page}
                     max={50}
                     onChange={this.onPage} />
                 </main>
