@@ -23,7 +23,7 @@ class Result extends React.Component {
         return (
             <main className={styles['result-details']} role="main">
               <navigation>
-                <button onClick={this.props.history.goBack}>
+                <button onClick={this.props.history.goBack} aria-role="button">
                     &lt; Back to results
                 </button>
               </navigation>

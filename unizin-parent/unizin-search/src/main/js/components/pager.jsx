@@ -89,6 +89,7 @@ export default class Pager extends React.Component {
                       onClick={this.onClick}
                       disabled={i == current}
                       aria-disabled={i == current}
+                      aria-role="button"
                       className={i == current ? styles.active : undefined}>
                       {label}
                     </button>
