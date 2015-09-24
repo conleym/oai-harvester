@@ -19,7 +19,7 @@ export default class SearchResults extends React.Component {
         const { title } = result
         const returnUrl = routeReturnUrl(result).url
         const resultRoute = routeResult(result).route
-
+        const insertLabel = "Insert " + title + " into your page"
 
         return (
             <li key={result.uid} className={styles.result}>
@@ -32,7 +32,7 @@ export default class SearchResults extends React.Component {
                     </Link>
                 </h2>
 
-                <a href={returnUrl} className={styles.btn}>
+                <a href={returnUrl} className={styles.btn} aria-label={insertLabel}>
                     + Insert
                 </a>
             </li>
@@ -46,13 +46,16 @@ export default class SearchResults extends React.Component {
 
     render() {
         const { criteria, results } = this.props
+
         if (!criteria.text) {
             return null
+        } else {
+            var resultsString = " Results for '" + criteria.text + "'"
         }
 
         return (
-            <main className={styles.results} role="main">
-                <h1>{results.totalSize} Results</h1>
+            <div className={styles.results} role="main">
+                <h1>{results.totalSize}{resultsString}</h1>
 
                 <Pager
                     current={this.props.page}
@@ -67,7 +70,7 @@ export default class SearchResults extends React.Component {
                     current={this.props.page}
                     max={50}
                     onChange={this.onPage} />
-                </main>
+            </div>
         )
     }
 }
