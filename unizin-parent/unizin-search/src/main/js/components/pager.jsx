@@ -80,20 +80,19 @@ export default class Pager extends React.Component {
         }
 
         return (
-          <navigation>
-            <p id={pager_id} className="aural">Pagination</p>
-            <ul className={styles.pagination} role="navigation" aria-labelledby={pager_id}>
-                {buttons.map(({label, i}) => (
-                    <li key={label}>
-                      <button
-                        value={i}
-                        onClick={this.onClick}
-                        disabled={i == current}
-                        className={i == current ? styles.active : undefined}>
-                        {label}
-                      </button>
-                    </li>
-                ))}
+          <navigation role="navigation" aria-label="Pagination">
+            <ul className={styles.pagination}>
+              {buttons.map(({label, i}) => (
+                  <li key={label}>
+                    <button
+                      value={i}
+                      onClick={this.onClick}
+                      disabled={i == current}
+                      className={i == current ? styles.active : undefined}>
+                      {label}
+                    </button>
+                  </li>
+              ))}
             </ul>
           </navigation>
         )
