@@ -44,19 +44,12 @@ class Search extends React.Component {
                 <form className="search-form" onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
-                    { criteria.text == null ? (
-                        <label htmlFor="searchInput">
-                            Enter Search Term
-                        </label>
-                    ) : null}
-
-
-                    <input id="searchInput" ref="searchInput" />
+                    <input id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
                     <label for="searchInput" className="aural">Enter search criteria</label>
                     <input type="submit" value="Search" />
                 </form>
               </header>
-              <main className="results-container" role="main">
+              <div className="results-container" role="main">
                 { criteria.text != null ? (
                     <CatalogSelector
                         onChange={this.props.changeCatalog}
@@ -69,7 +62,7 @@ class Search extends React.Component {
                         criteria={criteria}
                         results={searchResults} />
                 ) : null}
-              </main>
+              </div>
             </div>
         )
     }
