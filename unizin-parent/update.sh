@@ -13,17 +13,17 @@ VM_NAME=$1
 # verify the name works before rebuilding everything
 ssh $VM_NAME "true" || exit 1
 
-
 mvn clean package
 
-SRC=$(ls catalog-skateboard-marketplace-package/target/*.zip)
+SRC=$(ls ./search-package/target/search-package-*.zip)
 FILE=$(basename $SRC)
 
 scp $SRC $VM_NAME:/tmp/$FILE
 
 ssh -q $VM_NAME << EOF
+set -ex
 sudo service nuxeo stop
-sudo nuxeoctl mp-remove catalog-skateboard
+sudo nuxeoctl mp-remove unizin-search
 sudo nuxeoctl mp-install /tmp/$FILE
 sudo service nuxeo start
 EOF
