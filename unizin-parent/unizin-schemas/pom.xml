@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>catalog-skateboard-parent</artifactId>
-    <groupId>org.unizin</groupId>
+    <artifactId>unizin-parent</artifactId>
+    <groupId>org.unizin.catalog</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>catalog-skateboard-schemas</artifactId>
+  <artifactId>unizin-schemas</artifactId>
   <name>Unizin Catalog: Skateboard Edition Schemas</name>
   <description>Nuxeo document type and facet schemas for use by Unizin
     Catalog: Skateboard Edition</description>

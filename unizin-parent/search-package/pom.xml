@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
-    <artifactId>catalog-skateboard-parent</artifactId>
-    <groupId>org.unizin</groupId>
+    <artifactId>unizin-parent</artifactId>
+    <groupId>org.unizin.catalog</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>catalog-skateboard-marketplace-package</artifactId>
+  <artifactId>search-package</artifactId>
   <name>Unizin Catalog: Skateboard Edition Marketplace Package</name>
   <description>Packages the Unizin Catalog project for deployment via
   Nuxeo's Marketplace packaging mechanism.</description>
@@ -18,13 +18,13 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.unizin</groupId>
-      <artifactId>catalog-skateboard-lti-tool</artifactId>
+      <groupId>org.unizin.catalog</groupId>
+      <artifactId>unizin-search</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.unizin</groupId>
-      <artifactId>catalog-skateboard-schemas</artifactId>
+      <groupId>org.unizin.catalog</groupId>
+      <artifactId>unizin-schemas</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

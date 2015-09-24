@@ -15,8 +15,8 @@
     <nuxeo.distribution.version>7.3</nuxeo.distribution.version>
   </properties>
 
-  <groupId>org.unizin</groupId>
-  <artifactId>catalog-skateboard-parent</artifactId>
+  <groupId>org.unizin.catalog</groupId>
+  <artifactId>unizin-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Unizin Catalog: Skateboard Edition</name>
@@ -25,9 +25,9 @@
     instance.</description>
 
   <modules>
-    <module>catalog-skateboard-schemas</module>
-    <module>catalog-skateboard-lti-tool</module>
-    <module>catalog-skateboard-marketplace-package</module>
+    <module>unizin-schemas</module>
+    <module>unizin-search</module>
+    <module>search-package</module>
   </modules>
 
   <repositories>

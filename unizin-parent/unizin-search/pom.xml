@@ -4,11 +4,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <artifactId>catalog-skateboard-parent</artifactId>
-    <groupId>org.unizin</groupId>
+    <artifactId>unizin-parent</artifactId>
+    <groupId>org.unizin.catalog</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>catalog-skateboard-lti-tool</artifactId>
+  <artifactId>unizin-search</artifactId>
   <name>Unizin Catalog: Skateboard Edition LTI Tool</name>
   <description>JAX-RS/WebEngine app implementing an LTI tool enabling search
     and acquisition from the Nuxeo repository.</description>

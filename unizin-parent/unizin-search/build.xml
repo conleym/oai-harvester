@@ -1,4 +1,4 @@
-<project name="catalog-skateboard-lti-tool">
+<project name="unizin-search">
   <target name="copy-skin"
           description="Copy Nuxeo skin resources to server directory">
     <copy todir="${nuxeo.skindir}">

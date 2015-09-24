@@ -12,11 +12,11 @@ application will implement the LTI integration and basic search interfaces.
 It should save time to use the existing Nuxeo implementations of search views,
 results views, and item preview, as well as the built-in OAuth authentication, 
 validation, and encryption facilities.  The server-side Nuxeo components are
-contained in `catalog-skateboard/catalog-skateboard/`.
+contained in `catalog-skateboard/unizin-parent/`.
 
 ## OAI-PMH Harvester
 This will use an "off-the-shelf" open source OAI harvesting library and the
 Nuxeo client library to harvest metadata records from OAI-PMH servers and
 create corresponding metadata records in a Nuxeo repository.  It will run in
 a separate process and interact with the Nuxeo repository via the REST API.
-The harvester code is contained in `catalog-skateboard/catalog-skateboard-harvester/`.
+The harvester code is contained in `catalog-skateboard/unizin-harvester/`.
