@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.nuxeo</groupId>
+    <artifactId>nuxeo-addons-parent</artifactId>
+    <version>7.3</version>
+  </parent>
+
+  <properties>
+    <nuxeo.distribution.version>7.3</nuxeo.distribution.version>
+  </properties>
+
+  <groupId>org.unizin.catalog</groupId>
+  <artifactId>unizin-parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Unizin Catalog: Skateboard Edition</name>
+  <description>Nuxeo extensions and metadata schemas to implement an LTI tool
+    for search and deployment of repository content into a Canvas LMS
+    instance.</description>
+
+  <modules>
+    <module>unizin-schemas</module>
+    <module>unizin-search</module>
+    <module>search-package</module>
+  </modules>
+
+  <repositories>
+    <repository>
+      <id>nuxeo-public</id>
+      <url>http://maven.nuxeo.org/nexus/content/groups/public</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>nuxeo-public-snapshot</id>
+      <url>http://maven.nuxeo.org/nexus/content/groups/public-snapshot</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+    </repository>
+  </repositories>
+
+</project>
