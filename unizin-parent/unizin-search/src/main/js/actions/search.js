@@ -8,10 +8,15 @@ export function json(response) {
     return response.json()
 }
 
-export function httpGET(url, options) {
-    options = Object.assign({
+export function httpGET(url, options = {}) {
+    options = {
+        ...options,
+        headers: {
+            ...options.headers,
+            Accept: 'application/json',
+        },
         credentials: 'include',
-    }, options)
+    }
 
     return fetch(url, options).catch(e => {
         console.warn('ERROR', e) // eslint-disable-line no-console
@@ -20,10 +25,28 @@ export function httpGET(url, options) {
     })
 }
 
+function encodeParameters(params) {
+    return Object.keys(params).map((key) => {
+        let value = params[key]
+        if (value == null) { value = '' }
+        if (encodeURIComponent(key) != key) {
+            // I don't know if keys should be encoded or not. Probaby you just
+            // shouldn't use a key that needs encoding
+            throw new Error("Invalid key")
+        }
+
+        return key + '=' + encodeURIComponent(value)
+    }).join('&')
+}
+
 export function encodeURL(strings, ...values) {
     return strings.reduce((out, next, index) => {
         out = out + next
+        // strings always has one more element than values
         if (index < values.length) {
+            if (typeof values[index] === 'object') {
+                return out + encodeParameters(values[index])
+            }
             return out + encodeURIComponent(values[index])
         }
         return out
@@ -31,21 +54,29 @@ export function encodeURL(strings, ...values) {
 }
 
 const PATH = 'default-domain'
-export function searchFor(text) {
-    const url = encodeURL`/nuxeo/site/api/v1/path/${PATH}/@search?fullText=${text}`
+export function searchFor(text, page) {
+
+    const params = {
+        fullText: text,
+        pageSize: 20,
+    }
+    if (page != null) {
+        params.currentPageIndex = parseInt(page, 10)
+    }
+
+    const url =  encodeURL`/nuxeo/site/api/v1/path/${PATH}/@search?${params}`
+    const options = {
+        headers: {
+            'X-NXDocumentProperties': '*'
+        }
+    }
 
     return (dispatch) => {
         dispatch({
             type: SEARCH_FOR,
             payload: { text },
         })
-        dispatch(routeSearchFor(text))
-
-        const options = {
-            headers: {
-                'X-NXDocumentProperties': '*'
-            }
-        }
+        dispatch(routeSearchFor(text, page))
 
         httpGET(url, options).then(json).then((results) => {
             dispatch({
@@ -53,9 +84,7 @@ export function searchFor(text) {
                 payload: { results }
             })
         })
-
     }
-
 }
 
 export function changeCatalog(key, enabled) {
