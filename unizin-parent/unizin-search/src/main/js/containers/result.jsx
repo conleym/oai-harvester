@@ -21,14 +21,14 @@ class Result extends React.Component {
         const returnUrl = routeReturnUrl(document).url
 
         return (
-            <main className={styles['result-details']}>
+            <main className={styles['result-details']} role="main">
               <navigation>
                 <button onClick={this.props.history.goBack}>
                     &lt; Back to results
                 </button>
               </navigation>
 
-              <header>
+              <div className={styles.header}>
                 <ul className={styles.controls}>
                   <li>
                     <a href={returnUrl} className={styles.btn}>
@@ -45,7 +45,7 @@ class Result extends React.Component {
                 <Cover document={document} className={styles.cover} />
 
                 <h1>{document.title}</h1>
-              </header>
+              </div>
 
               <section>
                 Metadata:

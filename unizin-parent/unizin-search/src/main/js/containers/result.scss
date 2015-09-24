@@ -4,7 +4,7 @@ $result_left_padding: $cover_width + $global_padding + 1rem;
 :local .result-details {
   padding: $global_padding;
 
-  header {
+  .header {
     position: relative;
     padding: $global_padding;
     min-height: $cover_height + ($global_padding * 2);
