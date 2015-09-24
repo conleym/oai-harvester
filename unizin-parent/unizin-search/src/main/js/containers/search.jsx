@@ -39,9 +39,9 @@ class Search extends React.Component {
         if (page) { page = parseInt(page, 10) }
 
         return (
-            <main className="search-container" role="main">
+            <main className={styles['search-container']} role="main">
               <div class="header">
-                <form className="search-form" onSubmit={this.onSearch.bind(this)} role="search"
+                <form className={styles['search-form']} onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
                     <input id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
@@ -49,7 +49,7 @@ class Search extends React.Component {
                     <input type="submit" value="Search" />
                 </form>
               </div>
-              <div className="results-container">
+              <div className={styles['results-container']}>
                 { criteria.text != null ? (
                     <CatalogSelector
                         onChange={this.props.changeCatalog}
