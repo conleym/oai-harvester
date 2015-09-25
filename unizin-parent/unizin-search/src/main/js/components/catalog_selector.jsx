@@ -29,8 +29,8 @@ export default class CatalogSelector extends React.Component {
     render() {
 
         return (
-            <aside className={styles.filters} aria-label="Filter search results">
-                <h1>Filter search results</h1>
+            <aside className={styles.filters} aria-label="Filter query">
+                <h1 aria-hidden="true">Filter search results</h1>
                 <form role="form">
                   <fieldset>
                     <legend>
