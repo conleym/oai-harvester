@@ -54,13 +54,14 @@ export default class SearchResults extends React.Component {
 
         if (!criteria.text) {
             return null
-        } else {
-            var resultsString = " Results for '" + criteria.text + "'"
         }
+
+        const totalSize = (results.totalSize != null) ? results.totalSize : ''
+        const resultsString = `${totalSize} Results for '${criteria.text}'`
 
         return (
             <div className={styles.results}>
-                <h1>{results.totalSize}{resultsString}</h1>
+                <h1>{resultsString}</h1>
 
                 <Pager
                     current={this.props.page}
