@@ -40,7 +40,7 @@ class Search extends React.Component {
 
         return (
             <main className={styles.container} role="main">
-              <div className="header">
+              <div className={styles.header}>
                 <form className={styles.search} onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
