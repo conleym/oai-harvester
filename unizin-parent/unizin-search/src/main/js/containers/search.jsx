@@ -40,12 +40,12 @@ class Search extends React.Component {
 
         return (
             <main className={styles['search-container']} role="main">
-              <div class="header">
+              <div className="header">
                 <form className={styles['search-form']} onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
                     <input id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
-                    <label for="searchInput" className="aural">Enter search criteria</label>
+                    <label htmlFor="searchInput" className="aural">Enter search criteria</label>
                     <input type="submit" value="Search" />
                 </form>
               </div>
