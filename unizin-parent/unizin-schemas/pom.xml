@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>unizin-parent</artifactId>
-    <groupId>org.unizin.catalog</groupId>
+    <groupId>org.unizin.cmp</groupId>
     <version>1.0-SNAPSHOT</version>
   </parent>
 

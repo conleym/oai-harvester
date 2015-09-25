@@ -15,7 +15,7 @@
     <nuxeo.distribution.version>7.3</nuxeo.distribution.version>
   </properties>
 
-  <groupId>org.unizin.catalog</groupId>
+  <groupId>org.unizin.cmp</groupId>
   <artifactId>unizin-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
