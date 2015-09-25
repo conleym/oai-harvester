@@ -64,7 +64,8 @@ export default class SearchResults extends React.Component {
                 <Pager
                     current={this.props.page}
                     max={50}
-                    onChange={this.onPage} />
+                    onChange={this.onPage}
+                    ariaLabel="Results pagination top" />
 
                 <ul>
                     {results.entries.map(this.renderResult)}
@@ -73,7 +74,8 @@ export default class SearchResults extends React.Component {
                 <Pager
                     current={this.props.page}
                     max={50}
-                    onChange={this.onPage} />
+                    onChange={this.onPage}
+                    ariaLabel="Results pagination bottom" />
               </div>
         )
     }
