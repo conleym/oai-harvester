@@ -26,11 +26,9 @@ export default class SearchResults extends React.Component {
 
                 <Cover className={styles.cover} document={result} />
 
-                <h2>
-                    <Link to={resultRoute}>
-                        {title}
-                    </Link>
-                </h2>
+                <Link to={resultRoute}>
+                    {title}
+                </Link>
 
                 <ul className={styles.metadata}>
                   <li>Type: {result.type}</li>

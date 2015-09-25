@@ -15,18 +15,18 @@ $result_left_padding: $cover_width + $global_padding;
   margin-bottom: 2rem;
   min-height: $cover_height;
 
-  h2 {
+  a {
+    display: block;
+    font-weight: bold;
+    font-size: 1rem;
+    line-height: 1.3rem;
+    text-decoration: none;
     margin-bottom: .75rem;
 
-    a {
-      font-size: 1rem;
-      line-height: 1.3rem;
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
+    &:hover {
+      text-decoration: underline;
     }
+
   }
 
   .cover {
