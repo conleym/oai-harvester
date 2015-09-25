@@ -1,5 +1,5 @@
+import { encodeURL } from './utils.js'
 import { ROUTE } from '../middleware/routing.js'
-import { encodeURL } from './search.js'
 
 export const LOCATION_CHANGED = 'LOCATION_CHANGED'
 export let history
