@@ -1,7 +1,7 @@
 @import '../variables.scss';
 $result_left_padding: $cover_width + $global_padding + 1rem;
 
-:local .result-details {
+:local .result {
   padding: $global_padding;
 
   .header {

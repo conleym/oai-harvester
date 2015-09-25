@@ -21,7 +21,7 @@ class Result extends React.Component {
         const returnUrl = routeReturnUrl(document).url
 
         return (
-            <main className={styles['result-details']} role="main">
+            <main className={styles.result} role="main">
               <navigation>
                 <button onClick={this.props.history.goBack} aria-role="button">
                     &lt; Back to results
