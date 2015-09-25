@@ -9,7 +9,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>unizin-search</artifactId>
-  <name>Unizin Catalog: Skateboard Edition LTI Tool</name>
+  <name>Unizin CMP Search Tool</name>
   <description>JAX-RS/WebEngine app implementing an LTI tool enabling search
     and acquisition from the Nuxeo repository.</description>
 

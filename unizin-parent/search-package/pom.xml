@@ -10,8 +10,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <artifactId>search-package</artifactId>
-  <name>Unizin Catalog: Skateboard Edition Marketplace Package</name>
-  <description>Packages the Unizin Catalog project for deployment via
+  <name>Unizin CMP Search Tool Marketplace Package</name>
+  <description>Packages the Unizin CMP search tool for deployment via
   Nuxeo's Marketplace packaging mechanism.</description>
 
   <packaging>zip</packaging>

@@ -10,8 +10,8 @@
   </parent>
 
   <artifactId>unizin-schemas</artifactId>
-  <name>Unizin Catalog: Skateboard Edition Schemas</name>
+  <name>Unizin CMP Schemas</name>
   <description>Nuxeo document type and facet schemas for use by Unizin
-    Catalog: Skateboard Edition</description>
+    CMP</description>
 
 </project>
