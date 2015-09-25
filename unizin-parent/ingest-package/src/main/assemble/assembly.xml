@@ -1,4 +1,4 @@
-<project name="unizin-search-assembly"
+<project name="unizin-ingest-assembly"
          default="build"
          xmlns:nx="urn:nuxeo-build"
          xmlns:artifact="urn:nuxeo-artifact">

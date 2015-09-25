@@ -28,6 +28,8 @@
     <module>unizin-schemas</module>
     <module>unizin-search</module>
     <module>search-package</module>
+    <module>unizin-ingest</module>
+    <module>ingest-package</module>
   </modules>
 
   <repositories>
