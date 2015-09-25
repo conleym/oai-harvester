@@ -39,9 +39,9 @@ class Search extends React.Component {
         if (page) { page = parseInt(page, 10) }
 
         return (
-            <main className={styles['search-container']} role="main">
+            <main className={styles.container} role="main">
               <div className="header">
-                <form className={styles['search-form']} onSubmit={this.onSearch.bind(this)} role="search"
+                <form className={styles.search} onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
                     <input id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
