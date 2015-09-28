@@ -9,17 +9,14 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>search-package</artifactId>
-  <name>Unizin CMP Search Tool Marketplace Package</name>
-  <description>Packages the Unizin CMP search tool for deployment via
-  Nuxeo's Marketplace packaging mechanism.</description>
-
+  <artifactId>ingest-package</artifactId>
+  <name>Unizin CMP Ingest Tool Marketplace Package</name>
   <packaging>zip</packaging>
 
   <dependencies>
     <dependency>
       <groupId>org.unizin.cmp</groupId>
-      <artifactId>unizin-search</artifactId>
+      <artifactId>unizin-ingest</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -42,5 +39,6 @@
       </plugin>
     </plugins>
   </build>
+
 
 </project>

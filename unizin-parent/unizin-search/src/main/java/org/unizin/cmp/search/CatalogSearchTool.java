@@ -1,4 +1,4 @@
-package org.unizin.catalog.search;
+package org.unizin.cmp.search;
 
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
