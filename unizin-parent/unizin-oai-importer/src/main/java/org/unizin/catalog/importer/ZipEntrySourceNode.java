@@ -15,17 +15,12 @@ import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.api.blobholder.SimpleBlobHolder;
 import org.nuxeo.ecm.platform.importer.source.SourceNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Iterables;
 
 
 /** Each of these is assumed to be an OAI-PMH ListRecords response. */
 public final class ZipEntrySourceNode implements SourceNode {
-	
-	private static final Logger LOGGER = 
-			LoggerFactory.getLogger(ZipEntrySourceNode.class);
 
 	private final ZipFile zipFile;
 	private final ZipEntry zipEntry;	
@@ -61,9 +56,11 @@ public final class ZipEntrySourceNode implements SourceNode {
 			Iterables.addAll(children, splitter);
 			return children;
 		} catch (final XMLStreamException e) {
-			throw new XMLStreamRuntimeException(e);
+			throw new ImporterException(e);
 		} catch (final URISyntaxException e) {
 			throw new IOException(e);
+		} catch (final IORuntimeException e) {
+			throw e.getCause();
 		}
 	}
 

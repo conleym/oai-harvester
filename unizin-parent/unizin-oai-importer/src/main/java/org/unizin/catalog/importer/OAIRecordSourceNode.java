@@ -16,6 +16,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.joda.time.DateTime;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.ClientException;
@@ -44,6 +45,7 @@ public final class OAIRecordSourceNode implements SourceNode {
     private final XPath xpath;
 	private final Blob blob;
 	private final URI baseURI;
+	private final Calendar lastModified;
 	private final Map<String, Serializable> properties;
 
 	
@@ -55,7 +57,18 @@ public final class OAIRecordSourceNode implements SourceNode {
 		this.xpath.setNamespaceContext(OAIConstants.OAI_NS_CONTEXT);
 		this.blob = Blobs.createBlob(bytes);
 		this.baseURI = baseURI;
-		this.properties = parseProperties();		
+		this.lastModified = parseLastModified();
+		this.properties = parseProperties();	
+	}
+	
+	
+	private Calendar parseLastModified() throws XPathExpressionException {
+		final String datestamp = (String) xpath.evaluate(
+				"/oai:record/oai:header/oai:datestamp/text()",
+				document,
+				XPathConstants.STRING);
+		final DateTime dt = new DateTime(datestamp);
+		return dt.toCalendar(null); // Default locale.
 	}
 	
 
@@ -67,6 +80,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 			titles = UNTITLED;
 		}
 		result.put("dc:title", titles[0]);
+		// TODO: other dc: fields?
 		result.put("hrv:title", listXPath("title"));
         result.put("hrv:creator", listXPath("creator"));
         result.put("hrv:subject", listXPath("subject"));
@@ -143,7 +157,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 
 			@Override
 			public Calendar getModificationDate() throws ClientException {
-				return null;
+				return lastModified;
 			}
 		};
 	}

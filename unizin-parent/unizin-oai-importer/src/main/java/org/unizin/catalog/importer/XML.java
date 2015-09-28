@@ -4,7 +4,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 
-final class XMLStreams {
+final class XML {
 	static XMLInputFactory inputFactory() {
 		final XMLInputFactory factory = XMLInputFactory.newFactory();
 		// Force coalescing of adjacent character events into a single event.
@@ -26,5 +26,5 @@ final class XMLStreams {
 
 
 	/** No instances allowed. */
-	private XMLStreams() {}
+	private XML() {}
 }

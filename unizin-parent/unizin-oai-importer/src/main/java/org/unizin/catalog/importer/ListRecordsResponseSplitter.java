@@ -29,9 +29,9 @@ final class ListRecordsResponseSplitter
 	implements Iterable<OAIRecordSourceNode> {
 	
 	private final DocumentBuilderFactory docBuilderFactory =
-			XMLStreams.docBuilderFactory();
-	private final XMLInputFactory inputFactory = XMLStreams.inputFactory();
-	private final XMLOutputFactory outputFactory = XMLStreams.outputFactory();
+			XML.docBuilderFactory();
+	private final XMLInputFactory inputFactory = XML.inputFactory();
+	private final XMLOutputFactory outputFactory = XML.outputFactory();
 	private final XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 	private final XMLEventReader eventReader;
 	private boolean hasNext = false;
@@ -48,7 +48,6 @@ final class ListRecordsResponseSplitter
 			}
 			event = this.eventReader.nextEvent();
 			if (isRequestStart(event)) {
-				// TODO: Double check this.
 				if (this.eventReader.hasNext()) {
 					event = this.eventReader.peek();
 					if (event.isCharacters()) {
@@ -154,7 +153,7 @@ final class ListRecordsResponseSplitter
 			} catch (final IOException e) {
 				throw new IORuntimeException(e);
 			} catch (final XMLStreamException e) {
-				throw new XMLStreamRuntimeException(e);
+				throw new ImporterException(e);
 			}
 		}
 	}
