@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<component name="org.unizin.cmp.importer">
+  <extension target="org.nuxeo.ecm.platform.importer.service.DefaultImporterComponent" point="importerConfiguration">
+   <importerConfig sourceNodeClass ="org.unizin.cmp.importer.HarvestedZipFileSourceNode" >
+       <documentModelFactory leafType="File" folderishType="Folder" 
+        documentModelFactoryClass="org.unizin.cmp.importer.HarvestedRecordFactory" />
+   </importerConfig>
+  </extension>
+</component>

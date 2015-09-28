@@ -1,4 +1,4 @@
-package org.unizin.catalog.importer;
+package org.unizin.cmp.importer;
 
 /** 
  * Runtime exception wrapper for checked exceptions thrown at inconvenient

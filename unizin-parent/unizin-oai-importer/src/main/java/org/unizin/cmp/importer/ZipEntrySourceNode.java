@@ -1,4 +1,4 @@
-package org.unizin.catalog.importer;
+package org.unizin.cmp.importer;
 
 import java.io.IOException;
 import java.io.InputStream;

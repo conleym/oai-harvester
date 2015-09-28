@@ -1,4 +1,4 @@
-package org.unizin.catalog.importer;
+package org.unizin.cmp.importer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLInputFactory;

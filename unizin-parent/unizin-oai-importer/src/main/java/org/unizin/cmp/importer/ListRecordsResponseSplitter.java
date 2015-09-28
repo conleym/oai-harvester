@@ -1,4 +1,4 @@
-package org.unizin.catalog.importer;
+package org.unizin.cmp.importer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
