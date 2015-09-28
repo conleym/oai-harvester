@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.xpath.XPath;
@@ -31,6 +30,9 @@ import org.w3c.dom.Text;
 
 
 public final class OAIRecordSourceNode implements SourceNode {
+	
+	private static final String[] EMPTY = new String[]{};
+	private static final String[] UNTITLED = new String[]{"Untitled"};
 	
 	private static final Logger LOGGER = 
 			LoggerFactory.getLogger(OAIRecordSourceNode.class);
@@ -60,8 +62,11 @@ public final class OAIRecordSourceNode implements SourceNode {
 	private Map<String, Serializable> parseProperties() 
 		throws XPathExpressionException {
 		final Map<String, Serializable> result = new HashMap<>();
-		final String title = optionalXPath("title[1]").orElse("Untitled");
-		result.put("title", title);
+		String[] titles = listXPath("title");
+		if (titles.length == 0) {
+			titles = UNTITLED;
+		}
+		result.put("dc:title", titles[0]);
 		result.put("hrv:title", listXPath("title"));
         result.put("hrv:creator", listXPath("creator"));
         result.put("hrv:subject", listXPath("subject"));
@@ -81,30 +86,20 @@ public final class OAIRecordSourceNode implements SourceNode {
 		return result;
 	}
 	
-	
-	private Optional<String> optionalXPath(final String expression) 
-		throws XPathExpressionException {
-		final String dcExpression = String.format(XPATH_FORMAT, expression);
-		final Object result = xpath.evaluate(dcExpression, document,
-				XPathConstants.STRING);
-		return (result instanceof String) ? Optional.of((String)result) : 
-			Optional.empty();	
-	}
-	
 
-	private Serializable listXPath(final String expression)
+	private String[] listXPath(final String expression)
 			throws XPathExpressionException {
 		final String dcExpression = String.format(XPATH_FORMAT, expression);
 		final Object result = xpath.evaluate(dcExpression, document, 
 				XPathConstants.NODESET);
 		if (result instanceof NodeList) {
-			return toList((NodeList)result);
+			return toList((NodeList)result).toArray(EMPTY);
 		}
-		return (Serializable)Collections.emptyList();
+		return EMPTY;
 	}
 	
 	
-	private Serializable toList(final NodeList nodes) {
+	private List<String> toList(final NodeList nodes) {
 		final ArrayList<String> result = new ArrayList<>();
 		for (int i = 0; i < nodes.getLength(); i++) {
 			final Object o = nodes.item(i);

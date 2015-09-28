@@ -1,6 +1,7 @@
 package org.unizin.catalog.importer;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +15,21 @@ public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 
 	private final DefaultDocumentModelFactory dfmf = 
 			new DefaultDocumentModelFactory();
+
+	private interface KeyFilter {
+		boolean operation(String key);
+	}
+	
+	private static <T> Map<String, T> filterMap(final Map<String, T> toFilter,
+			KeyFilter f) {
+		final Map<String, T> result = new HashMap<>();
+		for (final Map.Entry<String, T> entry : toFilter.entrySet()) {
+			if (f.operation(entry.getKey())) {
+				result.put(entry.getKey(), entry.getValue());
+			}
+		}
+		return result;
+	}
 	
 	@Override
 	public DocumentModel createFolderishNode(final CoreSession session, 
@@ -27,10 +43,17 @@ public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 			final DocumentModel parent, final SourceNode node)
 					throws IOException {
 		final DocumentModel dm = dfmf.createLeafNode(session, parent, node);
+		final Map<String, Serializable> props = 
+				node.getBlobHolder().getProperties();
+
+		final Map<String, Object> dc = new HashMap<>(filterMap(props,
+				k -> k.startsWith("dc")));
+		dm.setProperties("dublincore", dc);
+		
 		dm.addFacet("Harvested");
-		final Map<String, Object> m = new HashMap<>();
-		m.putAll(node.getBlobHolder().getProperties());
-		dm.setProperties("HarvestedRecord", m);
+		final Map<String, Object> hrv = new HashMap<>(filterMap(props,
+				k -> k.startsWith("hrv:")));
+		dm.setProperties("HarvestedRecord", hrv);
 		
 		return dm;
 	}
