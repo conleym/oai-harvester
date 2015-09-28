@@ -1,17 +1,27 @@
-import { httpGET, json, encodeURL } from './utils.js'
+import { httpGET, json, encodeURL, nxql } from './utils.js'
 import { routeSearchFor } from './route.js'
 
 export const SEARCH_FOR = 'SEARCH_FOR'
 export const SEARCH_RESULTS = 'SEARCH_RESULTS'
 export const CHANGE_CATALOG = 'CHANGE_CATALOG'
 
+
 const PATH = 'default-domain'
 export function searchFor(text, page) {
 
+    const catalogs = [
+    ]
+
     const params = {
-        fullText: text,
         pageSize: 20,
+        query: nxql`SELECT * FROM Document
+            WHERE ecm:fulltext = ${text}
+        ` + (catalogs.length
+            ? nxql` AND hrv:sourceRepository not in ( ${catalogs} )`
+            : ''
+        )
     }
+
     if (page != null) {
         params.currentPageIndex = parseInt(page, 10)
     }
@@ -51,7 +61,6 @@ export const FETCH_CATALOGS = 'FETCH_CATALOGS'
 const catalogUrl = '/nuxeo/api/v1/directory/sourceRepositories'
 export function fetchCatalogs() {
     return (dispatch, getState) => {
-        console.log('wat', Object.keys(getState().catalogs).length)
         if (Object.keys(getState().catalogs).length === 0) {
             return httpGET(catalogUrl).then(json).then((results) => dispatch({
                 type: FETCH_CATALOGS,

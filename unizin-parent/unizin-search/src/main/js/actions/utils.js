@@ -20,6 +20,21 @@ export function httpGET(url, options = {}) {
     })
 }
 
+function zip(a, b) {
+    if (a.length !== b.length + 1) {
+        // I just need this for handling tagged template litterals, where the
+        // first list is always exactly 1 longer than the 2nd list
+        throw new Error('undefined behavior')
+    }
+    return a.reduce(( out, next, index ) => {
+        out.push(next)
+        if (index < b.length) {
+            out.push(b[index])
+        }
+        return out
+    }, [])
+}
+
 function encodeParameters(params) {
     return Object.keys(params).map((key) => {
         let value = params[key]
@@ -35,15 +50,25 @@ function encodeParameters(params) {
 }
 
 export function encodeURL(strings, ...values) {
-    return strings.reduce((out, next, index) => {
-        out = out + next
-        // strings always has one more element than values
-        if (index < values.length) {
-            if (typeof values[index] === 'object') {
-                return out + encodeParameters(values[index])
-            }
-            return out + encodeURIComponent(values[index])
+    const encodeValue = (value) => {
+        if (typeof value == 'object') {
+            return encodeParameters(value)
         }
-        return out
-    }, '')
+        return encodeURIComponent(value)
+    }
+
+    return zip(strings, values.map(encodeValue)).join('')
+}
+
+function escapeQuote(str) {
+    if (typeof str.map === 'function') {
+        return str.map(escapeQuote).join(', ')
+    }
+
+    const encoded =  str.replace(/["'\\]/g, function(x) { return '\\' + x })
+    return `'${encoded}'`
+}
+
+export function nxql(strings, ...values) {
+    return zip(strings, values.map(escapeQuote)).join('')
 }
