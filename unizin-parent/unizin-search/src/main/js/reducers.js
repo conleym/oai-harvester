@@ -1,4 +1,4 @@
-import { CHANGE_CATALOG, SEARCH_FOR, SEARCH_RESULTS } from './actions/search.js'
+import { FETCH_CATALOGS, CHANGE_CATALOG, SEARCH_FOR, SEARCH_RESULTS } from './actions/search.js'
 import { LOCATION_CHANGED } from './actions/route.js'
 import { DOCUMENT } from './actions/documents.js'
 
@@ -52,26 +52,7 @@ export function location(state = {}, action) {
     return state
 }
 
-const defaultCatalogs = {
-    contentRelay: {
-        label: 'Content Relay',
-        enabled: true,
-    },
-    hathi: {
-        label: 'Hathi Trust',
-        enabled: true,
-    },
-    jstor: {
-        label: 'JSTOR',
-        enabled: true,
-    },
-    spiders: {
-        label: 'Web of Science',
-        enabled: true,
-    }
-}
-
-export function catalogs(state = defaultCatalogs, action) {
+export function catalogs(state = {}, action) {
     if (action.type === CHANGE_CATALOG) {
         const { key, enabled } = action.payload
         return {
@@ -81,6 +62,14 @@ export function catalogs(state = defaultCatalogs, action) {
                 enabled
             }
         }
+    }
+    if (action.type === FETCH_CATALOGS) {
+        const enabled = true
+        return action.payload.reduce((catalogs, record) => {
+            const { id, label } = record.properties
+            catalogs[id] = { label, enabled }
+            return catalogs
+        }, {})
     }
     return state
 }

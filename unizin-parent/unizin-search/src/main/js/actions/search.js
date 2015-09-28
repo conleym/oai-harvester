@@ -45,3 +45,18 @@ export function changeCatalog(key, enabled) {
         payload: { key, enabled }
     }
 }
+
+export const FETCH_CATALOGS = 'FETCH_CATALOGS'
+
+const catalogUrl = '/nuxeo/api/v1/directory/sourceRepositories'
+export function fetchCatalogs() {
+    return (dispatch, getState) => {
+        console.log('wat', Object.keys(getState().catalogs).length)
+        if (Object.keys(getState().catalogs).length === 0) {
+            return httpGET(catalogUrl).then(json).then((results) => dispatch({
+                type: FETCH_CATALOGS,
+                payload: results.entries
+            }))
+        }
+    }
+}
