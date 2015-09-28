@@ -11,11 +11,11 @@ final class XML {
 		factory.setProperty("javax.xml.stream.isCoalescing", true);
 		return factory;
 	}
-	
+
 	static XMLOutputFactory outputFactory() {
 		return XMLOutputFactory.newFactory();
 	}
-	
+
 	static DocumentBuilderFactory docBuilderFactory() {
 		final DocumentBuilderFactory factory = 
 				DocumentBuilderFactory.newInstance();

@@ -14,21 +14,21 @@ import org.nuxeo.ecm.platform.importer.source.SourceNode;
 public class HarvestedZipFileSourceNode extends FileSourceNode {
 	private static Pattern FILES_TO_AVOID = 
 			Pattern.compile("(?:^__MACOSX)|^\\.|(?:\\.DS_Store)");
-	
+
 
 	private final ZipFile zipFile;
 
-	
+
 	public HarvestedZipFileSourceNode(final File file) throws IOException {
 		super(file);
 		this.zipFile = new ZipFile(file);
 	}
-	
+
 	public HarvestedZipFileSourceNode(final ZipFile zipFile) {
 		super(new File(zipFile.getName()));
 		this.zipFile = zipFile;
 	}
-	
+
 	@Override
 	public boolean isFolderish() {
 		return true;
@@ -36,10 +36,9 @@ public class HarvestedZipFileSourceNode extends FileSourceNode {
 
 	@Override
 	public List<SourceNode> getChildren() throws IOException {
-		zipFile.stream().forEach(ze -> System.out.println(ze.getName()));
 		return zipFile.stream().filter(ze -> !ze.isDirectory())
-							   .filter(ze -> !FILES_TO_AVOID.matcher(ze.getName()).find())
-		                       .map(ze -> new ZipEntrySourceNode(zipFile, ze))
-		                       .collect(Collectors.toList());
+				.filter(ze -> !FILES_TO_AVOID.matcher(ze.getName()).find())
+				.map(ze -> new ZipEntrySourceNode(zipFile, ze))
+				.collect(Collectors.toList());
 	}
 }

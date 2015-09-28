@@ -32,11 +32,11 @@ public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public DocumentModel createFolderishNode(final CoreSession session, 
 			final DocumentModel parent, final SourceNode node)
-			throws IOException {
+					throws IOException {
 		return dmf.createFolderishNode(session, parent, node);
 	}
 
@@ -51,15 +51,15 @@ public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 		final Map<String, Object> dc = new HashMap<>(filterByKeys(props,
 				k -> k.startsWith("dc:")));
 		dm.setProperties("dublincore", dc);
-		
+
 		// Facets can be added an ecm: property on the BlobHolder, but I 
 		// think it's better to be explicit.
 		dm.addFacet("Harvested");
-		
+
 		final Map<String, Object> hrv = new HashMap<>(filterByKeys(props,
 				k -> k.startsWith("hrv:")));
 		dm.setProperties("HarvestedRecord", hrv);
-		
+
 		return dm;
 	}
 

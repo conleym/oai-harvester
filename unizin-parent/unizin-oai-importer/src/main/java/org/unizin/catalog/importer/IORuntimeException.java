@@ -21,7 +21,7 @@ public class IORuntimeException extends RuntimeException {
 	public IORuntimeException(final IOException e) {
 		super(e);
 	}
-	
+
 	@Override
 	public IOException getCause() {
 		return (IOException)super.getCause();

@@ -22,12 +22,10 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.google.common.io.ByteStreams;
-
 
 final class ListRecordsResponseSplitter
-	implements Iterable<OAIRecordSourceNode> {
-	
+implements Iterable<OAIRecordSourceNode> {
+
 	private final DocumentBuilderFactory docBuilderFactory =
 			XML.docBuilderFactory();
 	private final XMLInputFactory inputFactory = XML.inputFactory();
@@ -37,8 +35,8 @@ final class ListRecordsResponseSplitter
 	private boolean hasNext = false;
 	private URI baseURL;
 
-	
-	public ListRecordsResponseSplitter(final InputStream in)
+
+	ListRecordsResponseSplitter(final InputStream in)
 			throws XMLStreamException, URISyntaxException {
 		this.eventReader = inputFactory.createXMLEventReader(in);
 		while (this.eventReader.hasNext()) {
@@ -64,34 +62,32 @@ final class ListRecordsResponseSplitter
 		return event.isStartElement() &&
 				OAIConstants.REQUEST.equals(event.asStartElement().getName());
 	}
-	
+
 	private static boolean isRecordStart(final XMLEvent event) {
 		return event.isStartElement() && 
 				OAIConstants.RECORD.equals(event.asStartElement().getName());
 	}
 
-	
+
 	private static boolean isRecordEnd(final XMLEvent event) {
 		return event.isEndElement() &&
 				OAIConstants.RECORD.equals(event.asEndElement().getName());
 	}
-	
-	
+
+
 	private OAIRecordSourceNode recordOf(final byte[] bytes)
 			throws XMLStreamException, IOException {
 		try {
 			final Document doc = docBuilderFactory.newDocumentBuilder()
 					.parse(new ByteArrayInputStream(bytes));
-			ByteStreams.copy(new ByteArrayInputStream(bytes), System.out);
 			return new OAIRecordSourceNode(bytes, doc, baseURL);
 		} catch (final ParserConfigurationException | XPathExpressionException |
 				SAXException e) {
-			// TODO: better exception.
-			throw new RuntimeException(e);
+			throw new ImporterException(e);
 		}
 	}
-	
-	
+
+
 	private OAIRecordSourceNode nextRecord()
 			throws XMLStreamException, IOException {
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -99,8 +95,8 @@ final class ListRecordsResponseSplitter
 		if (hasNext) {
 			final XMLEvent event = this.eventReader.nextEvent();
 			writer.add(event);
-            writer.add(
-                    eventFactory.createNamespace(OAIConstants.OAI_NS_URI));
+			writer.add(
+					eventFactory.createNamespace(OAIConstants.OAI_NS_URI));
 		}
 		while (eventReader.hasNext()) {
 			final XMLEvent event = this.eventReader.nextEvent();
@@ -112,8 +108,8 @@ final class ListRecordsResponseSplitter
 		}
 		throw new XMLStreamException("Unexpected end of input looking for end of record.");
 	}
-	
-	
+
+
 	private void skipToNextRecordStart() throws XMLStreamException {
 		try {
 			while (this.eventReader.hasNext()) {
@@ -133,13 +129,13 @@ final class ListRecordsResponseSplitter
 		}
 	}
 
-	
+
 	@Override
 	public Iterator<OAIRecordSourceNode> iterator() {
 		return new IteratorImpl();
 	}
-	
-	
+
+
 	private class IteratorImpl implements Iterator<OAIRecordSourceNode> {
 		@Override
 		public boolean hasNext() {

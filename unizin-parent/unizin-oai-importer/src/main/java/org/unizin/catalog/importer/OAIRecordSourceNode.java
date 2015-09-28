@@ -31,27 +31,27 @@ import org.w3c.dom.Text;
 
 
 public final class OAIRecordSourceNode implements SourceNode {
-	
+
 	private static final String[] EMPTY = new String[]{};
 	private static final String[] UNTITLED = new String[]{"Untitled"};
-	
+
 	private static final Logger LOGGER = 
 			LoggerFactory.getLogger(OAIRecordSourceNode.class);
 
 	private static final String XPATH_FORMAT = 
 			"/oai:record/oai:metadata/oai_dc:dc/dc:%s/text()";
-	
-    private final Document document;
-    private final XPath xpath;
+
+	private final Document document;
+	private final XPath xpath;
 	private final Blob blob;
 	private final URI baseURI;
 	private final Calendar lastModified;
 	private final Map<String, Serializable> properties;
 
-	
+
 	public OAIRecordSourceNode(final byte[] bytes, final Document document, 
 			final URI baseURI)
-			throws XMLStreamException, XPathExpressionException {
+					throws XMLStreamException, XPathExpressionException {
 		this.document = document;
 		this.xpath = XPathFactory.newInstance().newXPath();
 		this.xpath.setNamespaceContext(OAIConstants.OAI_NS_CONTEXT);
@@ -60,8 +60,8 @@ public final class OAIRecordSourceNode implements SourceNode {
 		this.lastModified = parseLastModified();
 		this.properties = parseProperties();	
 	}
-	
-	
+
+
 	private Calendar parseLastModified() throws XPathExpressionException {
 		final String datestamp = (String) xpath.evaluate(
 				"/oai:record/oai:header/oai:datestamp/text()",
@@ -70,10 +70,10 @@ public final class OAIRecordSourceNode implements SourceNode {
 		final DateTime dt = new DateTime(datestamp);
 		return dt.toCalendar(null); // Default locale.
 	}
-	
+
 
 	private Map<String, Serializable> parseProperties() 
-		throws XPathExpressionException {
+			throws XPathExpressionException {
 		final Map<String, Serializable> result = new HashMap<>();
 		String[] titles = listXPath("title");
 		if (titles.length == 0) {
@@ -82,22 +82,22 @@ public final class OAIRecordSourceNode implements SourceNode {
 		result.put("dc:title", titles[0]);
 		// TODO: other dc: fields?
 		result.put("hrv:title", listXPath("title"));
-        result.put("hrv:creator", listXPath("creator"));
-        result.put("hrv:subject", listXPath("subject"));
-        result.put("hrv:description", listXPath("description"));
-        result.put("hrv:publisher", listXPath("publisher"));
-        result.put("hrv:contributor", listXPath("contributor"));
-        result.put("hrv:date", listXPath("date"));
-        result.put("hrv:type", listXPath("type"));
-        result.put("hrv:format", listXPath("format"));
-        result.put("hrv:identifier", listXPath("identifier"));
-        result.put("hrv:source", listXPath("source"));
-        result.put("hrv:language", listXPath("language"));
-        result.put("hrv:relation", listXPath("relation"));
-        result.put("hrv:coverage", listXPath("coverage"));
-        result.put("hrv:rights", listXPath("rights"));
+		result.put("hrv:creator", listXPath("creator"));
+		result.put("hrv:subject", listXPath("subject"));
+		result.put("hrv:description", listXPath("description"));
+		result.put("hrv:publisher", listXPath("publisher"));
+		result.put("hrv:contributor", listXPath("contributor"));
+		result.put("hrv:date", listXPath("date"));
+		result.put("hrv:type", listXPath("type"));
+		result.put("hrv:format", listXPath("format"));
+		result.put("hrv:identifier", listXPath("identifier"));
+		result.put("hrv:source", listXPath("source"));
+		result.put("hrv:language", listXPath("language"));
+		result.put("hrv:relation", listXPath("relation"));
+		result.put("hrv:coverage", listXPath("coverage"));
+		result.put("hrv:rights", listXPath("rights"));
 		result.put("hrv:sourceRepository", String.valueOf(baseURI));
-		
+
 		String identifier = (String) xpath.evaluate(
 				"/oai:record/oai:header/oai:identifier/text()",
 				document,
@@ -108,7 +108,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 		result.put("hrv:oaiIdentifier", identifier);
 		return result;
 	}
-	
+
 
 	private String[] listXPath(final String expression)
 			throws XPathExpressionException {
@@ -120,8 +120,8 @@ public final class OAIRecordSourceNode implements SourceNode {
 		}
 		return EMPTY;
 	}
-	
-	
+
+
 	private List<String> toList(final NodeList nodes) {
 		final ArrayList<String> result = new ArrayList<>();
 		for (int i = 0; i < nodes.getLength(); i++) {
@@ -135,7 +135,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public boolean isFolderish() {
 		return false;

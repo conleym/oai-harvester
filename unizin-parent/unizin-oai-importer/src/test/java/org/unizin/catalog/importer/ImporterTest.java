@@ -30,12 +30,12 @@ import com.google.inject.Inject;
 	PlatformFeature.class})
 @Deploy({"org.unizin.cmp.schemas"})
 public final class ImporterTest {
-	private static final String ZF_NAME = "/harvester-test.zip";
-	private static final URL TEST_ZIP = ImporterTest.class.getResource(ZF_NAME);
-	
-    @Inject
-    protected CoreSession session;
-	
+	private static final String ZIP_NAME = "/harvester-test.zip";
+	private static final URL TEST_ZIP = ImporterTest.class.getResource(ZIP_NAME);
+
+	@Inject
+	protected CoreSession session;
+
 	@Test
 	public void doImport() throws Exception {
 		final File test = new File(TEST_ZIP.getFile());
@@ -48,7 +48,7 @@ public final class ImporterTest {
 		GenericMultiThreadedImporter imp = new GenericMultiThreadedImporter(builder.build());
 		imp.setFactory(new HarvestedRecordFactory());
 		imp.run();
-		
+
 		final DocumentModelList docs = session.query("select * from File");
 		Assert.assertEquals(231, docs.totalSize());
 		for (final DocumentModel doc : docs) {
