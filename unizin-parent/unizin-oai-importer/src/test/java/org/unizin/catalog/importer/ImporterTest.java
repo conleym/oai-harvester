@@ -4,6 +4,7 @@ import java.io.File;
 import java.net.URL;
 
 import org.apache.commons.logging.LogFactory;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.ecm.core.api.CoreSession;
@@ -24,13 +25,11 @@ import org.nuxeo.runtime.test.runner.RuntimeFeature;
 
 import com.google.inject.Inject;
 
-
 @RunWith(FeaturesRunner.class)
 @Features({TransactionalFeature.class, RuntimeFeature.class, CoreFeature.class,
 	PlatformFeature.class})
 @Deploy({"org.unizin.catalog.schemas"})
 public final class ImporterTest {
-	//private static final String ZF_NAME = "/test-harvests.zip";
 	private static final String ZF_NAME = "/harvester-test.zip";
 	private static final URL TEST_ZIP = ImporterTest.class.getResource(ZF_NAME);
 	
@@ -51,8 +50,9 @@ public final class ImporterTest {
 		imp.run();
 		
 		final DocumentModelList docs = session.query("select * from File");
+		Assert.assertEquals(231, docs.totalSize());
 		for (final DocumentModel doc : docs) {
-			System.out.println(doc);
+			System.out.println(doc.getTitle());
 		}
 	}
 }

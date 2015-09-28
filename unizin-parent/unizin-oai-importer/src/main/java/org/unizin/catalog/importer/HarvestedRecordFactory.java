@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
@@ -16,15 +17,11 @@ public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 	private final DefaultDocumentModelFactory dfmf = 
 			new DefaultDocumentModelFactory();
 
-	private interface KeyFilter {
-		boolean operation(String key);
-	}
-	
-	private static <T> Map<String, T> filterMap(final Map<String, T> toFilter,
-			KeyFilter f) {
+	private static <T> Map<String, T> filterByKeys(
+			final Map<String, T> toFilter, Predicate<String> f) {
 		final Map<String, T> result = new HashMap<>();
 		for (final Map.Entry<String, T> entry : toFilter.entrySet()) {
-			if (f.operation(entry.getKey())) {
+			if (f.test(entry.getKey())) {
 				result.put(entry.getKey(), entry.getValue());
 			}
 		}
@@ -46,12 +43,15 @@ public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 		final Map<String, Serializable> props = 
 				node.getBlobHolder().getProperties();
 
-		final Map<String, Object> dc = new HashMap<>(filterMap(props,
-				k -> k.startsWith("dc")));
+		final Map<String, Object> dc = new HashMap<>(filterByKeys(props,
+				k -> k.startsWith("dc:")));
 		dm.setProperties("dublincore", dc);
 		
+		// Facets can be added an ecm: property on the BlobHolder, but I 
+		// think it's better to be explicit.
 		dm.addFacet("Harvested");
-		final Map<String, Object> hrv = new HashMap<>(filterMap(props,
+		
+		final Map<String, Object> hrv = new HashMap<>(filterByKeys(props,
 				k -> k.startsWith("hrv:")));
 		dm.setProperties("HarvestedRecord", hrv);
 		
