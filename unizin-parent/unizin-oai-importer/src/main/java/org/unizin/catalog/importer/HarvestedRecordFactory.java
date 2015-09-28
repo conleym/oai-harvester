@@ -12,9 +12,14 @@ import org.nuxeo.ecm.platform.importer.factories.AbstractDocumentModelFactory;
 import org.nuxeo.ecm.platform.importer.factories.DefaultDocumentModelFactory;
 import org.nuxeo.ecm.platform.importer.source.SourceNode;
 
+
+/**
+ * Creates new documents with the {@code Harvested} facet.
+ *
+ */
 public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 
-	private final DefaultDocumentModelFactory dfmf = 
+	private final DefaultDocumentModelFactory dmf = 
 			new DefaultDocumentModelFactory();
 
 	private static <T> Map<String, T> filterByKeys(
@@ -32,14 +37,14 @@ public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
 	public DocumentModel createFolderishNode(final CoreSession session, 
 			final DocumentModel parent, final SourceNode node)
 			throws IOException {
-		return dfmf.createFolderishNode(session, parent, node);
+		return dmf.createFolderishNode(session, parent, node);
 	}
 
 	@Override
 	public DocumentModel createLeafNode(final CoreSession session, 
 			final DocumentModel parent, final SourceNode node)
 					throws IOException {
-		final DocumentModel dm = dfmf.createLeafNode(session, parent, node);
+		final DocumentModel dm = dmf.createLeafNode(session, parent, node);
 		final Map<String, Serializable> props = 
 				node.getBlobHolder().getProperties();
 

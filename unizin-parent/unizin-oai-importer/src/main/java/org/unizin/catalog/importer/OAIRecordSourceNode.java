@@ -97,6 +97,15 @@ public final class OAIRecordSourceNode implements SourceNode {
         result.put("hrv:coverage", listXPath("coverage"));
         result.put("hrv:rights", listXPath("rights"));
 		result.put("hrv:sourceRepository", String.valueOf(baseURI));
+		
+		String identifier = (String) xpath.evaluate(
+				"/oai:record/oai:header/oai:identifier/text()",
+				document,
+				XPathConstants.STRING);
+		if (identifier == null || "".equals(identifier)) {
+			identifier = "NONE";
+		}
+		result.put("hrv:oaiIdentifier", identifier);
 		return result;
 	}
 	
@@ -170,7 +179,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 	@Override
 	public String getName() {
 		final Serializable title = properties.get("dc:title");
-		return title == null ? null : title.toString();
+		return title == null ? UNTITLED[0] : title.toString();
 	}
 
 	@Override
