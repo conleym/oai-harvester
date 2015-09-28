@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<component name="org.unizin.cmp.nuxeo.source-repositories">
+<component name="org.unizin.cmp.source-repositories">
   <require>org.nuxeo.ecm.directories</require>
   
   <extension target="org.nuxeo.ecm.directory.sql.SQLDirectoryFactory"
