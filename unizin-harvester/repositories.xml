@@ -5,61 +5,165 @@
     <name>The Knowledge Bank at OSU</name>
     <institution>Ohio State University</institution>
     <url>http://kb.osu.edu/oai/request</url>
+    <sets>
+      <set>hdl_1811_11</set>
+      <set>hdl_1811_12</set>
+      <set>hdl_1811_475</set>
+      <set>hdl_1811_476</set>
+      <set>hdl_1811_44593</set>
+      <set>hdl_1811_5961</set>
+      <set>hdl_1811_24835</set>
+      <set>hdl_1811_38894</set>
+      <set>hdl_1811_6091</set>
+      <set>hdl_1811_25195</set>
+      <set>hdl_1811_24835</set>
+      <set>hdl_1811_130</set>
+      <set>hdl_1811_44572</set>
+      <set>hdl_1811_24214</set>
+      <set>hdl_1811_38954</set>
+      <set>hdl_1811_61960</set>
+    </sets>
   </repository>
 
   <repository>
     <name>Deep Blue</name>
     <institution>University of Michigan</institution>
     <url>http://deepblue.lib.umich.edu/dspace-oai/request</url>
+    <sets>
+      <set>col_2027.42_55277</set>
+      <set>col_2027.42_55256</set>
+      <set>col_2027.42_58605</set>
+      <set>col_2027.42_55277</set>
+      <set>col_2027.42_58605</set>
+      <set>col_2027.42_100346</set>
+      <set>col_2027.42_106424</set>
+    </sets>
   </repository>
 
   <repository>
     <name>Digital Collections of Colorado</name>
     <institution>Colorado State University</institution>
     <url>https://dspace.library.colostate.edu/oai/request</url>
+    <sets>
+      <set>com_10976_1202</set>
+      <set>com_10217_100326</set>
+      <set>com_10217_100328</set>
+      <set>com_10217_100386</set>
+      <set>com_10217_100388</set>
+      <set>com_10217_100399</set>
+      <set>com_10217_100405</set>
+      <set>com_10217_100421</set>
+      <set>com_10217_100416</set>
+      <set>com_10217_100501</set>
+      <set>com_10217_100503</set>
+      <set>com_10217_100508</set>
+      <set>com_10217_100560</set>
+      <set>com_10217_100573</set>
+    </sets>
   </repository>
 
   <repository>
     <name>University of Florida Digital Collections</name>
     <institution>University of Florida</institution>
     <url>http://ufdc.ufl.edu/sobekcm_oai.aspx</url>
+    <sets>
+      <set>trc</set>
+      <set>edmod1</set>
+      <set>gart1</set>
+    </sets>
   </repository>
 
   <repository>
     <name>IUScholarWorks Repository</name>
     <institution>Indiana University</institution>
     <url>http://scholarworks.iu.edu/dspace-oai/request</url>
+    <sets>
+      <set>com_2022_6461</set>
+      <set>com_2022_6637</set>
+      <set>com_2022_7910</set>
+      <set>com_2022_13982</set>
+      <set>com_2022_14124</set>
+      <set>com_2022_14310</set>
+    </sets>
   </repository>
 
   <repository>
     <name>ScholarsArchive@OSU</name>
     <institution>Oregon State University</institution>
     <url>http://ir.library.oregonstate.edu/oai/request</url>
+    <sets>
+      <set>com_1957_1721</set>
+      <set>com_1957_4128</set>
+      <set>com_1957_4573</set>
+      <set>com_1957_13737</set>
+      <set>com_1957_14945</set>
+      <set>com_1957_17746</set>
+      <set>com_1957_18071</set>
+      <set>com_1957_18467</set>
+      <set>com_1957_18087</set>
+      <set>com_1957_25639</set>
+      <set>com_1957_22529</set>
+    </sets>
   </repository>
 
   <repository>
     <name>Iowa Research Online</name>
     <institution>University of Iowa</institution>
     <url>http://ir.uiowa.edu/do/oai/</url>
+    <sets>
+      <set>publication:tl</set>
+      <set>publication:tl_pubs</set>
+      <set>publication:ideal</set>
+      <set>publication:coe</set>
+    </sets>
   </repository>
 
   <repository>
     <name>MINDS@UW</name>
     <institution>University of Wisconsin</institution>
     <url>http://minds.wisconsin.edu/oai/request</url>
+    <sets>
+      <set>hdl_1793_37054</set>
+      <set>hdl_1793_35043</set>
+      <set>hdl_1793_6749</set>
+      <set>hdl_1793_35042</set>
+    </sets>
   </repository>
 
   <repository>
     <name>University of Minnesota Digital Conservancy</name>
     <institution>University of Minnesota</institution>
     <url>http://conservancy.umn.edu/oai/request</url>
+    <sets>
+      <set>com_11299_123612</set>
+      <set>com_11299_37056</set>
+      <set>com_11299_37580</set>
+      <set>com_11299_44003</set>
+      <set>com_11299_48487</set>
+      <set>com_11299_53732</set>
+      <set>com_11299_56383</set>
+      <set>com_11299_93252</set>
+      <set>com_11299_107917</set>
+      <set>com_11299_116137</set>
+      <set>com_11299_121608</set>
+    </sets>
   </repository>
 
   <repository>
     <name>DigitalCommons@University of Nebraska - Lincoln</name>
     <institution>University of Nebraska</institution>
     <url>http://digitalcommons.unl.edu/do/oai/</url>
+    <sets>
+      <set>publication:burosassessteaching</set>
+      <set>publication:burosteachertraining</set>
+      <set>publication:imseteach</set>
+      <set>publication:teaching_learning</set>
+      <set>publication:teachlearndept</set>
+      <set>publication:teachlearnfacpub</set>
+      <set>publication:teachlearnstudent</set>
+      <set>publication:teachlearntalks</set>
+      <set>publication:mathclass</set>
+    </sets>
   </repository>
-
 
 </repositories>
