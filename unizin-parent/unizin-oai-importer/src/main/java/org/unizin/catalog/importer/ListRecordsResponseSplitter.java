@@ -17,7 +17,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
-import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -81,8 +80,7 @@ implements Iterable<OAIRecordSourceNode> {
 			final Document doc = docBuilderFactory.newDocumentBuilder()
 					.parse(new ByteArrayInputStream(bytes));
 			return new OAIRecordSourceNode(bytes, doc, baseURL);
-		} catch (final ParserConfigurationException | XPathExpressionException |
-				SAXException e) {
+		} catch (final ParserConfigurationException | SAXException e) {
 			throw new ImporterException(e);
 		}
 	}
