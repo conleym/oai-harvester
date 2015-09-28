@@ -28,7 +28,7 @@ import com.google.inject.Inject;
 @RunWith(FeaturesRunner.class)
 @Features({TransactionalFeature.class, RuntimeFeature.class, CoreFeature.class,
 	PlatformFeature.class})
-@Deploy({"org.unizin.catalog.schemas"})
+@Deploy({"org.unizin.cmp.schemas"})
 public final class ImporterTest {
 	private static final String ZF_NAME = "/harvester-test.zip";
 	private static final URL TEST_ZIP = ImporterTest.class.getResource(ZF_NAME);
