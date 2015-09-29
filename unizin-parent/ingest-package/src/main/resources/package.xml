@@ -1,5 +1,5 @@
 <!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
-<package type="addon" name="unizin-search" version="@VERSION@">
+<package type="addon" name="unizin-ingest" version="@VERSION@">
   <title>Unizin Content Contribute</title>
   <description>
     <p>An LTI tool enabling users to contribute content to the repository</p>
