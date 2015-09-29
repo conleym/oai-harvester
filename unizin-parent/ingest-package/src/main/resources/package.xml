@@ -1,8 +1,8 @@
 <!-- See documentation at http://doc.nuxeo.com/x/HgIz -->
 <package type="addon" name="unizin-search" version="@VERSION@">
-  <title>Unizin Content Discovery</title>
+  <title>Unizin Content Contribute</title>
   <description>
-    <p>An LTI tool enabling search of the Unizin Catalog</p>
+    <p>An LTI tool enabling users to contribute content to the repository</p>
   </description>
   <home-page>http://www.unizin.org</home-page>
   <vendor>Unizin</vendor>

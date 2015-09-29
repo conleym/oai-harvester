@@ -19,20 +19,23 @@ export default class SearchResults extends React.Component {
         const { title } = result
         const returnUrl = routeReturnUrl(result).url
         const resultRoute = routeResult(result).route
-
+        const insertLabel = "Insert " + title + " into your page"
 
         return (
             <li key={result.uid} className={styles.result}>
 
                 <Cover className={styles.cover} document={result} />
 
-                <h2>
-                    <Link to={resultRoute}>
-                        {title}
-                    </Link>
-                </h2>
+                <Link to={resultRoute}>
+                    {title}
+                </Link>
 
-                <a href={returnUrl} className={styles.btn}>
+                <ul className={styles.metadata}>
+                  <li>Type: {result.type}</li>
+                  <li>Entity: {result['entity-type']}</li>
+                </ul>
+
+                <a href={returnUrl} className={styles.btn} aria-label={insertLabel}>
                     + Insert
                 </a>
             </li>
@@ -46,18 +49,23 @@ export default class SearchResults extends React.Component {
 
     render() {
         const { criteria, results } = this.props
+
         if (!criteria.text) {
             return null
         }
 
+        const totalSize = (results.totalSize != null) ? results.totalSize : ''
+        const resultsString = `${totalSize} Results for '${criteria.text}'`
+
         return (
-            <main className={styles.results}>
-                <h1>{results.totalSize} Results</h1>
+            <div className={styles.results}>
+                <h1>{resultsString}</h1>
 
                 <Pager
                     current={this.props.page}
                     max={50}
-                    onChange={this.onPage} />
+                    onChange={this.onPage}
+                    ariaLabel="Results pagination top" />
 
                 <ul>
                     {results.entries.map(this.renderResult)}
@@ -66,8 +74,9 @@ export default class SearchResults extends React.Component {
                 <Pager
                     current={this.props.page}
                     max={50}
-                    onChange={this.onPage} />
-                </main>
+                    onChange={this.onPage}
+                    ariaLabel="Results pagination bottom" />
+              </div>
         )
     }
 }

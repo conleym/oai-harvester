@@ -3,8 +3,6 @@ import React from 'react'
 
 const { number } = React.PropTypes
 
-let nextId = 1
-
 export default class Pager extends React.Component {
     static displayName = 'Pager'
 
@@ -17,7 +15,6 @@ export default class Pager extends React.Component {
         super(props, context)
 
         this.onClick = this.onClick.bind(this)
-        this.state = {uniqueId: nextId++ }
     }
 
     onClick(e) {
@@ -28,9 +25,14 @@ export default class Pager extends React.Component {
 
     render() {
         const { max, current } = this.props
-        const { uniqueId } = this.state
         const buttons = []
-        const pager_id = "pagination-label-" + uniqueId
+        const pager_name = this.props.ariaLabel
+
+        if (this.props.ariaLabel == null) {
+            console.warn( // eslint-disable-line no-console
+              "It looks like you did not provide an 'ariaLabel' when calling the Pager component."
+            )
+        }
 
         let from = current - 2
         let to = current + 2
@@ -80,22 +82,23 @@ export default class Pager extends React.Component {
         }
 
         return (
-          <navigation>
-            <p id={pager_id}>Pagination</p>
-            <ul className={styles.pagination} role="navigation" aria-labelledby={pager_id}>
-                {buttons.map(({label, i}) => (
-                    <li key={label}>
-                      <button
-                        value={i}
-                        onClick={this.onClick}
-                        disabled={i == current}
-                        className={i == current ? styles.active : undefined}>
-                        {label}
-                      </button>
-                    </li>
-                ))}
+          <nav role="navigation" aria-label={pager_name}>
+            <ul className={styles.pagination}>
+              {buttons.map(({label, i}) => (
+                  <li key={label}>
+                    <button
+                      value={i}
+                      onClick={this.onClick}
+                      disabled={i == current}
+                      aria-disabled={i == current}
+                      aria-role="button"
+                      className={i == current ? styles.active : undefined}>
+                      {label}
+                    </button>
+                  </li>
+              ))}
             </ul>
-          </navigation>
+          </nav>
         )
     }
 }

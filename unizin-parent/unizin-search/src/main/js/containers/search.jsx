@@ -58,35 +58,32 @@ class Search extends React.Component {
         if (page) { page = parseInt(page, 10) }
 
         return (
-            <div className="search-container">
-                <form className="search-form" onSubmit={this.onSearch.bind(this)}>
+            <main className={styles.container} role="main">
+              <div className={styles.header}>
+                <form className={styles.search} onSubmit={this.onSearch.bind(this)} role="search"
+                      aria-label="Search for catalog items">
 
-                    { criteria.text == null ? (
-                        <label htmlFor="searchInput">
-                            Enter Search Term
-                        </label>
-                    ) : null}
-
-
-                    <input id="searchInput" ref="searchInput" />
+                    <input id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
+                    <label htmlFor="searchInput" className="aural">Enter search criteria</label>
                     <input type="submit" value="Search" />
                 </form>
-                <div className="results-container">
-                  { criteria.text != null ? (
-                      <CatalogSelector
-                          onChange={this.changeCatalog.bind(this)}
-                          selected={selectedCatalogs}
-                          catalogs={catalogs} />
-                  ) : null}
-                  { criteria.text != null ? (
-                      <SearchResults
-                          searchFor={this.props.searchFor}
-                          page={page}
-                          criteria={criteria}
-                          results={searchResults} />
-                  ) : null}
-                </div>
-            </div>
+              </div>
+              <div className={styles['results-container']}>
+                { criteria.text != null ? (
+                    <CatalogSelector
+                        onChange={this.changeCatalog.bind(this)}
+                        selected={selectedCatalogs}
+                        catalogs={catalogs} />
+                ) : null}
+                { criteria.text != null ? (
+                    <SearchResults
+                        searchFor={this.props.searchFor}
+                        page={page}
+                        criteria={criteria}
+                        results={searchResults} />
+                ) : null}
+              </div>
+            </main>
         )
     }
 }

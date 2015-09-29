@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-Bundle-SymbolicName: org.unizin.catalog.schemas
+Bundle-SymbolicName: org.unizin.cmp.schemas
 Nuxeo-Component: OSGI-INF/types-contrib.xml
 Require-Bundle: org.nuxeo.runtime,
  org.nuxeo.ecm.core.api,
