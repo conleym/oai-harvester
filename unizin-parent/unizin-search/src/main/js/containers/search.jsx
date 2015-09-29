@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { changeCatalog, searchFor } from '../actions/search.js'
 import { routeSearchFor } from '../actions/route.js'
 import SearchResults from '../components/search_results.jsx'
+import Footer from '../components/footer.jsx'
 import CatalogSelector from '../components/catalog_selector.jsx'
 import difference from 'lodash.difference'
 import classNames from 'classnames'
@@ -86,7 +87,7 @@ class Search extends React.Component {
                         results={searchResults} />
                 ) : null}
               </div>
-              <footer>powered by [unizin logo]</footer>
+              <Footer />
             </main>
         )
     }

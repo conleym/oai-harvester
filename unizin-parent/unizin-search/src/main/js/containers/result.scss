@@ -97,17 +97,4 @@ $result_cover_width: 145px;
       }
     }
   }
-
-  .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    text-align: right;
-    padding-right: $global_padding;
-    height: $footer_height;
-    line-height: $footer_height;
-    width: 100%;
-    border-top: 1px solid $border_color;
-    background: white;
-  }
 }

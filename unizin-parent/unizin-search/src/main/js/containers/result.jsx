@@ -50,7 +50,6 @@ class Result extends React.Component {
                   <Cover document={document} className={styles.cover} />
 
                   <div className={styles.details}>
-
                     <h1>{document.title}</h1>
 
                     <h2>Author: {document.properties['hrv:creator']}</h2>
@@ -73,9 +72,7 @@ class Result extends React.Component {
                   </ul>
                 </aside>
               </div>
-              <div className={styles.footer}>
-                powered by [Unizin Logo]
-              </div>
+              <Footer className={styles.footer} />
             </main>
         )
     }

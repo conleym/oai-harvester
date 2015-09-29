@@ -18,6 +18,7 @@ $global_margin: $global_padding;
 $header_height: 80px;
 $header_bg_color: #e7e5e8;
 $footer_height: 45px;
+$footer_font_color: darken($header_bg_color, 35%);
 
 // main column width
 $main_column_width: 80%;
