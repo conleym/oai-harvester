@@ -29,6 +29,7 @@
     <module>unizin-search</module>
     <module>search-package</module>
     <module>unizin-ingest</module>
+    <module>ingest-package</module>
     <module>unizin-oai-importer</module>
   </modules>
 
