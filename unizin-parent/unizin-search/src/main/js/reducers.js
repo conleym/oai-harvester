@@ -23,10 +23,11 @@ export function searchResults(state = defaultResults, action) {
     }
 
     if (action.type === SEARCH_RESULTS) {
-        const { totalSize, entries } = action.payload.results
+        const { totalSize, pageSize, entries } = action.payload.results
 
         return {
             totalSize,
+            pageSize,
             entries
         }
     }
