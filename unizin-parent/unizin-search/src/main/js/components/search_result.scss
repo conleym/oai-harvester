@@ -26,6 +26,16 @@ $results_header_height: 115px;
         h1 {
           margin: 0;
           padding: 0;
+          font-weight: 300;
+
+          span:last-of-type {
+            font-weight: bold;
+
+            &:before,
+            &:after {
+              content: "'";
+            }
+          }
         }
       }
 

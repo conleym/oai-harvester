@@ -3,7 +3,7 @@ import React from 'react'
 import { Link } from 'react-router'
 import { routeInsert, routeResult, routeReturnUrl } from '../actions/route.js'
 import Cover from './cover.jsx'
-import Pager from '../components/pager.jsx'
+import Pager from './pager.jsx'
 import Loading from './loading.jsx'
 import classNames from 'classnames'
 
@@ -58,12 +58,11 @@ export default class SearchResults extends React.Component {
         }
 
         const { totalSize = 0, pageSize = 20 } = results
-        const resultsString = `${totalSize} Results for '${criteria.text}'`
 
         return (
           <div className={styles.wrapper}>
             <div className={styles.header}>
-              <h1>{resultsString}</h1>
+              <h1>{totalSize} Results for {criteria.text}</h1>
 
               <Pager
                   current={this.props.page}
