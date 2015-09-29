@@ -15,9 +15,11 @@ public class HarvestedZipFileSourceNode extends FileSourceNode {
 	private static Pattern FILES_TO_AVOID = 
 			Pattern.compile("(?:^__MACOSX)|^\\.|(?:\\.DS_Store)");
 
-
 	private final ZipFile zipFile;
-
+	
+	public HarvestedZipFileSourceNode(final String path) throws IOException {
+		this(new File(path));
+	}
 
 	public HarvestedZipFileSourceNode(final File file) throws IOException {
 		super(file);
