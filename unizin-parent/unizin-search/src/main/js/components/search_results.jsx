@@ -5,6 +5,7 @@ import { routeInsert, routeResult, routeReturnUrl } from '../actions/route.js'
 import Cover from './cover.jsx'
 import Pager from '../components/pager.jsx'
 import Loading from './loading.jsx'
+import classNames from 'classnames'
 
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
@@ -21,6 +22,7 @@ export default class SearchResults extends React.Component {
         const returnUrl = routeReturnUrl(result).url
         const resultRoute = routeResult(result).route
         const insertLabel = "Insert " + title + " into your page"
+        const insertBtnClasses = classNames("btn", styles.btn)
 
         return (
             <li key={result.uid} className={styles.result}>
@@ -36,7 +38,7 @@ export default class SearchResults extends React.Component {
                   <li>Entity: {result['entity-type']}</li>
                 </ul>
 
-                <Link to={routeInsert(result).route} className={styles.btn} className={styles.btn}>
+                <Link to={routeInsert(result).route} className={insertBtnClasses}  aria-label={insertLabel} role="button">
                   + Insert
                 </Link>
             </li>

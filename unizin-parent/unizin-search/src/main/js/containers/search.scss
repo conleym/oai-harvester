@@ -1,7 +1,29 @@
 @import '../variables.scss';
 
 :local .search {
+  position: relative;
+  height: 100%;
+  width: 100%;
 
+  input[type='text'] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 1px solid $border_color;
+    width: 83%;
+    height: 100%;
+    padding: inherit;
+    padding-left: 1rem;
+  }
+
+  .btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    line-height: 100%;
+    width: 15%;
+  }
 }
 
 :local .container {

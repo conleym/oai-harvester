@@ -49,33 +49,3 @@ $cover_height: $cover_width * $cover_aspect_ratio;
     font-weight: 300;
   }
 }
-
-// buttons
-button,
-.btn {
-  display: inline-block;
-  border: 1px solid $gray_purple;
-  color: $gray_purple;
-  background: none;
-  height: 100%;
-  line-height: 100%;
-  padding: 1rem;
-  text-decoration: none;
-  font-family: $decorative_font;
-  transition: all $transition_fast;
-
-  &:hover {
-    background: lighten($gray_purple, 20%);
-    color: darken($gray_purple, 20%);
-  }
-
-  &.primary {
-    background: $purple;
-    color: white;
-    border-color: darken($purple, 5%);
-
-    &:hover {
-      background: darken($purple, 20%);
-    }
-  }
-}

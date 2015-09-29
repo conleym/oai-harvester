@@ -30,6 +30,12 @@ $result_cover_width: 145px;
         }
       }
     }
+
+    button,
+    .btn {
+      height: 100%;
+      line-height: 100%;
+    }
   }
 
   .wrapper {

@@ -1,7 +1,12 @@
 :local .pagination {
   li {
     display: inline-block;
-    margin: .5rem;
+    margin: .35rem;
+
+    button {
+      font-size: .8rem;
+      padding: .3rem .5rem;
+    }
 
     &:first-of-type {
       margin-left: 0;
