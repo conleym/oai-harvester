@@ -1,11 +1,35 @@
 @import '../variables.scss';
 $result_left_padding: $cover_width + $global_padding;
 
+$results_header_height: 115px;
+
 :local {
-    .results {
-        float: left;
-        width: $results_width;
-        padding: $global_padding;
+    .wrapper {
+      margin-top: $header_height;
+      margin-bottom: $footer_height;
+      float: right;
+      height: calc(100% - (#{$header_height} + #{$footer_height}));
+      width: $main_column_width;
+      padding-top: calc(#{$results_header_height};
+
+      .header {
+        position: fixed;
+        top: $header_height;
+        right: 0;
+        width: $main_column_width;
+        height: $results_header_height;
+        border-bottom: 1px solid $border_color;
+        background: white;
+        z-index: 1;
+      }
+
+      .results {
+        overflow: scroll;
+        padding-bottom: $footer_height;
+        height: 100%;
+        padding: $global_padding $global_padding 0 $global_padding;
+        width: 100%;
+      }
     }
 }
 

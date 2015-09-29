@@ -59,25 +59,23 @@ export default class SearchResults extends React.Component {
         const resultsString = `${totalSize} Results for '${criteria.text}'`
 
         return (
+          <div className={styles.wrapper}>
+            <div className={styles.header}>
+              <h1>{resultsString}</h1>
+
+              <Pager
+                  current={this.props.page}
+                  max={50}
+                  onChange={this.onPage}
+                  ariaLabel="Results pagination top" />
+            </div>
+
             <div className={styles.results}>
-                <h1>{resultsString}</h1>
-
-                <Pager
-                    current={this.props.page}
-                    max={Math.ceil(totalSize / pageSize)}
-                    onChange={this.onPage}
-                    ariaLabel="Results pagination top" />
-
-                <ul>
-                    {results.entries.map(this.renderResult)}
-                </ul>
-
-                <Pager
-                    current={this.props.page}
-                    max={Math.ceil(totalSize / pageSize)}
-                    onChange={this.onPage}
-                    ariaLabel="Results pagination bottom" />
-              </div>
+              <ul>
+                  {results.entries.map(this.renderResult)}
+              </ul>
+            </div>
+          </div>
         )
     }
 }

@@ -1,6 +1,7 @@
 @import './normalize.css';
 @import './a11y.scss';
 @import '../../../../js/variables.scss';
+@import url(https://fonts.googleapis.com/css?family=Roboto+Slab:400,700,300);
 
 html, body {
   height: 100%;
@@ -13,6 +14,7 @@ main,
 header,
 navigation,
 aside,
+footer,
 li,
 p,
 textarea,
@@ -29,4 +31,8 @@ ul, li {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: "Roboto Slab", serif;
 }

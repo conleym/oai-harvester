@@ -84,6 +84,7 @@ class Search extends React.Component {
                         results={searchResults} />
                 ) : null}
               </div>
+              <footer>powered by [unizin logo]</footer>
             </main>
         )
     }

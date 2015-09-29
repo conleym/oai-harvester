@@ -1,7 +1,11 @@
 @import '../variables.scss';
 
 :local .filters {
-  float: left;
-  width: 100% - $results_width;
+  position: fixed;
+  top: $header_height;
+  left: 0;
+  height: calc(100% - (#{$header_height} + #{$footer_height}));
+  width: calc(100% - #{$main_column_width});
   padding: $global_padding;
+  overflow: scroll;
 }
