@@ -1,4 +1,4 @@
-<html>
+<html lang="en">
 <head>
     <title><@block name="title">Unizin Catalog</@block></title>
     <@block name="stylesheets" />
