@@ -1,25 +1,26 @@
 import { httpGET, json, encodeURL, nxql } from './utils.js'
 import { routeSearchFor } from './route.js'
+import difference from 'lodash.difference'
 
 export const SEARCH_FOR = 'SEARCH_FOR'
 export const SEARCH_RESULTS = 'SEARCH_RESULTS'
 export const CHANGE_CATALOG = 'CHANGE_CATALOG'
 
+export function fetchSearchResults(text, catalogs, page) {
 
-const PATH = 'default-domain'
-export function searchFor(text, page) {
-
-    const catalogs = [
-    ]
+    if (catalogs.length === 0) {
+        return Promise.resolve({
+            totalSize: 0,
+            entries: []
+        })
+    }
 
     const params = {
         pageSize: 20,
         query: nxql`SELECT * FROM Document
             WHERE ecm:fulltext = ${text}
-        ` + (catalogs.length
-            ? nxql` AND hrv:sourceRepository not in ( ${catalogs} )`
-            : ''
-        )
+            AND hrv:sourceRepository in ( ${catalogs} )
+        `
     }
 
     if (page != null) {
@@ -32,15 +33,27 @@ export function searchFor(text, page) {
             'X-NXDocumentProperties': '*'
         }
     }
+    return httpGET(url, options).then(json)
+}
 
-    return (dispatch) => {
+const PATH = 'default-domain'
+export function searchFor(text, catalogs, page) {
+    return (dispatch, getState) => {
         dispatch({
             type: SEARCH_FOR,
-            payload: { text },
+            payload: { text, catalogs },
         })
-        dispatch(routeSearchFor(text, page))
+        dispatch(routeSearchFor(text, catalogs, page))
 
-        httpGET(url, options).then(json).then((results) => {
+        fetchSearchResults(text, catalogs, page).then((results) => {
+            const { criteria } = getState()
+
+            // Don't keep these results if the criteria changed
+            if (criteria.text != text
+                || difference(criteria.catalogs, catalogs).length >0 ) {
+                return
+            }
+
             dispatch({
                 type: SEARCH_RESULTS,
                 payload: { results }

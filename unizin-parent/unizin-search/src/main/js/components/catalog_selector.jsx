@@ -4,14 +4,28 @@ import React from 'react'
 export default class CatalogSelector extends React.Component {
     static displayName = 'CatalogSelector'
 
-    onChange(key, e) {
-        this.props.onChange(key, e.target.checked)
+    onChange(k, event) {
+        const enabled = event.target.checked
+        const { catalogs } = this.props
+        let { selected = [] } = this.props
+
+        // Make sure we only output valid values
+        selected = selected.filter(v => catalogs[v] != null)
+
+        if (enabled) {
+            selected.push(k)
+        } else {
+            selected = selected.filter(v => v != k)
+        }
+
+        this.props.onChange(selected)
     }
     renderCatalogs() {
-        const { catalogs } = this.props
+        const { catalogs, selected = [] } = this.props
 
         return Object.keys(catalogs).map((key) => {
-            const { label, enabled } = catalogs[key]
+            const { label } = catalogs[key]
+            const enabled = selected.indexOf(key) >= 0
 
             return (
                 <li key={key}>

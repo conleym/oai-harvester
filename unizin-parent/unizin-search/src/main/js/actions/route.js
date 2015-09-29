@@ -43,8 +43,8 @@ export function route(route, query) {
     }
 }
 
-export function routeSearchFor(search, page = 1) {
-    return route('/search', { search, page })
+export function routeSearchFor(search, catalogs, page = 1) {
+    return route('/search', { search, catalogs, page })
 }
 
 export function routeResult(item) {

@@ -20,7 +20,7 @@ export function httpGET(url, options = {}) {
     })
 }
 
-function zip(a, b) {
+function weave(a, b) {
     if (a.length !== b.length + 1) {
         // I just need this for handling tagged template litterals, where the
         // first list is always exactly 1 longer than the 2nd list
@@ -57,18 +57,22 @@ export function encodeURL(strings, ...values) {
         return encodeURIComponent(value)
     }
 
-    return zip(strings, values.map(encodeValue)).join('')
+    return weave(strings, values.map(encodeValue)).join('')
 }
 
-function escapeQuote(str) {
-    if (typeof str.map === 'function') {
-        return str.map(escapeQuote).join(', ')
+function escapeQuote(input) {
+    if (!input) { return '' }
+
+    // If it looks like an array
+    if (typeof input.map === 'function') {
+        return input.map(escapeQuote).join(', ')
     }
 
-    const encoded =  str.replace(/["'\\]/g, function(x) { return '\\' + x })
+    // toString here handles numbers
+    const encoded = input.toString().replace(/["'\\]/g, function(x) { return '\\' + x })
     return `'${encoded}'`
 }
 
 export function nxql(strings, ...values) {
-    return zip(strings, values.map(escapeQuote)).join('')
+    return weave(strings, values.map(escapeQuote)).join('')
 }

@@ -20,6 +20,7 @@
     "es6-promise": "^3.0.2",
     "extract-text-webpack-plugin": "^0.8.2",
     "history": "^1.9.1",
+    "lodash.difference": "^3.2.2",
     "native-promise-only": "^0.8.1",
     "node-sass": "^3.3.3",
     "react": "^0.13.3",

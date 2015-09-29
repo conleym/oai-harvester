@@ -36,9 +36,7 @@ export function searchResults(state = defaultResults, action) {
 
 export function criteria(state = {}, action) {
     if (action.type === SEARCH_FOR) {
-        return {
-            text: action.payload.text
-        }
+        return { ...action.payload }
     }
 
     return state
