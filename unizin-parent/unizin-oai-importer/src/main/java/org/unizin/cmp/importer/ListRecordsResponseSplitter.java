@@ -100,6 +100,7 @@ implements Iterable<OAIRecordSourceNode> {
 			final XMLEvent event = this.eventReader.nextEvent();
 			writer.add(event);
 			if (isRecordEnd(event)) {
+				writer.close();
 				skipToNextRecordStart();
 				return recordOf(baos.toByteArray());
 			}
