@@ -1,5 +1,7 @@
 @import '../variables.scss';
 
+$footer_logo_width: 75px;
+
 footer {
   position: fixed;
   bottom: 0;
@@ -14,4 +16,16 @@ footer {
   width: 100%;
   border-top: 1px solid $border_color;
   background: white;
+
+  span {
+    padding-right: calc(#{$footer_logo_width} + .5rem);
+  }
+
+  .logo {
+    width: $footer_logo_width;
+    position: absolute;
+    top: 50%;
+    right: $global_padding;
+    transform: translateY(-50%);
+  }
 }

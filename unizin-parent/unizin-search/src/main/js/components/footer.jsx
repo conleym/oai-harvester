@@ -1,4 +1,5 @@
 import styles from './footer.scss'
+import Logo from './logo.jsx'
 import React, { PropTypes } from 'react'
 
 
@@ -11,7 +12,7 @@ export default class Footer extends React.Component {
     render() {
         return (
           <footer>
-            powered by [Unizin logo]
+            powered by <Logo className="logo" />
           </footer>
         )
     }
