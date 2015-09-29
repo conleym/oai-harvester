@@ -67,7 +67,7 @@ export default class SearchResults extends React.Component {
 
               <Pager
                   current={this.props.page}
-                  max={50}
+                  max={Math.ceil(totalSize / pageSize)}
                   onChange={this.onPage}
                   ariaLabel="Results pagination top" />
             </div>
