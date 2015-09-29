@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { routeResult, routeReturnUrl } from '../actions/route.js'
 import Cover from './cover.jsx'
 import Pager from '../components/pager.jsx'
+import Loading from './loading.jsx'
 
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
@@ -50,11 +51,11 @@ export default class SearchResults extends React.Component {
     render() {
         const { criteria, results } = this.props
 
-        if (!criteria.text) {
-            return null
+        if (results.totalSize == null) {
+            return <Loading message={`Loading Results for '${criteria.text}'`} />
         }
 
-        const totalSize = (results.totalSize != null) ? results.totalSize : ''
+        const { totalSize = 0, pageSize = 20 } = results
         const resultsString = `${totalSize} Results for '${criteria.text}'`
 
         return (
@@ -63,7 +64,7 @@ export default class SearchResults extends React.Component {
 
                 <Pager
                     current={this.props.page}
-                    max={50}
+                    max={Math.ceil(totalSize / pageSize)}
                     onChange={this.onPage}
                     ariaLabel="Results pagination top" />
 
@@ -73,7 +74,7 @@ export default class SearchResults extends React.Component {
 
                 <Pager
                     current={this.props.page}
-                    max={50}
+                    max={Math.ceil(totalSize / pageSize)}
                     onChange={this.onPage}
                     ariaLabel="Results pagination bottom" />
               </div>
