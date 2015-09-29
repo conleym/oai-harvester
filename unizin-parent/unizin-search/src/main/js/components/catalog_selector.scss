@@ -4,6 +4,8 @@
   position: fixed;
   top: $header_height;
   left: 0;
+  background: darken(white, 2.5%);
+  border-right: 1px solid $border_color;
   height: calc(100% - (#{$header_height} + #{$footer_height}));
   width: calc(100% - #{$main_column_width});
   padding: $global_padding;

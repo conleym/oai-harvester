@@ -27,9 +27,7 @@ class Result extends React.Component {
                 <button onClick={this.props.history.goBack} aria-role="button">
                     &lt; Back to results
                 </button>
-              </navigation>
 
-              <div className={styles.header}>
                 <ul className={styles.controls}>
                   <li>
                     <a href={previewUrl} target="_blank" className={styles.btn}>
@@ -42,18 +40,26 @@ class Result extends React.Component {
                     </Link>
                   </li>
                 </ul>
+              </navigation>
 
-                <Cover document={document} className={styles.cover} />
+              <div className={styles.wrapper}>
+                <div className={styles.content}>
 
-                <h1>{document.title}</h1>
+                  <Cover document={document} className={styles.cover} />
+
+                  <h1>{document.title}</h1>
+
+                  {JSON.stringify(document, null, 2)}
+                </div>
+
+                <aside>
+                  <h1>Additional information</h1>
+                  <ul>
+                    <li>Some info</li>
+                    <li>More info</li>
+                  </ul>
+                </aside>
               </div>
-
-              <section>
-                Metadata:
-                <pre>
-                    {JSON.stringify(document, null, 2)}
-                </pre>
-              </section>
             </main>
         )
     }

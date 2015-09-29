@@ -2,24 +2,14 @@
 $result_left_padding: $cover_width + $global_padding + 1rem;
 
 :local .result {
-  padding: $global_padding;
 
-  .header {
-    position: relative;
+  navigation {
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+    height: $header_height;
     padding: $global_padding;
-    min-height: $cover_height + ($global_padding * 2);
-    padding: 0 13rem 0 $result_left_padding;
-
-    h1 {
-      padding-top: $global_padding;
-      font-size: 1.75rem;
-    }
-
-    .cover {
-      position: absolute;
-      left: $global_padding;
-      top: $global_padding;
-    }
+    background: $header_bg_color;
 
     .controls {
       display: inline-block;
@@ -35,7 +25,38 @@ $result_left_padding: $cover_width + $global_padding + 1rem;
     }
   }
 
-  section {
-    padding: $global_padding;
+  .wrapper {
+    position: relative;
+    top: $header_height;
+    left: 0;
+
+    .content {
+      width: $main_column_width;
+      height: calc(100% - #{$header_height});
+      overflow: scroll;
+      padding: $global_padding;
+
+      h1 {
+        padding-top: $global_padding;
+        font-size: 1.75rem;
+      }
+
+      .cover {
+        position: absolute;
+        left: $global_padding;
+        top: $global_padding;
+      }
+    }
+
+    aside {
+      width: calc(100% - #{$main_column_width});
+      height: calc(100% - #{$header_height});
+      position: fixed;
+      top: $header_height;
+      right: 0;
+      border-left: 1px solid $border_color;
+      overflow-y: scroll;
+      padding: $global_padding;
+    }
   }
 }
