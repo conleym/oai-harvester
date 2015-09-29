@@ -1,8 +1,7 @@
 @import '../variables.scss';
 
 :local .cover {
-  width: $cover_width;
-  height: $cover_height;
+  @include cover;
   border: 1px solid $border_color;
   text-align: center;
   margin: 0 $global_padding 0 0;

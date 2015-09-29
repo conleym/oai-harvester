@@ -1,15 +1,18 @@
 @import '../variables.scss';
 $result_left_padding: $cover_width + $global_padding + 1rem;
+$result_cover_width: 145px;
 
 :local .result {
+  height: 100%;
 
-  navigation {
+  .header {
     position: fixed;
     z-index: 1;
     width: 100%;
     height: $header_height;
     padding: $global_padding;
     background: $header_bg_color;
+    border-bottom: 1px solid $border_color;
 
     .controls {
       display: inline-block;
@@ -21,6 +24,10 @@ $result_left_padding: $cover_width + $global_padding + 1rem;
       li {
         display: inline-block;
         margin: 0 $global_margin;
+
+        &:first-of-type {
+          margin-right: 0;
+        }
       }
     }
   }
@@ -32,31 +39,69 @@ $result_left_padding: $cover_width + $global_padding + 1rem;
 
     .content {
       width: $main_column_width;
-      height: calc(100% - #{$header_height});
+      height: $main_content_height;
       overflow: scroll;
       padding: $global_padding;
 
       h1 {
-        padding-top: $global_padding;
+        padding: 0;
+        margin: 0;
         font-size: 1.75rem;
+      }
+
+      h2 {
+        font-size: 1rem;
       }
 
       .cover {
         position: absolute;
         left: $global_padding;
         top: $global_padding;
+        @include cover($result_cover_width);
+      }
+
+      .details {
+        padding-left: calc(#{$result_cover_width} + #{$global_padding});
+      }
+
+      .description {
+        font-size: .875rem;
+        line-height: 1.3rem;
       }
     }
 
     aside {
-      width: calc(100% - #{$main_column_width});
-      height: calc(100% - #{$header_height});
+      width: $aside_width;
+      height: $main_content_height;
       position: fixed;
       top: $header_height;
       right: 0;
       border-left: 1px solid $border_color;
       overflow-y: scroll;
       padding: $global_padding;
+      @include aside;
+
+      li {
+        margin-bottom: 1rem;
+
+        span:first-of-type {
+          display: block;
+          font-weight: bold;
+        }
+      }
     }
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    text-align: right;
+    padding-right: $global_padding;
+    height: $footer_height;
+    line-height: $footer_height;
+    width: 100%;
+    border-top: 1px solid $border_color;
+    background: white;
   }
 }

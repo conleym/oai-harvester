@@ -1,16 +1,81 @@
-$font_color: black;
+$default_font: "Roboto", sans-serif;
+$decorative_font: "Roboto Slab", serif;
 
+// Colors
+$font_color: black;
+$border_color: darken(white, 20%);
+$purple: #8056c7;
+$gray_purple: #81788e;
+
+// transitions
+$transition_fast: .25s;
+
+// Padding & margins
 $global_padding: 1rem;
 $global_margin: $global_padding;
-$border_color: darken(white, 20%);
 
-$cover_width: 4rem;
-$cover_height: $cover_width * 1.24;
-
+// header & footer definitions
 $header_height: 80px;
 $header_bg_color: #e7e5e8;
 $footer_height: 45px;
 
+// main column width
 $main_column_width: 80%;
-$results_height: 75%;
-//$main_column_width: calc(75% - ($global_padding * 2));
+// calculates scrollable regions of main content (main and aside elements)
+$main_content_height: calc(100% - (#{$header_height} + #{$footer_height}));
+$aside_width: calc(100% - #{$main_column_width});
+
+// Cover
+$cover_width: 4rem;
+$cover_aspect_ratio: 1.24;
+$cover_height: $cover_width * $cover_aspect_ratio;
+
+// calculations for cover width and height
+// default width is "4rem"
+@mixin cover($cover_width: 4rem) {
+  width: $cover_width;
+  height: calc(#{$cover_width} * #{$cover_aspect_ratio});
+}
+
+// Aside
+@mixin aside {
+  word-wrap: break-word;
+  font-family: $default_font;
+  font-weight: 300;
+
+  h1 {
+    font-family: $default_font;
+    font-size: 1rem;
+    font-weight: 300;
+  }
+}
+
+// buttons
+button,
+.btn {
+  display: inline-block;
+  border: 1px solid $gray_purple;
+  color: $gray_purple;
+  background: none;
+  height: 100%;
+  line-height: 100%;
+  padding: 1rem;
+  text-decoration: none;
+  font-family: $decorative_font;
+  transition: all $transition_fast;
+
+  &:hover {
+    background: lighten($gray_purple, 20%);
+    color: darken($gray_purple, 20%);
+  }
+
+  &.primary {
+    background: $purple;
+    color: white;
+    border-color: darken($purple, 5%);
+
+    &:hover {
+      background: darken($purple, 20%);
+    }
+  }
+}

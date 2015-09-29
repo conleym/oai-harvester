@@ -8,7 +8,7 @@ $results_header_height: 115px;
       margin-top: $header_height;
       margin-bottom: $footer_height;
       float: right;
-      height: calc(100% - (#{$header_height} + #{$footer_height}));
+      height: $main_content_height;
       width: $main_column_width;
       padding-top: calc(#{$results_header_height};
 
