@@ -51,7 +51,7 @@ $results_header_height: 115px;
 
 :local .result {
   position: relative;
-  padding: 0 5rem 1rem $result_left_padding;
+  padding: 0 6rem 1rem $result_left_padding;
   margin-bottom: 1rem;
   min-height: $cover_height;
   border-bottom: 1px solid $border_color;
@@ -96,13 +96,28 @@ $results_header_height: 115px;
     }
   }
 
-  .btn {
-      display: inline-block;
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translate(0,-50%);
-      padding: .3rem .5rem;
-      font-size: .8rem;
+  .controls {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(0,-55%);
+    text-align: right;
+
+    .btn {
+        display: inline-block;
+        padding: .3rem .8rem;
+        font-size: .8rem;
+
+        &.preview {
+          border: none;
+          padding: 0;
+          margin-top: .3rem;
+
+          &:hover {
+            text-decoration: underline;
+            background: transparent;
+          }
+        }
+    }
   }
 }

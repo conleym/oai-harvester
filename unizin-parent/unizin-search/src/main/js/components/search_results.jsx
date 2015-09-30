@@ -21,8 +21,14 @@ export default class SearchResults extends React.Component {
         const { title } = result
         const returnUrl = routeReturnUrl(result).url
         const resultRoute = routeResult(result).route
+
+        // insert button
         const insertLabel = "Insert " + title + " into your page"
         const insertBtnClasses = classNames("btn", styles.btn)
+
+        // preview button
+        const previewBtnClasses = classNames("btn", styles.btn, styles.preview)
+        const previewLabel = "Preview " + title
 
         return (
             <li key={result.uid} className={styles.result}>
@@ -38,9 +44,18 @@ export default class SearchResults extends React.Component {
                   <li>Entity: {result['entity-type']}</li>
                 </ul>
 
-                <Link to={routeInsert(result).route} className={insertBtnClasses}  aria-label={insertLabel} role="button">
-                  + Insert
-                </Link>
+                <ul className={styles.controls}>
+                  <li>
+                    <Link to={routeInsert(result).route} className={insertBtnClasses}  aria-label={insertLabel} role="button">
+                      + Insert
+                    </Link>
+                  </li>
+                  <li>
+                    <a href={returnUrl} className={previewBtnClasses} aria-label={previewLabel}>
+                        o Preview
+                    </a>
+                  </li>
+                </ul>
             </li>
         )
     }
