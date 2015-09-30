@@ -9,13 +9,26 @@
   border-right: 1px solid $border_color;
   height: $main_content_height;
   width: $aside_width;
-  padding: $global_padding;
   overflow: scroll;
+
+  h1 {
+    margin: 0;
+    padding: .7rem $global_padding;
+    border-bottom: 1px solid $border_color;
+  }
+
+  li {
+    margin-bottom: .3rem;
+    font-size: .875rem;
+  }
 
   legend {
     margin: 0;
-    padding: 0 0 .25rem 0;
+    padding: 0 0 .4rem 0;
     text-transform: uppercase;
+    font-size: .8rem;
+    font-weight: 400;
+    color: lighten($font_color, 20%);
   }
 
   fieldset {
@@ -25,5 +38,9 @@
 
   input[type='checkbox'] {
     margin-right: .5rem;
+  }
+
+  .group {
+    padding: $global_padding;
   }
 }
