@@ -1,7 +1,7 @@
 import styles from './search_result.scss'
 import React from 'react'
 import { Link } from 'react-router'
-import { routeResult, routeReturnUrl } from '../actions/route.js'
+import { routeInsert, routeResult, routeReturnUrl } from '../actions/route.js'
 import Cover from './cover.jsx'
 import Pager from '../components/pager.jsx'
 import Loading from './loading.jsx'
@@ -36,9 +36,9 @@ export default class SearchResults extends React.Component {
                   <li>Entity: {result['entity-type']}</li>
                 </ul>
 
-                <a href={returnUrl} className={styles.btn} aria-label={insertLabel}>
-                    + Insert
-                </a>
+                <Link to={routeInsert(result).route} className={styles.btn} className={styles.btn}>
+                  + Insert
+                </Link>
             </li>
         )
     }
