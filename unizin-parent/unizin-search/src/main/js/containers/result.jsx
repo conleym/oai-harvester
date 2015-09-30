@@ -21,7 +21,8 @@ class Result extends React.Component {
         }
 
         const previewUrl = routePreviewUrl(document).url
-        const primaryBtnClasses = classNames("btn", "primary")
+        const primaryBtnClasses = classNames("btn", "primary", styles.btn)
+        const secondaryBtnClasses = classNames("btn", styles.btn)
 
         return (
             <main className={styles.result} role="main">
@@ -37,7 +38,7 @@ class Result extends React.Component {
                     </Link>
                   </li>
                   <li>
-                    <a href={previewUrl} target="_blank" className={styles.btn}>
+                    <a href={previewUrl} target="_blank" className={secondaryBtnClasses} role="button">
                       o Preview
                     </a>
                   </li>
@@ -63,7 +64,7 @@ class Result extends React.Component {
 
                 <aside role="complementary">
                   <h1>Additional information</h1>
-                  <ul>
+                  <ul className={styles.group}>
                     <li><span>Format</span>{document.type}</li>
                     <li><span>File size</span>{(document.properties["common:size"])}</li>
                     <li><span>Language</span>{document.properties["hrv:language"]}</li>

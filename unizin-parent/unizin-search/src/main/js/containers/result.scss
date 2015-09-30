@@ -28,6 +28,13 @@ $result_cover_width: 145px;
         &:first-of-type {
           margin-right: 0;
         }
+
+        button,
+        .btn {
+          height: 100%;
+          line-height: 100%;
+          padding: .7rem 1.2rem;
+        }
       }
     }
 
@@ -35,7 +42,9 @@ $result_cover_width: 145px;
     .btn {
       height: 100%;
       line-height: 100%;
+      padding: .7rem 1.2rem;
     }
+
   }
 
   .wrapper {
@@ -84,16 +93,26 @@ $result_cover_width: 145px;
       right: 0;
       border-left: 1px solid $border_color;
       overflow-y: scroll;
-      padding: $global_padding;
       @include aside;
+
+      h1 {
+        margin: 0;
+        padding: .7rem $global_padding;
+        border-bottom: 1px solid $border_color;
+      }
 
       li {
         margin-bottom: 1rem;
+        font-size: .875rem;
 
         span:first-of-type {
           display: block;
           font-weight: bold;
         }
+      }
+
+      .group {
+        padding: $global_padding;
       }
     }
   }
