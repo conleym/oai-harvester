@@ -2,7 +2,7 @@ import React from 'react'
 import Cover from '../components/cover.jsx'
 import { connect } from 'react-redux'
 import { ensureDocument } from '../actions/documents.js'
-import { routeReturnUrl, routeInsert } from '../actions/route.js'
+import { routeInsert, routePreviewUrl } from '../actions/route.js'
 import styles from './result.scss'
 import { Link } from 'react-router'
 
@@ -19,7 +19,7 @@ class Result extends React.Component {
             return null
         }
 
-        const returnUrl = routeReturnUrl(document).url
+        const previewUrl = routePreviewUrl(document).url
 
         return (
             <main className={styles.result} role="main">
@@ -32,7 +32,7 @@ class Result extends React.Component {
               <div className={styles.header}>
                 <ul className={styles.controls}>
                   <li>
-                    <a href={returnUrl} className={styles.btn}>
+                    <a href={previewUrl} target="_blank" className={styles.btn}>
                       o Preview
                     </a>
                   </li>

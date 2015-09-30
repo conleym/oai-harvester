@@ -65,3 +65,16 @@ export function routeReturnUrl(item) {
         url: window.lti_data.ext_content_return_url + query
     }
 }
+
+export function routePreviewUrl(item) {
+    const { protocol, hostname } = window.location
+    const prefix = `${protocol}//${hostname}`
+
+    const params = {
+        file: prefix + encodeURL`/nuxeo/api/v1/id/${item.uid}/@blob/blobholder:0`
+    }
+
+    return {
+        url: prefix + encodeURL`/nuxeo/viewer/web/viewer.html?${params}`
+    }
+}
