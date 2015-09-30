@@ -1,12 +1,23 @@
 import { CHANGE_CATALOG, SEARCH_FOR, SEARCH_RESULTS } from './actions/search.js'
 import { LOCATION_CHANGED } from './actions/route.js'
-import { DOCUMENT } from './actions/documents.js'
+import { DOCUMENT, DOCUMENT_LOAD_ERROR } from './actions/documents.js'
 
 export function documents(state = {}, action) {
     if (action.type === DOCUMENT) {
         return {
             ...state,
             [action.payload.uid]: action.payload
+        }
+    }
+    if (action.type === DOCUMENT_LOAD_ERROR) {
+        const { id } = action.payload
+        const doc = {
+            ...state[id],
+            loadError: action.payload.message
+        }
+        return {
+            ...state,
+            [id]: doc
         }
     }
 

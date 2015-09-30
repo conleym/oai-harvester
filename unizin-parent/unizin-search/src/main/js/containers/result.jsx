@@ -2,8 +2,9 @@ import React from 'react'
 import Cover from '../components/cover.jsx'
 import { connect } from 'react-redux'
 import { ensureDocument } from '../actions/documents.js'
-import { routeReturnUrl } from '../actions/route.js'
+import { routeReturnUrl, routeInsert } from '../actions/route.js'
 import styles from './result.scss'
+import { Link } from 'react-router'
 
 class Result extends React.Component {
     static displayName = 'Result'
@@ -36,9 +37,9 @@ class Result extends React.Component {
                     </a>
                   </li>
                   <li>
-                    <a href={returnUrl} className={styles.btn}>
+                    <Link to={routeInsert(document).route} className={styles.btn}>
                       + Insert
-                    </a>
+                    </Link>
                   </li>
                 </ul>
 

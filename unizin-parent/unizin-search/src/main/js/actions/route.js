@@ -51,6 +51,10 @@ export function routeResult(item) {
     return route(encodeURL`/result/${item.uid}`)
 }
 
+export function routeInsert(item) {
+    return route(encodeURL`/insert/${item.uid}`)
+}
+
 export function routeReturnUrl(item) {
     const { path, title } = item
     const url = location.protocol + '//' + location.hostname + path
