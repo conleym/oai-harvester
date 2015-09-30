@@ -8,12 +8,14 @@ request() {
 WORKSPACE="Harvested"
 TARGET_PATH="/default-domain/workspaces/${WORKSPACE}"
 INPUT_PATH="/unizin-cmp/harvests.zip"
-BATCH_SIZE=1000
-MAX_THREADS=15
+BATCH_SIZE=10
+MAX_THREADS=10
 
-NX_URL="http://localhost:8080/nuxeo/site"
+# You can set NX_URL to something else to run on a different server if you like.
+${NX_URL:="http://localhost:8080/nuxeo/site"}
+${TARGET_PATH:="/unizin-cmp/harvests.zip"}
 
-CREATE_URL="${NX_URL}/api/v1/path/default-domain/workspaces"
+WORKSPACES_URL="${NX_URL}/api/v1/path/default-domain/workspaces"
 
 # File importer URLs
 BASE_URL="${NX_URL}/fileImporter"
@@ -24,6 +26,8 @@ LOG_URL="${BASE_URL}/log"
 # Create the workspace.
 echo "Creating workspace if necessary."
 
+request "${WORKSPACES_URL}"
+
 read -r -d '' POST_DATA <<EOF
 {
   "entity-type": "document",
@@ -33,10 +37,9 @@ read -r -d '' POST_DATA <<EOF
 }
 EOF
 
-request -v -X POST "${CREATE_URL}" -H 'content-type:application/json' --data-binary "${POST_DATA}"
+request -v -X POST "${WORKSPACES_URL}" -H 'content-type:application/json' --data-binary "${POST_DATA}"
 
 printf "\nStarting import.\n"
 request "${LOG_ACTIVATE_URL}"
 request "${RUN_URL}"
-printf "\nLatest logs:\n"
-request "${LOG_URL}"
+printf "\nVisit %s for logs\n" "${LOG_URL}"
