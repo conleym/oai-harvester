@@ -1,7 +1,7 @@
 import styles from './search_result.scss'
 import React from 'react'
 import { Link } from 'react-router'
-import { routeInsert, routeResult, routeReturnUrl } from '../actions/route.js'
+import { routeInsert, routeResult, routeReturnUrl, routePreviewUrl } from '../actions/route.js'
 import Cover from './cover.jsx'
 import Pager from './pager.jsx'
 import Loading from './loading.jsx'
@@ -27,6 +27,7 @@ export default class SearchResults extends React.Component {
         const insertBtnClasses = classNames("btn", styles.btn)
 
         // preview button
+        const previewUrl = routePreviewUrl(result).url
         const previewBtnClasses = classNames("btn", styles.btn, styles.preview)
         const previewLabel = "Preview " + title
 
@@ -51,8 +52,8 @@ export default class SearchResults extends React.Component {
                     </Link>
                   </li>
                   <li>
-                    <a href={returnUrl} className={previewBtnClasses} aria-label={previewLabel}>
-                        o Preview
+                    <a href={previewUrl} target="_blank" className={previewBtnClasses} role="button" aria-label={previewLabel}>
+                      o Preview
                     </a>
                   </li>
                 </ul>
