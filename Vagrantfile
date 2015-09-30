@@ -10,6 +10,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.hostname = "catskateboard.local"
   config.vm.network "private_network", ip: "10.10.20.20"
+  config.vm.synced_folder ".", "/unizin-cmp"
 
   config.vm.provider "virtualbox" do |vb|
     vb.memory = "2048"
@@ -20,5 +21,4 @@ Vagrant.configure(2) do |config|
   config.vm.provision "puppet" do |puppet|
     puppet.module_path = "modules"
   end
-
 end
