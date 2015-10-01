@@ -8,6 +8,7 @@ import Footer from '../components/footer.jsx'
 import CatalogSelector from '../components/catalog_selector.jsx'
 import difference from 'lodash.difference'
 import classNames from 'classnames'
+import { selectResults } from '../selectors.js'
 
 function loadData(props) {
     const { criteria } = props
@@ -93,11 +94,13 @@ class Search extends React.Component {
     }
 }
 
-function mapStateToProps(state) {
+function mapStateToProps(state, props) {
+    const { search, catalogs = [], page = 1 } = props.location.query
+
     return {
         catalogs: state.catalogs,
         criteria: state.criteria,
-        searchResults: state.searchResults,
+        searchResults: selectResults(search, catalogs, page)(state)
     }
 }
 
