@@ -51,6 +51,10 @@ export function routeResult(item) {
     return route(encodeURL`/result/${item.uid}`)
 }
 
+export function routeInsert(item) {
+    return route(encodeURL`/insert/${item.uid}`)
+}
+
 export function routeReturnUrl(item) {
     const { path, title } = item
     const url = location.protocol + '//' + location.hostname + path
@@ -59,5 +63,18 @@ export function routeReturnUrl(item) {
 
     return {
         url: window.lti_data.ext_content_return_url + query
+    }
+}
+
+export function routePreviewUrl(item) {
+    const { protocol, hostname } = window.location
+    const prefix = `${protocol}//${hostname}`
+
+    const params = {
+        file: prefix + encodeURL`/nuxeo/api/v1/id/${item.uid}/@blob/blobholder:0`
+    }
+
+    return {
+        url: prefix + encodeURL`/nuxeo/viewer/web/viewer.html?${params}`
     }
 }

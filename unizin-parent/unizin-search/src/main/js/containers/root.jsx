@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import App from './app.jsx'
 import Search from './search.jsx'
 import Result from './result.jsx'
+import SmartInsert from './smart_insert.jsx'
 
 export default class Root extends React.Component {
     static displayName = 'Root'
@@ -16,6 +17,7 @@ export default class Root extends React.Component {
                 <Route component={App}>
                     <Route path="/result/:uid" component={Result} />
                     <Route path="/search" component={Search} />
+                    <route path="/insert/:uid" component={SmartInsert} />
                     <Route path="/" component={Search} />
                 </Route>
             </Router>

@@ -25,6 +25,10 @@ export default class Pager extends React.Component {
 
     render() {
         const { max, current } = this.props
+        if (max < 2) {
+            return null
+        }
+
         const buttons = []
         const pager_name = this.props.ariaLabel
 
@@ -44,6 +48,9 @@ export default class Pager extends React.Component {
         if (to >= max) {
             to = max
             from = to - 5
+        }
+        if (from < 1) {
+            from = 1
         }
 
         for (let i = from; i <= to; i++) {

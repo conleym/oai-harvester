@@ -1,12 +1,25 @@
 #!/bin/bash
 
-set -ex
 
 if [ -z "$1" ]; then
-    echo "USAGE: $0 VMName"
-    echo "VMName should be whatever you use to ssh to your nuxeo VM"
+    cat << EOF
+USAGE: $0 VMName
+
+For this script to work you MUST be able to \`ssh VMName\`. Since everyone has a
+custom setup there\'s no way to know what this name is.
+
+$ cd /path/where/you/have/Vagrantfile
+$ vagrant ssh-config
+
+look at the first line here. Mine says \`Host default\`, but that\'s not a good
+name. Before I copy this into ~/.ssh/config I changed my host to \`nuxeo\`. Now I
+can \`./update.sh nuxeo\`
+
+EOF
     exit 1
 fi
+
+set -ex
 
 VM_NAME=$1
 

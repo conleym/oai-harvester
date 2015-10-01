@@ -25,7 +25,7 @@ public class CatalogSearchTool extends ModuleRoot {
     // LTI process. This function is for working on the UI
     @GET
     public Object doGet() {
-        String ext_content_return_url = "https://unizin.instructure.com/courses/31/external_content/success/external_tool_dialog";
+        String ext_content_return_url = "about:blank";
 
         return getView("index").arg("jsPath",
                                     Framework.getProperty(
