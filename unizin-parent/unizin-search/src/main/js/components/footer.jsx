@@ -11,9 +11,9 @@ export default class Footer extends React.Component {
 
     render() {
         return (
-          <footer>
-            powered by <Logo className="logo" />
-          </footer>
+          <div className={styles.footer}>
+            powered by <Logo className={styles.logo} />
+        </div>
         )
     }
 }
