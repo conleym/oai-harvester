@@ -61,9 +61,18 @@ class Search extends React.Component {
         let { page } = this.props.location.query
         if (page) { page = parseInt(page, 10) }
 
+        const mainClasses = (criteria.text == null) ? classNames(styles.container,styles.empty) : styles.container
+        const brandURL = require('file!../../resources/skin/resources/brand.svg')
+
         return (
-            <main className={styles.container} role="main">
+            <main className={mainClasses} role="main">
               <div className={styles.header}>
+                { criteria.text == null ? (
+                  <div className={styles.brand}>
+                    <img src={brandURL} />
+                    <h1>Content Discovery Tool</h1>
+                  </div>
+                ) : null}
                 <form className={styles.search} onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
