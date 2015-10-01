@@ -13,7 +13,7 @@ export default class Footer extends React.Component {
         return (
           <div className={styles.footer}>
             powered by <Logo className={styles.logo} />
-        </div>
+          </div>
         )
     }
 }
