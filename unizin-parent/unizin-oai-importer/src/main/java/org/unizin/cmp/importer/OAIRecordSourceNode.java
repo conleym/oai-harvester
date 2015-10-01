@@ -30,10 +30,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import com.google.common.collect.ImmutableMap;
+
 
 public final class OAIRecordSourceNode implements SourceNode {
 
-	private static final Blob EMPTY_BLOB = Blobs.createBlob(new byte[]{});
 	private static final String[] EMPTY = new String[]{};
 	private static final String[] UNTITLED = new String[]{"Untitled"};
 
@@ -47,14 +48,24 @@ public final class OAIRecordSourceNode implements SourceNode {
 	private final Calendar lastModified;
 	private final Map<String, Serializable> properties;
 
-
 	public OAIRecordSourceNode(final byte[] bytes, final Document document, 
-			final URI baseURI) throws XMLStreamException {
+			final URI baseURI) throws XMLStreamException, IOException {
 		final XPath xpath = XPathFactory.newInstance().newXPath();
 		xpath.setNamespaceContext(OAIConstants.OAI_NS_CONTEXT);
 		this.baseURI = baseURI;
 		this.lastModified = parseLastModified(xpath, document);
-		this.properties = parseProperties(xpath, document);	
+		this.properties = parseProperties(xpath, document);
+		final Blob attachment = Blobs.createBlob(bytes, "application/xml", 
+				// TODO: might need to allow alternate encodings.
+				"utf-8");
+		attachment.setFilename("oai-record.xml");
+		
+		final Object[] attachments = new Object[]{
+				ImmutableMap.of(
+						"file", attachment,
+						"filename", attachment.getFilename())
+		};
+		this.properties.put("files:files", attachments);
 	}
 
 
@@ -179,7 +190,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 
 			@Override
 			public Blob getBlob() throws ClientException {
-				return EMPTY_BLOB;
+				return null;
 			}
 
 			@Override

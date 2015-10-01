@@ -1,66 +1,65 @@
 package org.unizin.cmp.importer;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Predicate;
+import java.util.List;
 
+import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
-import org.nuxeo.ecm.platform.importer.factories.AbstractDocumentModelFactory;
+import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.platform.importer.factories.DefaultDocumentModelFactory;
 import org.nuxeo.ecm.platform.importer.source.SourceNode;
 
 
 /**
- * Creates new documents with the {@code Harvested} facet.
- *
+ * A {@code DocumentModelFactory} that doesn't assume we have content to
+ * attach to imported files.
  */
-public final class HarvestedRecordFactory extends AbstractDocumentModelFactory {
+public final class HarvestedRecordFactory extends DefaultDocumentModelFactory {
+	
+	public HarvestedRecordFactory() {
+	} 
+	
+	public HarvestedRecordFactory(final String folderishType,
+			final String leafType) {
+		super(folderishType, leafType);
+	}
 
-	private final DefaultDocumentModelFactory dmf = 
-			new DefaultDocumentModelFactory();
-
-	private static <T> Map<String, T> filterByKeys(
-			final Map<String, T> toFilter, Predicate<String> f) {
-		final Map<String, T> result = new HashMap<>();
-		for (final Map.Entry<String, T> entry : toFilter.entrySet()) {
-			if (f.test(entry.getKey())) {
-				result.put(entry.getKey(), entry.getValue());
-			}
+	@Override
+	protected DocumentModel defaultCreateLeafNode(final CoreSession session,
+			final DocumentModel parent, final SourceNode node)
+					throws IOException {
+		// Copy and paste, from defaultCreateLeafNode, except that we _don't_
+		// assume the SourceNode's BlobHolder has a non-null blob.
+		//
+		// This lets us import without empty file attachments
+		// or other junk we don't want if we don't have the actual
+		// files on hand.
+		BlobHolder bh = node.getBlobHolder();
+		String leafTypeToUse = getDocTypeToUse(bh);
+		if (leafTypeToUse == null) {
+			leafTypeToUse = leafType;
 		}
-		return result;
+		List<String> facets = getFacetsToUse(bh);
+		// Also mimeType wasn't used, so we won't bother with it.
+		String name = getValidNameFromFileName(node.getName());
+		String title = node.getName();
+		DocumentModel doc = session.createDocumentModel(
+				parent.getPathAsString(), name, leafTypeToUse);
+		for (String facet : facets) {
+			doc.addFacet(facet);
+		}
+		doc.setProperty("dublincore", "title", title);
+		final Blob b = bh.getBlob();
+		if (b != null) {
+			doc.setProperty("file", "filename", title);
+			doc.setProperty("file", "content", bh.getBlob());
+		}
+		doc = session.createDocument(doc);
+		if (bh != null) {
+			doc = setDocumentProperties(session,
+					bh.getProperties(), doc);
+		}
+		return doc;
 	}
-
-	@Override
-	public DocumentModel createFolderishNode(final CoreSession session, 
-			final DocumentModel parent, final SourceNode node)
-					throws IOException {
-		return dmf.createFolderishNode(session, parent, node);
-	}
-
-	@Override
-	public DocumentModel createLeafNode(final CoreSession session, 
-			final DocumentModel parent, final SourceNode node)
-					throws IOException {
-		final DocumentModel dm = dmf.createLeafNode(session, parent, node);
-		final Map<String, Serializable> props = 
-				node.getBlobHolder().getProperties();
-
-		final Map<String, Object> dc = new HashMap<>(filterByKeys(props,
-				k -> k.startsWith("dc:")));
-		dm.setProperties("dublincore", dc);
-
-		// Facets can be added an ecm: property on the BlobHolder, but I 
-		// think it's better to be explicit.
-		dm.addFacet("Harvested");
-
-		final Map<String, Object> hrv = new HashMap<>(filterByKeys(props,
-				k -> k.startsWith("hrv:")));
-		dm.setProperties("HarvestedRecord", hrv);
-
-		return dm;
-	}
-
 }
