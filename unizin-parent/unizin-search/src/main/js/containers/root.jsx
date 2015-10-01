@@ -2,12 +2,22 @@ import React from 'react'
 import { Router, Route } from 'react-router'
 import { Provider } from 'react-redux'
 import App from './app.jsx'
-import Search from './search.jsx'
+import Search from './smart_search.jsx'
 import Result from './result.jsx'
 import SmartInsert from './smart_insert.jsx'
 
+const { any, shape, func } = React.PropTypes
+
 export default class Root extends React.Component {
     static displayName = 'Root'
+
+    static propTypes = {
+        history: any,
+        store: shape({
+            getState: func.isRequired,
+            dispatch: func.isRequired,
+        }).isRequired,
+    }
 
     // Because of context differences we need to pass a function to `<Provider>`
     // in React 0.13, but will be able to pass the content starting in 0.14
