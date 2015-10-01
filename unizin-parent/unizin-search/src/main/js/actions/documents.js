@@ -1,6 +1,7 @@
+import { httpGET, json, encodeURL } from './utils.js'
 import DataLoader from 'dataloader'
-import { encodeURL, httpGET, json } from './search.js'
 import { routeReturnUrl } from './route.js'
+
 export const DOCUMENT_LOAD_ERROR = 'DOCUMENT_LOAD_ERROR'
 export const DOCUMENT = 'DOCUMENT'
 
@@ -24,8 +25,6 @@ const documentLoader = new DataLoader(docIds => {
         return docIds.map((id) => map[id])
     })
 })
-
-window.documentLoader = documentLoader
 
 export function ensureDocument(id) {
     return (dispatch, getState) => {

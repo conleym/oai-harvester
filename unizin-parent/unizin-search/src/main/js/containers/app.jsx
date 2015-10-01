@@ -1,7 +1,14 @@
 import React from 'react'
+import { connect } from 'react-redux'
+import { fetchCatalogs } from '../actions/search.js'
 
-export default class App extends React.Component {
+
+class App extends React.Component {
     static displayName = 'App'
+
+    componentWillMount() {
+        this.props.fetchCatalogs()
+    }
 
     render() {
         if (process.env.NODE_ENV !== 'production') {
@@ -11,3 +18,12 @@ export default class App extends React.Component {
         return this.props.children
     }
 }
+
+function mapStateToProps(state) {
+    return {}
+}
+
+export default connect(
+  mapStateToProps,
+  { fetchCatalogs }
+)(App)

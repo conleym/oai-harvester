@@ -1,65 +1,28 @@
+import { httpGET, json, encodeURL, nxql } from './utils.js'
 import { routeSearchFor } from './route.js'
+import difference from 'lodash.difference'
 
 export const SEARCH_FOR = 'SEARCH_FOR'
 export const SEARCH_RESULTS = 'SEARCH_RESULTS'
 export const CHANGE_CATALOG = 'CHANGE_CATALOG'
 
-export function json(response) {
-    return response.json()
-}
+export function fetchSearchResults(text, catalogs, page) {
 
-export function httpGET(url, options = {}) {
-    options = {
-        ...options,
-        headers: {
-            ...options.headers,
-            Accept: 'application/json',
-        },
-        credentials: 'include',
+    if (catalogs.length === 0) {
+        return Promise.resolve({
+            totalSize: 0,
+            entries: []
+        })
     }
-
-    return fetch(url, options).catch(e => {
-        console.warn('ERROR', e) // eslint-disable-line no-console
-        console.warn(e.stack) // eslint-disable-line no-console
-        throw e
-    })
-}
-
-function encodeParameters(params) {
-    return Object.keys(params).map((key) => {
-        let value = params[key]
-        if (value == null) { value = '' }
-        if (encodeURIComponent(key) != key) {
-            // I don't know if keys should be encoded or not. Probaby you just
-            // shouldn't use a key that needs encoding
-            throw new Error("Invalid key")
-        }
-
-        return key + '=' + encodeURIComponent(value)
-    }).join('&')
-}
-
-export function encodeURL(strings, ...values) {
-    return strings.reduce((out, next, index) => {
-        out = out + next
-        // strings always has one more element than values
-        if (index < values.length) {
-            if (typeof values[index] === 'object') {
-                return out + encodeParameters(values[index])
-            }
-            return out + encodeURIComponent(values[index])
-        }
-        return out
-    }, '')
-}
-
-const PATH = 'default-domain'
-export function searchFor(text, page) {
 
     const params = {
-        fullText: text,
         pageSize: 20,
+        query: nxql`SELECT * FROM Document
+            WHERE ecm:fulltext = ${text}
+            AND hrv:sourceRepository in ( ${catalogs} )
+        `
     }
+
     if (page != null) {
         params.currentPageIndex = parseInt(page, 10)
     }
@@ -70,15 +33,27 @@ export function searchFor(text, page) {
             'X-NXDocumentProperties': '*'
         }
     }
+    return httpGET(url, options).then(json)
+}
 
-    return (dispatch) => {
+const PATH = 'default-domain'
+export function searchFor(text, catalogs, page) {
+    return (dispatch, getState) => {
         dispatch({
             type: SEARCH_FOR,
-            payload: { text },
+            payload: { text, catalogs },
         })
-        dispatch(routeSearchFor(text, page))
+        dispatch(routeSearchFor(text, catalogs, page))
 
-        httpGET(url, options).then(json).then((results) => {
+        fetchSearchResults(text, catalogs, page).then((results) => {
+            const { criteria } = getState()
+
+            // Don't keep these results if the criteria changed
+            if (criteria.text != text
+                || difference(criteria.catalogs, catalogs).length >0 ) {
+                return
+            }
+
             dispatch({
                 type: SEARCH_RESULTS,
                 payload: { results }
@@ -91,5 +66,19 @@ export function changeCatalog(key, enabled) {
     return {
         type: CHANGE_CATALOG,
         payload: { key, enabled }
+    }
+}
+
+export const FETCH_CATALOGS = 'FETCH_CATALOGS'
+
+const catalogUrl = '/nuxeo/api/v1/directory/sourceRepositories'
+export function fetchCatalogs() {
+    return (dispatch, getState) => {
+        if (Object.keys(getState().catalogs).length === 0) {
+            return httpGET(catalogUrl).then(json).then((results) => dispatch({
+                type: FETCH_CATALOGS,
+                payload: results.entries
+            }))
+        }
     }
 }
