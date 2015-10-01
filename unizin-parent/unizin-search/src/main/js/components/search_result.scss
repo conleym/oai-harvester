@@ -104,20 +104,20 @@ $results_header_height: 115px;
     text-align: right;
 
     .btn {
-        display: inline-block;
-        padding: .3rem .8rem;
-        font-size: .8rem;
+      display: inline-block;
+      padding: .3rem .8rem;
+      font-size: .8rem;
+    }
 
-        &.preview {
-          border: none;
-          padding: 0;
-          margin-top: .3rem;
+    .preview {
+      border: none;
+      padding: 0;
+      margin-top: .3rem;
 
-          &:hover {
-            text-decoration: underline;
-            background: transparent;
-          }
-        }
+      &:hover {
+        text-decoration: underline;
+        background: transparent;
+      }
     }
   }
 }
