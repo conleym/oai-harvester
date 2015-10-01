@@ -1,26 +1,61 @@
 @import '../variables.scss';
 
 :local .search {
-  padding: $global_padding;
-  border-bottom: 1px solid $border_color;
+  position: relative;
+  height: 100%;
+  width: 100%;
+
+  input[type='text'] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 1px solid $border_color;
+    width: 83%;
+    height: 100%;
+    padding: inherit;
+    padding-left: 1rem;
+  }
+
+  .btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    line-height: 100%;
+    width: 15%;
+  }
 }
 
 :local .container {
-  background-image: linear-gradient(
-    to right,
-    darken(white, 2.5%) 100%-$results_width,
-    $border_color 100%-$results_width,
-    $border_color 100%-$results_width+.1%,
-    white 100%-$results_width+.1%
-  );
 
   .header {
-    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: $header_bg_color;
+    padding: $global_padding;
+    border-bottom: 1px solid $border_color;
+    z-index: 1;
   }
 
   &:after {
     content: "";
     display: table;
     clear: both;
+  }
+
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    text-align: right;
+    padding-right: $global_padding;
+    height: $footer_height;
+    line-height: $footer_height;
+    width: 100%;
+    border-top: 1px solid $border_color;
+    background: white;
   }
 }

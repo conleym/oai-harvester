@@ -1,10 +1,11 @@
 import styles from './search_result.scss'
 import React from 'react'
 import { Link } from 'react-router'
-import { routeInsert, routeResult, routeReturnUrl } from '../actions/route.js'
+import { routeInsert, routeResult, routeReturnUrl, routePreviewUrl } from '../actions/route.js'
 import Cover from './cover.jsx'
-import Pager from '../components/pager.jsx'
+import Pager from './pager.jsx'
 import Loading from './loading.jsx'
+import classNames from 'classnames'
 
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
@@ -20,7 +21,15 @@ export default class SearchResults extends React.Component {
         const { title } = result
         const returnUrl = routeReturnUrl(result).url
         const resultRoute = routeResult(result).route
+
+        // insert button
         const insertLabel = "Insert " + title + " into your page"
+        const insertBtnClasses = classNames("btn", styles.btn)
+
+        // preview button
+        const previewUrl = routePreviewUrl(result).url
+        const previewBtnClasses = classNames("btn", styles.btn, styles.preview)
+        const previewLabel = "Preview " + title
 
         return (
             <li key={result.uid} className={styles.result}>
@@ -36,9 +45,18 @@ export default class SearchResults extends React.Component {
                   <li>Entity: {result['entity-type']}</li>
                 </ul>
 
-                <Link to={routeInsert(result).route} className={styles.btn} className={styles.btn}>
-                  + Insert
-                </Link>
+                <ul className={styles.controls}>
+                  <li>
+                    <Link to={routeInsert(result).route} className={insertBtnClasses}  aria-label={insertLabel} role="button">
+                      + Insert
+                    </Link>
+                  </li>
+                  <li>
+                    <a href={previewUrl} target="_blank" className={previewBtnClasses} role="button" aria-label={previewLabel}>
+                      o Preview
+                    </a>
+                  </li>
+                </ul>
             </li>
         )
     }
@@ -56,28 +74,25 @@ export default class SearchResults extends React.Component {
         }
 
         const { totalSize = 0, pageSize = 20 } = results
-        const resultsString = `${totalSize} Results for '${criteria.text}'`
 
         return (
+          <div className={styles.wrapper}>
+            <div className={styles.header}>
+              <h1>{totalSize} Results for {criteria.text}</h1>
+
+              <Pager
+                  current={this.props.page}
+                  max={Math.ceil(totalSize / pageSize)}
+                  onChange={this.onPage}
+                  ariaLabel="Results pagination top" />
+            </div>
+
             <div className={styles.results}>
-                <h1>{resultsString}</h1>
-
-                <Pager
-                    current={this.props.page}
-                    max={Math.ceil(totalSize / pageSize)}
-                    onChange={this.onPage}
-                    ariaLabel="Results pagination top" />
-
-                <ul>
-                    {results.entries.map(this.renderResult)}
-                </ul>
-
-                <Pager
-                    current={this.props.page}
-                    max={Math.ceil(totalSize / pageSize)}
-                    onChange={this.onPage}
-                    ariaLabel="Results pagination bottom" />
-              </div>
+              <ul>
+                  {results.entries.map(this.renderResult)}
+              </ul>
+            </div>
+          </div>
         )
     }
 }

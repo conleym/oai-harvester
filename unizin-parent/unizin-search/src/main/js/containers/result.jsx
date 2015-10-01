@@ -3,8 +3,10 @@ import Cover from '../components/cover.jsx'
 import { connect } from 'react-redux'
 import { ensureDocument } from '../actions/documents.js'
 import { routeInsert, routePreviewUrl } from '../actions/route.js'
+import Footer from '../components/footer.jsx'
 import styles from './result.scss'
 import { Link } from 'react-router'
+import classNames from 'classnames'
 
 class Result extends React.Component {
     static displayName = 'Result'
@@ -20,40 +22,59 @@ class Result extends React.Component {
         }
 
         const previewUrl = routePreviewUrl(document).url
+        const primaryBtnClasses = classNames("btn", "primary", styles.btn)
+        const secondaryBtnClasses = classNames("btn", styles.btn)
 
         return (
             <main className={styles.result} role="main">
-              <navigation>
-                <button onClick={this.props.history.goBack} aria-role="button">
+              <div className={styles.header}>
+                <button onClick={this.props.history.goBack} role="button">
                     &lt; Back to results
                 </button>
-              </navigation>
 
-              <div className={styles.header}>
                 <ul className={styles.controls}>
                   <li>
-                    <a href={previewUrl} target="_blank" className={styles.btn}>
-                      o Preview
-                    </a>
-                  </li>
-                  <li>
-                    <Link to={routeInsert(document).route} className={styles.btn}>
+                    <Link to={routeInsert(document).route} className={primaryBtnClasses} role="button">
                       + Insert
                     </Link>
                   </li>
+                  <li>
+                    <a href={previewUrl} target="_blank" className={secondaryBtnClasses} role="button">
+                      o Preview
+                    </a>
+                  </li>
                 </ul>
-
-                <Cover document={document} className={styles.cover} />
-
-                <h1>{document.title}</h1>
               </div>
 
-              <section>
-                Metadata:
-                <pre>
-                    {JSON.stringify(document, null, 2)}
-                </pre>
-              </section>
+              <div className={styles.wrapper}>
+                <div className={styles.content}>
+
+                  <Cover document={document} className={styles.cover} />
+
+                  <div className={styles.details}>
+                    <h1>{document.title}</h1>
+
+                    <h2>Author: {document.properties['hrv:creator']}</h2>
+
+                    <div className={styles.description}>
+                      {document.properties['hrv:description']}
+                    </div>
+                  </div>
+
+                </div>
+
+                <aside role="complementary">
+                  <h1>Additional information</h1>
+                  <ul className={styles.group}>
+                    <li><span>Format</span>{document.type}</li>
+                    <li><span>File size</span>{(document.properties["common:size"])}</li>
+                    <li><span>Language</span>{document.properties["hrv:language"]}</li>
+                    <li><span>Date added</span>{document.properties["hrv:date"]}</li>
+                    <li><span>Rights</span>{document.properties["hrv:rights"]}</li>
+                  </ul>
+                </aside>
+              </div>
+              <Footer className={styles.footer} />
             </main>
         )
     }

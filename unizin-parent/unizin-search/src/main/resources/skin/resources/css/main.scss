@@ -1,9 +1,13 @@
 @import './normalize.css';
 @import './a11y.scss';
+@import './buttons.scss';
 @import '../../../../js/variables.scss';
+@import url(https://fonts.googleapis.com/css?family=Roboto+Slab:400,700,300);
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,700,300,400italic,500);
 
 html, body {
   height: 100%;
+  font-family: $default_font;
 }
 
 div,
@@ -13,11 +17,14 @@ main,
 header,
 navigation,
 aside,
+footer,
 li,
 p,
 textarea,
 input,
-span {
+span,
+a,
+button {
   box-sizing: border-box;
 }
 
@@ -29,4 +36,8 @@ ul, li {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: $decorative_font;
 }

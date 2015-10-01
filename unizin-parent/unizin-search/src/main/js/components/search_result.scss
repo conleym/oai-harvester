@@ -1,27 +1,74 @@
 @import '../variables.scss';
 $result_left_padding: $cover_width + $global_padding;
 
+$results_header_height: 115px;
+
 :local {
-    .results {
-        float: left;
-        width: $results_width;
-        padding: $global_padding;
+    .wrapper {
+      margin-top: $header_height;
+      margin-bottom: $footer_height;
+      float: right;
+      height: $main_content_height;
+      width: $main_column_width;
+      padding-top: calc(#{$results_header_height};
+
+      .header {
+        position: fixed;
+        top: $header_height;
+        right: 0;
+        width: $main_column_width;
+        height: $results_header_height;
+        padding: 1rem;
+        border-bottom: 1px solid $border_color;
+        background: white;
+        z-index: 1;
+
+        h1 {
+          margin: 0;
+          padding: 0;
+          font-weight: 300;
+
+          span:last-of-type {
+            font-weight: bold;
+
+            &:before,
+            &:after {
+              content: "'";
+            }
+          }
+        }
+      }
+
+      .results {
+        overflow: scroll;
+        padding-bottom: $footer_height;
+        height: 100%;
+        padding: $global_padding $global_padding 0 $global_padding;
+        width: 100%;
+      }
     }
 }
 
 :local .result {
   position: relative;
-  padding: 0 5rem 0 $result_left_padding;
-  margin-bottom: 2rem;
+  padding: 0 6rem 1rem $result_left_padding;
+  margin-bottom: 1rem;
   min-height: $cover_height;
+  border-bottom: 1px solid $border_color;
+  box-sizing: content-box;
 
-  a {
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  a:not(.btn) {
     display: block;
     font-weight: bold;
     font-size: 1rem;
     line-height: 1.3rem;
     text-decoration: none;
     margin-bottom: .75rem;
+    color: $font_color;
 
     &:hover {
       text-decoration: underline;
@@ -49,11 +96,28 @@ $result_left_padding: $cover_width + $global_padding;
     }
   }
 
-  .btn {
+  .controls {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(0,-55%);
+    text-align: right;
+
+    .btn {
       display: inline-block;
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translate(0,-50%);
+      padding: .3rem .8rem;
+      font-size: .8rem;
+    }
+
+    .preview {
+      border: none;
+      padding: 0;
+      margin-top: .3rem;
+
+      &:hover {
+        text-decoration: underline;
+        background: transparent;
+      }
+    }
   }
 }

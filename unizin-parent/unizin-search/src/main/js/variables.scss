@@ -1,10 +1,52 @@
-$results_width: 75%;
+$default_font: "Roboto", sans-serif;
+$decorative_font: "Roboto Slab", serif;
 
+// Colors
 $font_color: black;
+$border_color: darken(white, 20%);
+$purple: #8056c7;
+$gray_purple: #81788e;
 
+// transitions
+$transition_fast: .25s;
+
+// Padding & margins
 $global_padding: 1rem;
 $global_margin: $global_padding;
-$border_color: darken(white, 20%);
 
+// header & footer definitions
+$header_height: 80px;
+$header_bg_color: #e7e5e8;
+$footer_height: 45px;
+$footer_font_color: darken($header_bg_color, 35%);
+
+// main column width
+$main_column_width: 80%;
+// calculates scrollable regions of main content (main and aside elements)
+$main_content_height: calc(100% - (#{$header_height} + #{$footer_height}));
+$aside_width: calc(100% - #{$main_column_width});
+
+// Cover
 $cover_width: 4rem;
-$cover_height: $cover_width * 1.24;
+$cover_aspect_ratio: 1.24;
+$cover_height: $cover_width * $cover_aspect_ratio;
+
+// calculations for cover width and height
+// default width is "4rem"
+@mixin cover($cover_width: 4rem) {
+  width: $cover_width;
+  height: calc(#{$cover_width} * #{$cover_aspect_ratio});
+}
+
+// Aside
+@mixin aside {
+  word-wrap: break-word;
+  font-family: $default_font;
+  font-weight: 300;
+
+  h1 {
+    font-family: $default_font;
+    font-size: 1rem;
+    font-weight: 300;
+  }
+}

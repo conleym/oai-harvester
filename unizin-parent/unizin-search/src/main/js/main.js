@@ -1,3 +1,12 @@
+// http://webpack.github.io/docs/configuration.html#output-publicpath
+const scripts = document.getElementsByTagName("script")
+const src = scripts[scripts.length - 1].getAttribute("src")
+
+/*eslint-disable no-undef*/
+__webpack_public_path__ = src.substr(0, src.lastIndexOf("/") + 1)
+/*eslint-enable no-undef*/
+
+
 import '../resources/skin/resources/css/main.scss'
 import './setup_fetch.js'
 import React from 'react'

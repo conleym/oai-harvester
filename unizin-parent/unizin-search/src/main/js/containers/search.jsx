@@ -4,8 +4,10 @@ import { connect } from 'react-redux'
 import { changeCatalog, searchFor } from '../actions/search.js'
 import { routeSearchFor } from '../actions/route.js'
 import SearchResults from '../components/search_results.jsx'
+import Footer from '../components/footer.jsx'
 import CatalogSelector from '../components/catalog_selector.jsx'
 import difference from 'lodash.difference'
+import classNames from 'classnames'
 
 function loadData(props) {
     const { criteria } = props
@@ -55,6 +57,7 @@ class Search extends React.Component {
     render() {
         const { catalogs, criteria, searchResults, location } = this.props
         const { catalogs: selectedCatalogs } = location.query
+        const searchBtnClasses = classNames("btn", "primary", styles.btn)
         let { page } = this.props.location.query
         if (page) { page = parseInt(page, 10) }
 
@@ -64,9 +67,9 @@ class Search extends React.Component {
                 <form className={styles.search} onSubmit={this.onSearch.bind(this)} role="search"
                       aria-label="Search for catalog items">
 
-                    <input id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
+                    <input type="text" id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
                     <label htmlFor="searchInput" className="aural">Enter search criteria</label>
-                    <input type="submit" value="Search" />
+                    <input type="submit" value="Search" className={searchBtnClasses} />
                 </form>
               </div>
               <div className={styles['results-container']}>
@@ -84,6 +87,7 @@ class Search extends React.Component {
                         results={searchResults} />
                 ) : null}
               </div>
+              <Footer />
             </main>
         )
     }
