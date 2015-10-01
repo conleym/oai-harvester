@@ -53,7 +53,16 @@
     .header {
       border: none;
       @include center;
-      width: 80%;
+      width: 70%;
+
+      input[type='text'] {
+        width: 73%;
+      }
+
+      .btn {
+        width: 25%;
+      }
+
     }
 
     .footer {
