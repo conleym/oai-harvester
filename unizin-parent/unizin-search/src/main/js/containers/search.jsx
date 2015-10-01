@@ -13,6 +13,7 @@ function loadData(props) {
 
     if (criteria == null
         || search !== criteria.text
+        || difference(criteria.catalogs, catalogs).length > 0
         || difference(catalogs, criteria.catalogs).length > 0) {
         props.searchFor(search, catalogs, page)
     }
