@@ -96,7 +96,7 @@ class Search extends React.Component {
                         results={searchResults} />
                 ) : null}
               </div>
-              <Footer />
+              <Footer className={styles.footer} />
             </main>
         )
     }

@@ -35,9 +35,9 @@
 
     .brand {
       @include center;
-      transform: translate(-50%,-145%);
-      width: 60%;
-      height: 200px;
+      transform: translate(-50%,-175%);
+      width: 80%;
+      height: 150px;
       text-align: center;
 
       h1 {
@@ -53,11 +53,28 @@
     .header {
       border: none;
       @include center;
-      width: 60%;
+      width: 80%;
     }
 
-    .foooter {
+    .footer {
       @include center;
+      width: 300px;
+      transform: translate(-50%, 350%);
+      height: 25px;
+      line-height: 25px;
+      text-align: center;
+
+      span {
+        display: inline-block;
+        transform: translateY(-25%);
+        font-size: .75rem;
+        padding-right: .5rem;
+        color: darken($header_bg_color, 50%);
+      }
+
+      img {
+        height: 100%;
+      }
     }
   }
 
