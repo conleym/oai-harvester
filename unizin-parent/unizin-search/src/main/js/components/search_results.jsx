@@ -70,7 +70,7 @@ export default class SearchResults extends React.Component {
         const { criteria, results } = this.props
 
         if (results.totalSize == null) {
-            return <Loading message={`Loading Results for '${criteria.text}'`} />
+            return <Loading message={`Loading Results for '${criteria.text}'`} className={styles.loading} />
         }
 
         const { totalSize = 0, pageSize = 20 } = results
