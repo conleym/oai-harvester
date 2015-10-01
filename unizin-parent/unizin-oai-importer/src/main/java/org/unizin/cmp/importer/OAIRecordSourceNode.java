@@ -33,6 +33,7 @@ import org.w3c.dom.Text;
 
 public final class OAIRecordSourceNode implements SourceNode {
 
+	private static final Blob EMPTY_BLOB = Blobs.createBlob(new byte[]{});
 	private static final String[] EMPTY = new String[]{};
 	private static final String[] UNTITLED = new String[]{"Untitled"};
 
@@ -42,7 +43,6 @@ public final class OAIRecordSourceNode implements SourceNode {
 	private static final String DC_XPATH_FORMAT = 
 			"/oai:record/oai:metadata/oai_dc:dc/dc:%s/text()";
 
-	private final Blob blob;
 	private final URI baseURI;
 	private final Calendar lastModified;
 	private final Map<String, Serializable> properties;
@@ -52,7 +52,6 @@ public final class OAIRecordSourceNode implements SourceNode {
 			final URI baseURI) throws XMLStreamException {
 		final XPath xpath = XPathFactory.newInstance().newXPath();
 		xpath.setNamespaceContext(OAIConstants.OAI_NS_CONTEXT);
-		this.blob = Blobs.createBlob(bytes);
 		this.baseURI = baseURI;
 		this.lastModified = parseLastModified(xpath, document);
 		this.properties = parseProperties(xpath, document);	
@@ -180,7 +179,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 
 			@Override
 			public Blob getBlob() throws ClientException {
-				return blob;
+				return EMPTY_BLOB;
 			}
 
 			@Override
