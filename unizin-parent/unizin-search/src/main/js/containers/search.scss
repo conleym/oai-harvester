@@ -58,15 +58,17 @@
 
     .footer {
       @include center;
-      width: 300px;
+      width: 160px;
       transform: translate(-50%, 350%);
       height: 25px;
       line-height: 25px;
-      text-align: center;
+      text-align: left;
+      background: transparent;
+      border: none;
 
       span {
         display: inline-block;
-        transform: translateY(-25%);
+        transform: translateY(10%);
         font-size: .75rem;
         padding-right: .5rem;
         color: darken($header_bg_color, 50%);

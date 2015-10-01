@@ -64,6 +64,9 @@ class Search extends React.Component {
         const mainClasses = classNames(styles.container, {
             [styles.empty]: (criteria.text == null)
         })
+        const footerClasses = classNames(null, {
+            [styles.footer]: (criteria.text == null)
+        })
         const brandURL = require('file!../../resources/skin/resources/brand.svg')
 
         return (
@@ -98,11 +101,7 @@ class Search extends React.Component {
                         results={searchResults} />
                 ) : null}
               </div>
-              { criteria.text != null ? (
-                <Footer />
-              ) :
-                <Footer className={styles.footer} />
-              }
+              <Footer className={footerClasses} />
             </main>
         )
     }
