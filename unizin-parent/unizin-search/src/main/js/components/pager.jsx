@@ -1,14 +1,16 @@
 import styles from './pager.scss'
 import React from 'react'
 
-const { number } = React.PropTypes
+const { number, func, string } = React.PropTypes
 
 export default class Pager extends React.Component {
     static displayName = 'Pager'
 
     static propTypes = {
-        current: number,
-        max: number
+        current: number.isRequired,
+        max: number.isRequired,
+        onChange: func.isRequired,
+        ariaLabel: string.isRequired,
     }
 
     constructor(props, context) {

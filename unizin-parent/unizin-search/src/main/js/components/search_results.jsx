@@ -1,14 +1,27 @@
 import styles from './search_result.scss'
 import React from 'react'
 import { Link } from 'react-router'
-import { routeInsert, routeResult, routeReturnUrl, routePreviewUrl } from '../actions/route.js'
+import { routeInsert, routeResult, routePreviewUrl } from '../actions/route.js'
 import Cover from './cover.jsx'
 import Pager from './pager.jsx'
 import Loading from './loading.jsx'
 import classNames from 'classnames'
 
+const { shape, string, func, number, array } = React.PropTypes
+
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
+
+    static propTypes = {
+        criteria: shape({
+            text: string
+        }).isRequired,
+        searchFor: func,
+        results: shape({
+            entities: array,
+        }),
+        page: number.isRequired,
+    }
 
     constructor(props, context) {
         super(props, context)
@@ -17,9 +30,13 @@ export default class SearchResults extends React.Component {
         this.renderResult = this.renderResult.bind(this)
     }
 
+    onPage(page) {
+        const { criteria, searchFor } = this.props
+        searchFor(criteria.text, page)
+    }
+
     renderResult(result, index) {
         const { title } = result
-        const returnUrl = routeReturnUrl(result).url
         const resultRoute = routeResult(result).route
 
         // insert button
@@ -59,11 +76,6 @@ export default class SearchResults extends React.Component {
                 </ul>
             </li>
         )
-    }
-
-    onPage(page) {
-        const { criteria, searchFor } = this.props
-        searchFor(criteria.text, page)
     }
 
     render() {

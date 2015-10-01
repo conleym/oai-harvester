@@ -26,6 +26,7 @@ if (process.env.NODE_ENV !== 'production') {
     window.store = store
     window.rHistory = history
     window.reactRouter = require('react-router')
+    window.React = React
 }
 
 React.render(

@@ -1,8 +1,18 @@
 import styles from './catalog_selector.scss'
 import React from 'react'
 
+const { objectOf, shape, string, arrayOf, func } = React.PropTypes
+
 export default class CatalogSelector extends React.Component {
     static displayName = 'CatalogSelector'
+
+    static propTypes = {
+        catalogs: objectOf(shape({
+            label: string.isRequired
+        })).isRequired,
+        selected: arrayOf(string).isRequired,
+        onChange: func.isRequired,
+    }
 
     onChange(k, event) {
         const enabled = event.target.checked

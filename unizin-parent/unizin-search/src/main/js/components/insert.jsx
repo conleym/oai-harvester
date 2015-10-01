@@ -1,7 +1,16 @@
 import React from 'react'
 
+const { shape, string } = React.PropTypes
+
 export default class Insert extends React.Component {
     static displayName = 'Insert'
+
+    static propTypes = {
+        document: shape({
+            title: string,
+            loadError: string,
+        })
+    }
 
     renderError(document) {
 

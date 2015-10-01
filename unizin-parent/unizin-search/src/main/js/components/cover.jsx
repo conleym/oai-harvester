@@ -2,8 +2,17 @@ import styles from './cover.scss'
 import React from 'react'
 import classNames from 'classnames'
 
+const { string, shape, object } = React.PropTypes
+
 export default class Cover extends React.Component {
     static displayName = 'Cover'
+
+    static propTypes = {
+        className: string,
+        document: shape({
+            properties: object
+        })
+    }
 
     render() {
         const { properties } = this.props.document
