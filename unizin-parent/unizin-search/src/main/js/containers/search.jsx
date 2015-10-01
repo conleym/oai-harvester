@@ -61,7 +61,9 @@ class Search extends React.Component {
         let { page } = this.props.location.query
         if (page) { page = parseInt(page, 10) }
 
-        const mainClasses = (criteria.text == null) ? classNames(styles.container,styles.empty) : styles.container
+        const mainClasses = classNames(styles.container, {
+            [styles.empty]: (criteria.text == null)
+        })
         const brandURL = require('file!../../resources/skin/resources/brand.svg')
 
         return (
