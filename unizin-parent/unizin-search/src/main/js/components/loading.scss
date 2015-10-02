@@ -1,3 +1,5 @@
+@import '../variables.scss';
+
 :local .loading {
   position: relative;
   width: 100%;
@@ -7,29 +9,28 @@
     position: absolute;
     top: 50%;
     left: 50%;
+    width: calc(100% - (#{$global_padding}*2));
     transform: translate(-50%,-50%);
     font-family: 'Roboto Slab', serif;
     font-size: 1.5rem;
     padding-top: 2rem;
+    text-align: center;
   }
 
-  svg {
+  img {
     width: 150px;
     height: 150px;
     position: absolute;
-    top: 50%;
+    top: 47.5%;
     left: 50%;
     transform: translate(-50%,-90%);
-  }
-
-  .logo {
     z-index: 2;
-    animation: 3s opacity infinite;
-  }
 
-
-  #logo-bg {
-    z-index: 1;
+    // hack for animation issue that css-loader is generating
+    // https://github.com/webpack/css-loader/issues/65`
+    :global {
+        animation: 3s opacity infinite;
+    }
   }
 }
 
