@@ -9,7 +9,7 @@ export default class Logo extends React.Component {
     render() {
         const logoURL = require('file!../../resources/skin/resources/logo.svg')
         return (
-            <img className={this.props.className} src={logoURL} />
+            <img className={this.props.className} src={logoURL} alt="Unizin Logo" title="Logo" />
         )
     }
 }
