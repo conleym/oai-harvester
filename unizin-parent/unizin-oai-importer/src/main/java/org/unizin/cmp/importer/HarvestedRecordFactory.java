@@ -26,7 +26,7 @@ public final class HarvestedRecordFactory extends DefaultDocumentModelFactory {
 	}
 
 	@Override
-	protected DocumentModel defaultCreateLeafNode(final CoreSession session,
+	public DocumentModel createLeafNode(final CoreSession session,
 			final DocumentModel parent, final SourceNode node)
 					throws IOException {
 		// Copy and paste, from defaultCreateLeafNode, except that we _don't_

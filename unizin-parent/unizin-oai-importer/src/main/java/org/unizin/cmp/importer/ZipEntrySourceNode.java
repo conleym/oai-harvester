@@ -24,23 +24,23 @@ import com.google.common.collect.Iterables;
 /** Each of these is assumed to be an OAI-PMH ListRecords response. */
 public final class ZipEntrySourceNode implements SourceNode {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ZipEntrySourceNode.class);
-	
+
 
 	private final ZipFile zipFile;
 	private final ZipEntry zipEntry;	
-	
-	
+
+
 	public ZipEntrySourceNode(final ZipFile zipFile, final ZipEntry zipEntry) {
 		LOGGER.debug("Creating source node for zip entry: {}.",
 				zipEntry.getName());
 		this.zipFile = zipFile;
 		this.zipEntry = zipEntry;
 	}
-	
+
 	private InputStream getInputStream() throws IOException {
 		return this.zipFile.getInputStream(this.zipEntry);
 	}
-	
+
 	@Override
 	public boolean isFolderish() {
 		return true;
@@ -54,10 +54,9 @@ public final class ZipEntrySourceNode implements SourceNode {
 
 	@Override
 	public List<SourceNode> getChildren() throws IOException {
-		try {
-			final InputStream in = getInputStream();
-			final ListRecordsResponseSplitter splitter = 
-					new ListRecordsResponseSplitter(in);
+		try (final InputStream in = getInputStream();
+			 final ListRecordsResponseSplitter splitter = 
+					new ListRecordsResponseSplitter(in)) {
 			final List<SourceNode> children = new ArrayList<>();
 			Iterables.addAll(children, splitter);
 			return children;
@@ -67,7 +66,7 @@ public final class ZipEntrySourceNode implements SourceNode {
 			throw new IOException(e);
 		} catch (final IORuntimeException e) {
 			throw e.getCause();
-		}
+		} 
 	}
 
 	@Override

@@ -23,7 +23,7 @@ import org.xml.sax.SAXException;
 
 
 final class ListRecordsResponseSplitter
-implements Iterable<OAIRecordSourceNode> {
+implements Iterable<OAIRecordSourceNode>, AutoCloseable {
 
 	private final DocumentBuilderFactory docBuilderFactory =
 			XML.docBuilderFactory();
@@ -100,6 +100,9 @@ implements Iterable<OAIRecordSourceNode> {
 			final XMLEvent event = this.eventReader.nextEvent();
 			writer.add(event);
 			if (isRecordEnd(event)) {
+				// woodstox requires a flush of the buffers to work properly.
+				// Omitting this leads to parse errors. JDK version seems fine
+				// without it, but it really should be here either way.
 				writer.close();
 				skipToNextRecordStart();
 				return recordOf(baos.toByteArray());
@@ -151,5 +154,11 @@ implements Iterable<OAIRecordSourceNode> {
 				throw new ImporterException(e);
 			}
 		}
+	}
+
+
+	@Override
+	public void close() throws XMLStreamException {
+		this.eventReader.close();
 	}
 }

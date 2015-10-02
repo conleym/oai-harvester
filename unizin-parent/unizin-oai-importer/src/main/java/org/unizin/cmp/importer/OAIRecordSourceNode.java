@@ -3,6 +3,7 @@ package org.unizin.cmp.importer;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -19,7 +20,6 @@ import javax.xml.xpath.XPathFactory;
 
 import org.joda.time.DateTime;
 import org.nuxeo.ecm.core.api.Blob;
-import org.nuxeo.ecm.core.api.Blobs;
 import org.nuxeo.ecm.core.api.ClientException;
 import org.nuxeo.ecm.core.api.blobholder.AbstractBlobHolder;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
-import com.google.common.collect.ImmutableMap;
 
 
 public final class OAIRecordSourceNode implements SourceNode {
@@ -44,7 +42,6 @@ public final class OAIRecordSourceNode implements SourceNode {
 	private static final String DC_XPATH_FORMAT = 
 			"/oai:record/oai:metadata/oai_dc:dc/dc:%s/text()";
 
-	private final URI baseURI;
 	private final Calendar lastModified;
 	private final Map<String, Serializable> properties;
 
@@ -52,20 +49,13 @@ public final class OAIRecordSourceNode implements SourceNode {
 			final URI baseURI) throws XMLStreamException, IOException {
 		final XPath xpath = XPathFactory.newInstance().newXPath();
 		xpath.setNamespaceContext(OAIConstants.OAI_NS_CONTEXT);
-		this.baseURI = baseURI;
 		this.lastModified = parseLastModified(xpath, document);
 		this.properties = parseProperties(xpath, document);
-		final Blob attachment = Blobs.createBlob(bytes, "application/xml", 
-				// TODO: might need to allow alternate encodings.
-				"utf-8");
-		attachment.setFilename("oai-record.xml");
 		
-		final Object[] attachments = new Object[]{
-				ImmutableMap.of(
-						"file", attachment,
-						"filename", attachment.getFilename())
-		};
-		this.properties.put("files:files", attachments);
+		this.properties.put("hrv:sourceRepository", String.valueOf(baseURI));
+		// TODO: support other encodings based on input?
+		this.properties.put("hrv:content", new String(bytes, 
+				StandardCharsets.UTF_8));
 	}
 
 
@@ -109,7 +99,6 @@ public final class OAIRecordSourceNode implements SourceNode {
 		result.put("hrv:relation", dcList.apply("relation"));
 		result.put("hrv:coverage", dcList.apply("coverage"));
 		result.put("hrv:rights", dcList.apply("rights"));
-		result.put("hrv:sourceRepository", String.valueOf(baseURI));
 
 		String identifier = stringXPath(
 				"/oai:record/oai:header/oai:identifier/text()",
