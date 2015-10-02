@@ -82,7 +82,7 @@ class Result extends React.Component {
                       <div className={styles.details}>
                         <h1>{document.title}</h1>
 
-                        <h2>Author: {creators}</h2>
+                        <div className={styles.author}>Author: {joinAuthors(document.properties['hrv:creator'])}</div>
 
                         <div className={styles.description}>
                           {description}
@@ -92,7 +92,7 @@ class Result extends React.Component {
                     </div>
 
                     <aside role="complementary">
-                      <h2>Additional information</h2>
+                      <h2 className={styles.header}>Additional information</h2>
                       <ul className={styles.group}>
                         <li><span>Format</span>{type}</li>
                         <li><span>File size</span>{size}</li>

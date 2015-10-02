@@ -70,8 +70,11 @@ $result_cover_width: 145px;
         font-size: 1.75rem;
       }
 
-      h2 {
+      .author {
+        font-weight: bold;
+        font-family: $decorative_font;
         font-size: 1rem;
+        padding: 1rem 0;
       }
 
       .cover {
@@ -101,10 +104,13 @@ $result_cover_width: 145px;
       overflow-y: scroll;
       @include aside;
 
-      h2 {
+      div.header {
         margin: 0;
         padding: .7rem $global_padding;
         border-bottom: 1px solid $border_color;
+        background: transparent;
+        position: static;
+        height: auto;
       }
 
       li {

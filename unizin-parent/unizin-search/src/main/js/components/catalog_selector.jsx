@@ -54,7 +54,7 @@ export default class CatalogSelector extends React.Component {
 
         return (
             <aside className={styles.filters} aria-label="Filter catalogs">
-                <h2 aria-hidden="true">Catalogs</h2>
+                <h2 className={styles.header} aria-hidden="true">Catalogs</h2>
                 <fieldset>
                   <legend>
                     <span className="aural">Show results from these Catalogs</span>
