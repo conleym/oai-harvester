@@ -81,11 +81,9 @@ export default class SearchResults extends React.Component {
     render() {
         const { criteria, results } = this.props
 
-        return <Loading message={`Loading Results for '${criteria.text}'`} className={styles.loading} />
-
-        // if (results.totalSize == null) {
-        //     return <Loading message={`Loading Results for '${criteria.text}'`} className={styles.loading} />
-        // }
+        if (results.totalSize == null) {
+            return <Loading message={`Loading Results for '${criteria.text}'`} className={styles.loading} />
+        }
 
         const { totalSize = 0, pageSize = 20 } = results
 
