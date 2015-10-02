@@ -12,9 +12,7 @@ export default class Loader extends React.Component {
     render() {
         const logoURL = require('file!../../resources/skin/resources/logo.svg')
 
-        const loadingClasses = classNames(styles.loading, {
-            [this.props.className]: (this.props.className)
-        })
+        const loadingClasses = classNames(styles.loading, this.props.className)
 
         return (
             <div className={loadingClasses}>
