@@ -41,9 +41,23 @@ export default class Search extends React.Component {
             this.props.onSearch(value)
         }
 
+        const mainClasses = classNames(styles.container, {
+            [styles.empty]: (criteria.text == null)
+        })
+        const footerClasses = classNames(null, {
+            [styles.footer]: (criteria.text == null)
+        })
+        const brandURL = require('file!../../resources/skin/resources/brand.svg')
+
         return (
-            <main className={styles.container} role="main">
+            <main className={mainClasses} role="main">
               <div className={styles.header}>
+                { criteria.text == null ? (
+                  <div className={styles.brand}>
+                    <img src={brandURL} />
+                    <h1>Content Discovery Tool</h1>
+                  </div>
+                ) : null}
                 <form className={styles.search} onSubmit={onSearch} role="search"
                       aria-label="Search for catalog items">
 
@@ -67,7 +81,7 @@ export default class Search extends React.Component {
                         results={searchResults} />
                 ) : null}
               </div>
-              <Footer />
+              <Footer className={footerClasses} />
             </main>
         )
     }
