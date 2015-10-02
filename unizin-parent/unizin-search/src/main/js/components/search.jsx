@@ -61,7 +61,12 @@ export default class Search extends React.Component {
                 <form className={styles.search} onSubmit={onSearch} role="search"
                       aria-label="Search for catalog items">
 
-                    <input type="text" id="searchInput" ref="searchInput" placeholder="Enter search criteria" />
+                    <input
+                        defaultValue={criteria.text}
+                        type="text"
+                        id="searchInput"
+                        ref="searchInput"
+                        placeholder="Enter search criteria" />
                     <label htmlFor="searchInput" className="aural">Enter search criteria</label>
                     <input type="submit" value="Search" className={searchBtnClasses} />
                 </form>
