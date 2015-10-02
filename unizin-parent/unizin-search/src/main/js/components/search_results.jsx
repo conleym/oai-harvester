@@ -27,23 +27,17 @@ export default class SearchResults extends React.Component {
         criteria: shape({
             text: string
         }).isRequired,
-        searchFor: func,
         results: shape({
             entities: array,
         }),
         page: number.isRequired,
+        selectPage: func.isRequired,
     }
 
     constructor(props, context) {
         super(props, context)
 
-        this.onPage = this.onPage.bind(this)
         this.renderResult = this.renderResult.bind(this)
-    }
-
-    onPage(page) {
-        const { criteria, searchFor } = this.props
-        searchFor(criteria.text, page)
     }
 
     renderResult(result, index) {
@@ -89,7 +83,7 @@ export default class SearchResults extends React.Component {
     }
 
     render() {
-        const { criteria, results } = this.props
+        const { criteria, results, selectPage } = this.props
 
         if (results.totalSize == null) {
             return <Loading message={`Loading Results for '${criteria.text}'`} className={styles.loading} />
@@ -109,7 +103,7 @@ export default class SearchResults extends React.Component {
               <Pager
                   current={this.props.page}
                   max={Math.ceil(totalSize / pageSize)}
-                  onChange={this.onPage}
+                  onChange={selectPage}
                   ariaLabel="Results pagination top" />
             </div>
 

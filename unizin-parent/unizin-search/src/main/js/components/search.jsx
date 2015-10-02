@@ -20,14 +20,14 @@ export default class Search extends React.Component {
         page: number.isRequired,
         searchResults: any,
         changeCatalog: func.isRequired,
-        searchFor: func.isRequired
+        selectPage: func.isRequired,
     }
 
     render() {
 
         const {
             criteria, allCatalogs, selectedCatalogs, page, searchResults,
-            changeCatalog, searchFor
+            changeCatalog, selectPage
         } = this.props
 
 
@@ -75,7 +75,7 @@ export default class Search extends React.Component {
                 ) : null}
                 { criteria.text != null ? (
                     <SearchResults
-                        searchFor={searchFor}
+                        selectPage={selectPage}
                         page={page}
                         criteria={criteria}
                         results={searchResults} />

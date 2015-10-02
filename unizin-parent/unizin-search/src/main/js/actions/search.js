@@ -41,7 +41,7 @@ export function searchFor(text, catalogs, page) {
     return (dispatch, getState) => {
         dispatch({
             type: SEARCH_FOR,
-            payload: { text, catalogs },
+            payload: { text, catalogs, page },
         })
         dispatch(routeSearchFor(text, catalogs, page))
 
