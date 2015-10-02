@@ -8,9 +8,13 @@ import Search from '../components/search.jsx'
 
 function loadData(props) {
     const { criteria } = props
-    const { search, catalogs = [], page = 1 } = props.location.query
+    const { search, catalogs = [] } = props.location.query
+    let { page = 1 } = props.location.query
+    page = parseInt(page, 10)
+
 
     if (criteria == null
+        || criteria.page != page
         || search !== criteria.text
         || difference(criteria.catalogs, catalogs).length > 0
         || difference(catalogs, criteria.catalogs).length > 0) {
@@ -25,12 +29,25 @@ function loadData(props) {
 class SmartSearch extends React.Component {
     static displayName = 'SmartSearch'
 
+    constructor(props, context) {
+        super(props, context)
+        this.selectPage = this.selectPage.bind(this)
+    }
+
     componentWillMount() {
         loadData(this.props)
     }
 
     componentWillReceiveProps(nextProps) {
         loadData(nextProps)
+    }
+
+    selectPage(page) {
+        const { location, criteria } = this.props
+        const { text: value } = criteria
+        const { catalogs: selectedCatalogs = [] } = location.query
+
+        this.props.routeSearchFor(value, selectedCatalogs, page)
     }
 
     onSearch(value) {
@@ -64,9 +81,9 @@ class SmartSearch extends React.Component {
                 selectedCatalogs={selectedCatalogs}
                 criteria={criteria}
                 page={page}
-                searchFor={this.props.searchFor}
                 searchResults={searchResults}
                 onSearch={this.onSearch.bind(this)}
+                selectPage={this.selectPage}
                 changeCatalog={this.changeCatalog.bind(this)} />
         )
     }
