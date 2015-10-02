@@ -1,5 +1,7 @@
 // Fetch requires es6 promises
-require('es6-promise').polyfill()
+if (global.Promise == null) {
+    require('es6-promise').polyfill()
+}
 
 // dataloader requires es6 maps
 if (window.Map == null) {
