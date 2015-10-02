@@ -47,6 +47,22 @@ $results_header_height: 115px;
         width: 100%;
       }
     }
+
+    .loading {
+      position: absolute !important;
+      top: $header_height !important;
+      height: $main_content_height !important;
+      width: $main_column_width !important;
+      right: 0;
+
+      img {
+        width: 25%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%,-100%);
+      }
+    }
 }
 
 :local .result {
