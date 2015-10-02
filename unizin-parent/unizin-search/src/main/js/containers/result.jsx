@@ -41,8 +41,6 @@ class Result extends React.Component {
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
 
-        const backIcon = require('file!../../resources/skin/resources/arrow-left.svg')
-
         return (
             <main className={styles.result} role="main">
               <div className={styles.header}>
