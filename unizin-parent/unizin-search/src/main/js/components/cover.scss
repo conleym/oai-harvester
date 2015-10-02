@@ -2,6 +2,8 @@
 
 :local .cover {
   @include cover;
+  position: relative;
+  background: darken(white, 2.5%);
   border: 1px solid $border_color;
   text-align: center;
   margin: 0 $global_padding 0 0;
@@ -9,5 +11,7 @@
 
   span {
     display: block;
+    @include center;
+    color: lighten($font_color, 20%);
   }
 }

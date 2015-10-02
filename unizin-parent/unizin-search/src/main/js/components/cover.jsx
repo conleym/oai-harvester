@@ -28,9 +28,7 @@ export default class Cover extends React.Component {
 
         return (
             <div className={classes}>
-                No
-                Cover
-                Available
+                <span>No Cover Available</span>
             </div>
         )
     }
