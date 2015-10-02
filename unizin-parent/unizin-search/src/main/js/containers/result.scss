@@ -28,20 +28,12 @@ $result_cover_width: 145px;
         &:first-of-type {
           margin-right: 0;
         }
-
-        button,
-        .btn {
-          height: 100%;
-          line-height: 100%;
-          padding: .7rem 1.2rem;
-        }
       }
     }
 
     button,
     .btn {
       height: 100%;
-      line-height: 100%;
       padding: .7rem 1.2rem;
 
       img {
