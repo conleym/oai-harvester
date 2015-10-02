@@ -87,8 +87,12 @@ export default class SearchResults extends React.Component {
 
         const { totalSize = 0, pageSize = 20 } = results
 
+        const wrapperClasses = classNames(styles.wrapper, {
+            [styles.singlePage]: (totalSize <= pageSize)
+        })
+
         return (
-          <div className={styles.wrapper}>
+          <div className={wrapperClasses}>
             <div className={styles.header}>
               <h1>{totalSize} Results for {criteria.text}</h1>
 
