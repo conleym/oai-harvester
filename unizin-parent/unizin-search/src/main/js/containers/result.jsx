@@ -8,6 +8,7 @@ import styles from './result.scss'
 import { Link } from 'react-router'
 import classNames from 'classnames'
 import { joinAuthors } from '../components/search_results.jsx'
+import FontAwesome from 'react-fontawesome'
 
 const { func, func: dispatchFunc, shape, string, any } = React.PropTypes
 
@@ -40,22 +41,24 @@ class Result extends React.Component {
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
 
+        const backIcon = require('file!../../resources/skin/resources/arrow-left.svg')
+
         return (
             <main className={styles.result} role="main">
               <div className={styles.header}>
                 <button onClick={this.props.history.goBack} role="button">
-                    &lt; Back to results
+                    <FontAwesome name='arrow-left' /> Back to results
                 </button>
 
                 <ul className={styles.controls}>
                   <li>
                     <Link to={routeInsert(document).route} className={primaryBtnClasses} role="button">
-                      + Insert
+                      <FontAwesome name='plus' /> Insert
                     </Link>
                   </li>
                   <li>
                     <a href={previewUrl} target="_blank" className={secondaryBtnClasses} role="button">
-                      o Preview
+                      <FontAwesome name='eye' /> Preview
                     </a>
                   </li>
                 </ul>

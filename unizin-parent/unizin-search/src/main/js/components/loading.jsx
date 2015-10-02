@@ -20,7 +20,7 @@ export default class Loader extends React.Component {
 
         return (
             <div className={loadingClasses}>
-              <img src={logoURL} className={styles.logo} />
+              <img src={logoURL} className={styles.logo} alt="Unizin Catalog Search Tool Logo" title="Logo" />
               <h1>{this.props.message}</h1>
             </div>
         )

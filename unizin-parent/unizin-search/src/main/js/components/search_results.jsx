@@ -6,6 +6,7 @@ import Cover from './cover.jsx'
 import Pager from './pager.jsx'
 import Loading from './loading.jsx'
 import classNames from 'classnames'
+import FontAwesome from 'react-fontawesome'
 
 const { shape, string, func, number, array } = React.PropTypes
 
@@ -69,12 +70,12 @@ export default class SearchResults extends React.Component {
                 <ul className={styles.controls}>
                   <li>
                     <Link to={routeInsert(result).route} className={insertBtnClasses}  aria-label={insertLabel} role="button">
-                      + Insert
+                      <FontAwesome name='plus' /> Insert
                     </Link>
                   </li>
                   <li>
                     <a href={previewUrl} target="_blank" className={previewBtnClasses} role="button" aria-label={previewLabel}>
-                      o Preview
+                      <FontAwesome name='eye' /> Preview
                     </a>
                   </li>
                 </ul>
