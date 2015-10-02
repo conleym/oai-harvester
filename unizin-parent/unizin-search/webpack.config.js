@@ -65,26 +65,6 @@ module.exports = {
                 loader: 'babel',
                 query: {
                     cacheDirectory: true,
-                    optional: [
-                        'runtime',
-                        // This is currently a Stage 1 proposal. It might change
-                        // going forward, but it seems simple enough to be to be
-                        // worth the risk.
-                        //
-                        // I'm adding it to support "static something = ..." in
-                        // class definitions.
-                        'es7.classProperties',
-                        // This is currently a Stage 1 proposal. It might change
-                        // going forward, but it seems obvious enough and has a
-                        // parallel with arrays that I think it's worth the
-                        // risk.
-                        //
-                        // var { foo, bar, ...baz } = obj
-                        // foo = obj.foo
-                        // bar = obj.bar
-                        // baz = _.omit(obj, 'foo', 'bar')
-                        'es7.objectRestSpread',
-                    ]
                 }
             }
         ]

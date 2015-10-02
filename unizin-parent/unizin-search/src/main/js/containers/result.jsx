@@ -8,8 +8,22 @@ import styles from './result.scss'
 import { Link } from 'react-router'
 import classNames from 'classnames'
 
+const { func, func: dispatchFunc, shape, string, any } = React.PropTypes
+
 class Result extends React.Component {
     static displayName = 'Result'
+
+    static propTypes = {
+        ensureDocument: dispatchFunc.isRequired,
+        params: shape({
+            uid: string.isRequired
+        }).isRequired,
+        document: any,
+        history: shape({
+            goBack: func.isRequired
+        }).isRequired,
+    }
+
 
     componentDidMount() {
         this.props.ensureDocument(this.props.params.uid)

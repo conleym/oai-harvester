@@ -3,8 +3,18 @@ import { connect } from 'react-redux'
 import { waitForDocument } from '../actions/documents.js'
 import Insert from '../components/insert.jsx'
 
+const { func: dispatchFunc, shape, string, any } = React.PropTypes
+
 class SmartInsert extends React.Component {
     static displayName = 'SmartInsert'
+
+    static propTypes = {
+        waitForDocument: dispatchFunc.isRequired,
+        params: shape({
+            uid: string.isRequired
+        }).isRequired,
+        document: any
+    }
 
     componentWillMount() {
         this.props.waitForDocument(this.props.params.uid)
