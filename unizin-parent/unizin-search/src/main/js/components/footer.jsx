@@ -7,9 +7,7 @@ import classNames from 'classnames'
 export default class Footer extends React.Component {
 
     render() {
-        const footerClasses = classNames(styles.footer, {
-            [this.props.className]: (this.props.className != null)
-        })
+        const footerClasses = classNames(styles.footer, this.props.className)
         return (
           <div className={footerClasses}>
             powered by <Logo className={styles.logo} />
