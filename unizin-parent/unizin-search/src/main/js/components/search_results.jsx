@@ -10,10 +10,10 @@ import classNames from 'classnames'
 const { shape, string, func, number, array } = React.PropTypes
 
 function normalizeAuthor(name) {
-    const [ first, last ] = name.split(',')
+    const [ last, first ] = name.split(',')
 
     // If there wasn't a comma, return the original name
-    if (last == null) { return name }
+    if (first == null) { return name }
 
     return `${first} ${last}`
 }
