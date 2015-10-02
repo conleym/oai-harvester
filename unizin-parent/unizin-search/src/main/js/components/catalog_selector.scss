@@ -10,6 +10,7 @@
   height: $main_content_height;
   width: $aside_width;
   overflow: scroll;
+  word-wrap: break-word;
 
   h1 {
     margin: 0;
@@ -17,9 +18,21 @@
     border-bottom: 1px solid $border_color;
   }
 
+  ul {
+    width: calc(100% - #{$global_padding} * 2);
+  }
+
   li {
-    margin-bottom: .3rem;
+    position: relative;
+    margin-bottom: .5rem;
     font-size: .875rem;
+    padding-left: 1.2rem;
+
+    input[type='checkbox'] {
+      position: absolute;
+      left: 0;
+      top: .15rem;
+    }
   }
 
   legend {
