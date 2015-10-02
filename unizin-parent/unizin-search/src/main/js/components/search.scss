@@ -99,6 +99,7 @@
     padding: $global_padding;
     border-bottom: 1px solid $border_color;
     z-index: 1;
+    transition: all .5s;
   }
 
   &:after {

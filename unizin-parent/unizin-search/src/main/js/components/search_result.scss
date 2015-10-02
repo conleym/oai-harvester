@@ -13,6 +13,11 @@ $single_page_results_header_height: 80px;
       width: $main_column_width;
       padding-top: $results_header_height;
 
+      :global {
+        animation: fadein 1s;
+      }
+
+
       &.singlePage {
         padding-top: $single_page_results_header_height;
 

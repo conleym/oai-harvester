@@ -12,6 +12,10 @@
   overflow: scroll;
   word-wrap: break-word;
 
+  :global {
+    animation: fadein 2s;
+  }
+
   h1 {
     margin: 0;
     padding: .7rem $global_padding;
