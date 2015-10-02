@@ -28,6 +28,67 @@
 
 :local .container {
 
+  &.empty {
+    position: relative;
+    height: 100%;
+    background: $header_bg_color;
+
+    .brand {
+      @include center;
+      transform: translate(-50%,-175%);
+      width: 80%;
+      height: 150px;
+      text-align: center;
+
+      h1 {
+        margin: 0;
+        padding: 0;
+      }
+
+      img {
+        height: 100%;
+      }
+    }
+
+    .header {
+      border: none;
+      @include center;
+      width: 70%;
+
+      input[type='text'] {
+        width: 73%;
+      }
+
+      .btn {
+        width: 25%;
+      }
+
+    }
+
+    .footer {
+      @include center;
+      width: 160px;
+      transform: translate(-50%, 350%);
+      height: 25px;
+      line-height: 25px;
+      text-align: left;
+      background: transparent;
+      border: none;
+
+      span {
+        display: inline-block;
+        transform: translateY(10%);
+        font-size: .75rem;
+        padding-right: .5rem;
+        color: darken($header_bg_color, 50%);
+      }
+
+      img {
+        height: 100%;
+      }
+    }
+  }
+
   .header {
     position: fixed;
     top: 0;
