@@ -34,13 +34,13 @@ class SmartSearch extends React.Component {
     }
 
     onSearch(value) {
-        const { catalogs, criteria, location } = this.props
+        const { allCatalogs, criteria, location } = this.props
         let { catalogs: selectedCatalogs = [] } = location.query
 
         // If it's the first search the location won't have any of the catalogs
         // and we need to default to all
         if (criteria.text == null) {
-            selectedCatalogs = Object.keys(catalogs)
+            selectedCatalogs = Object.keys(allCatalogs)
         }
 
         this.props.routeSearchFor(value, selectedCatalogs)
