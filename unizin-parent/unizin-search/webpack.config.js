@@ -1,4 +1,5 @@
 /* eslint no-var: [0] */
+require('es6-promise').polyfill()
 var path = require('path')
 var webpack = require('webpack')
 var ExtractTextPlugin = require("extract-text-webpack-plugin")
