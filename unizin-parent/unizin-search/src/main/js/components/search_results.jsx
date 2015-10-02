@@ -9,6 +9,17 @@ import classNames from 'classnames'
 
 const { shape, string, func, number, array } = React.PropTypes
 
+function normalizeAuthor(name) {
+    const [ first, last ] = name.split(',')
+
+    // If there wasn't a comma, return the original name
+    if (last == null) { return name }
+
+    return `${first} ${last}`
+}
+
+export const joinAuthors = (authors) => authors.map(normalizeAuthor).join(', ')
+
 export default class SearchResults extends React.Component {
     static displayName = 'SearchResults'
 
@@ -58,8 +69,7 @@ export default class SearchResults extends React.Component {
                 </Link>
 
                 <ul className={styles.metadata}>
-                  <li>Type: {result.type}</li>
-                  <li>Entity: {result['entity-type']}</li>
+                    <li>Author: {joinAuthors(result.properties['hrv:creator'])}</li>
                 </ul>
 
                 <ul className={styles.controls}>

@@ -7,6 +7,7 @@ import Footer from '../components/footer.jsx'
 import styles from './result.scss'
 import { Link } from 'react-router'
 import classNames from 'classnames'
+import { joinAuthors } from '../components/search_results.jsx'
 
 const { func, func: dispatchFunc, shape, string, any } = React.PropTypes
 
@@ -68,7 +69,7 @@ class Result extends React.Component {
                   <div className={styles.details}>
                     <h1>{document.title}</h1>
 
-                    <h2>Author: {document.properties['hrv:creator']}</h2>
+                    <h2>Author: {joinAuthors(document.properties['hrv:creator'])}</h2>
 
                     <div className={styles.description}>
                       {document.properties['hrv:description']}
