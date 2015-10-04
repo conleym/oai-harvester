@@ -55,7 +55,7 @@ export default class Search extends React.Component {
                 { criteria.text == null ? (
                   <div className={styles.brand}>
                     <img src={brandURL} />
-                    <h1>Content Discovery Tool</h1>
+                    <h1>Content discovery tool</h1>
                   </div>
                 ) : null}
                 <form className={styles.search} onSubmit={onSearch} role="search"
