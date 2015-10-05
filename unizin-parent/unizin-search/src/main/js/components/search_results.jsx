@@ -7,6 +7,7 @@ import Pager from './pager.jsx'
 import Loading from './loading.jsx'
 import classNames from 'classnames'
 import FontAwesome from 'react-fontawesome'
+import { checkValue } from '../actions/utils.js'
 
 const { shape, string, func, number, array } = React.PropTypes
 
@@ -54,6 +55,8 @@ export default class SearchResults extends React.Component {
         const previewBtnClasses = classNames("btn", styles.btn, styles.preview)
         const previewLabel = "Preview " + title
 
+        const creators = checkValue(joinAuthors(result.properties['hrv:creator']))
+
         return (
             <li key={result.uid} className={styles.result}>
 
@@ -64,7 +67,7 @@ export default class SearchResults extends React.Component {
                 </Link>
 
                 <ul className={styles.metadata}>
-                    <li>Author: {joinAuthors(result.properties['hrv:creator'])}</li>
+                    <li>Author: {creators}</li>
                 </ul>
 
                 <ul className={styles.controls}>
