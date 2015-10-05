@@ -54,7 +54,7 @@ export default class Search extends React.Component {
         const brandURL = require('file!../../resources/skin/resources/brand.svg')
 
         return (
-            <Focus>
+            <Focus key={criteria.text}>
                 <main className={mainClasses} role="main">
                     <div className={styles.header}>
                       { criteria.text == null ? (
