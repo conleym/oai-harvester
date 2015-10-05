@@ -38,7 +38,10 @@ export default class Search extends React.Component {
         const onSearch = (event) => {
             event.preventDefault()
             const { value } = React.findDOMNode(this.refs.searchInput)
-            this.props.onSearch(value)
+
+            if (value.trim().length > 0) {
+                this.props.onSearch(value)
+            }
         }
 
         const mainClasses = classNames(styles.container, {
@@ -62,6 +65,7 @@ export default class Search extends React.Component {
                       aria-label="Search for catalog items">
 
                     <input
+                        key={criteria.text}
                         defaultValue={criteria.text}
                         type="text"
                         id="searchInput"
