@@ -43,6 +43,16 @@ $result_cover_width: 145px;
       height: 100%;
       line-height: 100%;
       padding: .7rem 1.2rem;
+
+      img {
+        height: 100%;
+        float: left;
+
+
+        svg {
+          fill: red;
+        }
+      }
     }
 
   }
@@ -52,11 +62,15 @@ $result_cover_width: 145px;
     top: $header_height;
     left: 0;
 
+    :global {
+      animation: fadein 1s;
+    }
+
     .content {
       width: $main_column_width;
       height: $main_content_height;
       overflow: scroll;
-      padding: $global_padding;
+      padding: $global_padding * 2;
 
       h1 {
         padding: 0;
@@ -70,8 +84,8 @@ $result_cover_width: 145px;
 
       .cover {
         position: absolute;
-        left: $global_padding;
-        top: $global_padding;
+        left: $global_padding * 2;
+        top: $global_padding * 2;
         @include cover($result_cover_width);
       }
 

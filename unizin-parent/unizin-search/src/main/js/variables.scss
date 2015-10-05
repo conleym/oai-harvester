@@ -57,3 +57,8 @@ $cover_height: $cover_width * $cover_aspect_ratio;
   left: 50%;
   transform: translate(-50%,-50%);
 }
+
+@keyframes fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
