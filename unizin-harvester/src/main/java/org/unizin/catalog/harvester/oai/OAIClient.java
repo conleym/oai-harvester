@@ -18,6 +18,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -69,19 +71,24 @@ public class OAIClient {
         }
     }
 
-    public void listRecords(URI baseURI, OutputStream outputStream) throws
+    public void listRecords(URI baseURI, String setName, File outputDir) throws
             IOException, XMLStreamException {
         URIBuilder builder = new URIBuilder(baseURI);
         try {
+            int count = 0;
             URI requestURI = builder.addParameter("verb", "ListRecords")
-                    .addParameter("metadataPrefix", "oai_dc").build();
+                    .addParameter("metadataPrefix", "oai_dc")
+                    .addParameter("set", setName).build();
             HttpGet get = new HttpGet(requestURI);
             HttpResponse response = httpClient.execute(get);
             HttpEntity entity = response.getEntity();
             ResumptionToken resumptionToken;
             if (entity != null) {
                 InputStream content = entity.getContent();
-                resumptionToken = parseResponse(content, outputStream);
+                String filename = String.format("file%d.xml", ++count);
+                try (OutputStream outputStream = new FileOutputStream(new File(outputDir, filename))) {
+                    resumptionToken = parseResponse(content, outputStream);
+                }
                 System.out.println(resumptionToken.toString());
                 while (!isEmpty(resumptionToken.token)) {
                     builder.clearParameters();
@@ -93,9 +100,15 @@ public class OAIClient {
                     response = httpClient.execute(get);
                     entity = response.getEntity();
                     content = entity.getContent();
-                    resumptionToken = parseResponse(content, outputStream);
-                    LOGGER.info(baseURI.toString() + ": " + resumptionToken.toString());
+                    filename = String.format("file%d.xml", ++count);
+                    try (OutputStream outputStream = new FileOutputStream(new File(outputDir, filename))) {
+                        resumptionToken = parseResponse(content, outputStream);
+
+                    }
+                    LOGGER.info(baseURI.toString() + ": " +
+                                resumptionToken.toString());
                 }
+
             }
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);

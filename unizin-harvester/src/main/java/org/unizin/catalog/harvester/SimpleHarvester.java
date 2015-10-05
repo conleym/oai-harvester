@@ -27,9 +27,12 @@ public class SimpleHarvester {
         for (Repository repository : reader.parse(new File("repositories.xml"))) {
             threadPool.execute(() -> {
                 LOGGER.info("Starting harvest of " + repository.name);
-                try (FileOutputStream out = new FileOutputStream(
-                        repository.name + ".xml")) {
-                    client.listRecords(repository.url, out);
+                try {
+                    File outputDir = new File(repository.name);
+                    outputDir.mkdir();
+                    for (String set: repository.sets) {
+                        client.listRecords(repository.url, set, outputDir);
+                    }
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
