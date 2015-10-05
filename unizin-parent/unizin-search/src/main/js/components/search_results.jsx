@@ -87,7 +87,7 @@ export default class SearchResults extends React.Component {
         const { criteria, results, selectPage } = this.props
 
         if (results.totalSize == null) {
-            return <Loading message={`Loading Results for '${criteria.text}'`} className={styles.loading} />
+            return <Loading message={`Loading results for '${criteria.text}'`} className={styles.loading} />
         }
 
         const { totalSize = 0, pageSize = 20 } = results
@@ -99,7 +99,7 @@ export default class SearchResults extends React.Component {
         return (
           <div className={wrapperClasses}>
             <div className={styles.header}>
-              <h1>{totalSize} Results for {criteria.text}</h1>
+              <h1>{totalSize} results for {criteria.text}</h1>
 
               <Pager
                   current={this.props.page}
