@@ -16,11 +16,21 @@ export default class Focus extends React.Component {
     }
 
     componentDidMount() {
+        this.unmounting = false
         process.nextTick(() => {
+            if (this.unmounting) {
+                return
+            }
+
             const DOM = React.findDOMNode(this)
             const first = $(DOM).find(':tabbable').first()
             first.focus()
         })
+    }
+
+    componentWillUnmount() {
+        this.unmounting = true
+
     }
 
     render() {
