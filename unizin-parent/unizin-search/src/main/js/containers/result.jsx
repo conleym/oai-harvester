@@ -86,7 +86,7 @@ class Result extends React.Component {
                     <li><span>Format</span>{document.type}</li>
                     <li><span>File size</span>{(document.properties["common:size"])}</li>
                     <li><span>Language</span>{document.properties["hrv:language"]}</li>
-                    <li><span>Date added</span><Date date={document.properties["hrv:date"]} /></li>
+                    <li><span>Dates</span><Date date={document.properties["hrv:date"]} /></li>
                     <li><span>Rights</span>{document.properties["hrv:rights"]}</li>
                   </ul>
                 </aside>

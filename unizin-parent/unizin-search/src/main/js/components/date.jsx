@@ -13,7 +13,16 @@ export default class Date extends React.Component {
   }
 
   formatString(date) {
-      return moment(date).format('MMMM D, YYYY')
+      // in some cases we won't get a date back.
+      // for examplethere might be a string representation for the dc.date.avaiable
+      // http://deepblue.lib.umich.edu/handle/2027.42/55391?show=full
+      // in that case we'll just return the string instead of the formatted date
+
+      if (moment(date).isValid()) {
+          return moment(date).format('MMMM D, YYYY')
+      } else {
+          return date
+      }
   }
 
   render() {
@@ -25,9 +34,12 @@ export default class Date extends React.Component {
           const dates = this.props.date
           return (
             <ul>
-                {dates.map((date) => {
-                    console.log(date)
-                    return <li><Time formattedDate={this.formatString(date)} dateTime={date} /></li>
+                {dates.map((date, index) => {
+                    return (
+                      <li key={'date' + index}>
+                          <Time formattedDate={this.formatString(date)} dateTime={date} />
+                      </li>
+                    )
                 })}
             </ul>
           )
