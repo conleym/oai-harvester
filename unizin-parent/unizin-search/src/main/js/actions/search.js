@@ -24,7 +24,8 @@ export function fetchSearchResults(text, catalogs, page) {
     }
 
     if (page != null) {
-        params.currentPageIndex = parseInt(page, 10)
+        // the API needs an index, but for the UI we show page numbers
+        params.currentPageIndex = parseInt(page, 10) - 1
     }
 
     const url =  encodeURL`/nuxeo/site/api/v1/path/${PATH}/@search?${params}`
