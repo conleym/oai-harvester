@@ -4,6 +4,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 public class ConfigReader {
@@ -17,6 +18,11 @@ public class ConfigReader {
 
     public List<Repository> parse(File inputFile) throws JAXBException {
         Repositories repositories = (Repositories) unmarshaller.unmarshal(inputFile);
+        return repositories.repositories;
+    }
+
+    public List<Repository> parse(InputStream stream) throws JAXBException {
+        Repositories repositories = (Repositories) unmarshaller.unmarshal(stream);
         return repositories.repositories;
     }
 }
