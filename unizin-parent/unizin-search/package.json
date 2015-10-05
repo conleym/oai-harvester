@@ -23,6 +23,7 @@
     "file-loader": "^0.8.4",
     "glob": "^5.0.15",
     "history": "^1.9.1",
+    "jquery": "^2.1.4",
     "lodash.difference": "^3.2.2",
     "moment": "^2.10.6",
     "native-promise-only": "^0.8.1",
