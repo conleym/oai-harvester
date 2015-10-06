@@ -12,6 +12,14 @@ export default class Date extends React.Component {
       date: any.isRequired,
   }
 
+  constructor(props, context) {
+      super(props, context)
+
+      // dates will come back as either a string or an array
+      // right now we are only bringing back the first date of an array set
+      this.date = (typeof this.props.date === 'string') ? this.props.date : this.props.date[0]
+  }
+
   formatString(date) {
       // in some cases we won't get a date back.
       // for examplethere might be a string representation for the dc.date.avaiable
@@ -26,23 +34,6 @@ export default class Date extends React.Component {
   }
 
   render() {
-      // dates will come back as either a string or an array
-      if (typeof this.props.date === 'string') {
-          return <Time formattedDate={this.formatString(this.props.date)} dateTime={this.props.date} />
-      } else {
-          // iterate over each date and render the <Time /> component
-          const dates = this.props.date
-          return (
-            <ul>
-                {dates.map((date, index) => {
-                    return (
-                      <li key={'date' + index}>
-                          <Time formattedDate={this.formatString(date)} dateTime={date} />
-                      </li>
-                    )
-                })}
-            </ul>
-          )
-      }
+      return <Time formattedDate={this.formatString(this.date)} dateTime={this.date} />
   }
 }
