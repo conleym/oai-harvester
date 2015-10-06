@@ -58,7 +58,8 @@ module.exports = {
                 loader: extractText.extract([
                     'css-loader?sourceMap&localIdentName=' + css,
                     'resolve-url',
-                    'sass?sourceMap'
+                    'sass?sourceMap',
+                    'postcss-loader'
                 ].join("!"))
             },
             {
@@ -68,18 +69,9 @@ module.exports = {
                 query: {
                     cacheDirectory: true,
                 }
-            },
-            {
-                test:   /\.css$/,
-                loader: "style-loader!css-loader!postcss-loader"
             }
         ]
     },
-    postcss: [
-        autoprefixer({
-            browsers: ['last 2 versions']
-        })
-    ],
     plugins: [
         new webpack.DefinePlugin({
             'process.env': env
@@ -93,6 +85,11 @@ module.exports = {
         sourceMapFilename: "[hash].[file].map",
         chunkFilename: '[hash].[id].engage.js',
     },
+    postcss: [
+        autoprefixer({
+            browsers: ['last 2 versions']
+        })
+    ],
     devServer: {
         // contentBase: 'dist/release/',
         port: 9595,
