@@ -1,10 +1,17 @@
 import React from 'react'
-import { Router, Route } from 'react-router'
+import { Route } from 'react-router'
+import { ReduxRouter } from 'redux-router'
 import { Provider } from 'react-redux'
 import App from './app.jsx'
 import SmartHome from './smart_home.jsx'
 
 const { any, shape, func } = React.PropTypes
+
+export const routes = (
+    <Route component={App}>
+        <Route path="/" component={SmartHome} />
+    </Route>
+)
 
 export default class Root extends React.Component {
     static displayName = 'Root'
@@ -21,11 +28,7 @@ export default class Root extends React.Component {
     // in React 0.13, but will be able to pass the content starting in 0.14
     providerContent() {
         return (
-            <Router history={this.props.history}>
-                <Route component={App}>
-                    <Route path="/" component={SmartHome} />
-                </Route>
-            </Router>
+            <ReduxRouter>{routes}</ReduxRouter>
         )
     }
 

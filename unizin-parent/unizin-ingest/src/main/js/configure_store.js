@@ -1,4 +1,9 @@
 import { compose, createStore, applyMiddleware } from 'redux'
+import { reduxReactRouter, routerStateReducer, ReduxRouter } from 'redux-router';
+import { routes } from './containers/root.jsx'
+import { useQueries } from 'history'
+import createHistory from 'history/lib/createHashHistory'
+
 import * as reducers from './reducers'
 import { combineReducers } from 'redux'
 import thunk from 'redux-thunk'
@@ -24,11 +29,21 @@ if (process.env.NODE_ENV !== 'production') {
 
     createStoreWithMiddleware = compose(
         applyMiddleware(...middleware),
+        reduxReactRouter({
+            routes,
+            createHistory: useQueries(createHistory)
+        }),
         devTools(),
         persistState(key)
     )(createStore)
 } else {
-    createStoreWithMiddleware = applyMiddleware(...middleware)(createStore)
+    createStoreWithMiddleware = compose(
+        applyMiddleware(...middleware),
+        reduxReactRouter({
+            routes,
+            createHistory: useQueries(createHistory)
+        })
+    )(createStore)
 }
 
 
