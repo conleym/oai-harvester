@@ -10,6 +10,7 @@ import classNames from 'classnames'
 import { joinAuthors } from '../components/search_results.jsx'
 import FontAwesome from 'react-fontawesome'
 import Date from '../components/date.jsx'
+import { checkValue } from '../actions/utils.js'
 
 const { func, func: dispatchFunc, shape, string, any } = React.PropTypes
 
@@ -27,7 +28,6 @@ class Result extends React.Component {
         }).isRequired,
     }
 
-
     componentDidMount() {
         this.props.ensureDocument(this.props.params.uid)
     }
@@ -41,6 +41,15 @@ class Result extends React.Component {
         const previewUrl = routePreviewUrl(document).url
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
+
+        // document attributes
+        const creators = checkValue(joinAuthors(document.properties['hrv:creator']))
+        const type = checkValue(document.type)
+        const size = checkValue(document.properties["common:size"])
+        const language = checkValue(document.properties["hrv:language"])
+        const dateAdded = checkValue(document.properties["hrv:date"])
+        const rights = checkValue(document.properties["hrv:rights"])
+        const description = checkValue(document.properties['hrv:description'])
 
         return (
             <main className={styles.result} role="main">
@@ -71,10 +80,10 @@ class Result extends React.Component {
                   <div className={styles.details}>
                     <h1>{document.title}</h1>
 
-                    <h2>Author: {joinAuthors(document.properties['hrv:creator'])}</h2>
+                    <h2>Author: {creators}</h2>
 
                     <div className={styles.description}>
-                      {document.properties['hrv:description']}
+                      {description}
                     </div>
                   </div>
 
@@ -83,11 +92,11 @@ class Result extends React.Component {
                 <aside role="complementary">
                   <h1>Additional information</h1>
                   <ul className={styles.group}>
-                    <li><span>Format</span>{document.type}</li>
-                    <li><span>File size</span>{(document.properties["common:size"])}</li>
-                    <li><span>Language</span>{document.properties["hrv:language"]}</li>
-                    <li><span>Dates</span><Date date={document.properties["hrv:date"]} /></li>
-                    <li><span>Rights</span>{document.properties["hrv:rights"]}</li>
+                    <li><span>Format</span>{type}</li>
+                    <li><span>File size</span>{size}</li>
+                    <li><span>Language</span>{language}</li>
+                    <li><span>Date</span><Date date={dateAdded} /></li>
+                    <li><span>Rights</span>{rights}</li>
                   </ul>
                 </aside>
               </div>

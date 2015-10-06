@@ -76,3 +76,7 @@ function escapeQuote(input) {
 export function nxql(strings, ...values) {
     return weave(strings, values.map(escapeQuote)).join('')
 }
+
+export function checkValue(val) {
+    return (val === null || val.length === 0) ? "Not available" : val
+}
