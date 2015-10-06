@@ -16,7 +16,7 @@
     animation: fadein 2s;
   }
 
-  h1 {
+  .header {
     margin: 0;
     padding: .7rem $global_padding;
     border-bottom: 1px solid $border_color;
@@ -51,13 +51,10 @@
   fieldset {
     border: none;
     padding: 0;
+    margin: $global_padding;
   }
 
   input[type='checkbox'] {
     margin-right: .5rem;
-  }
-
-  .group {
-    padding: $global_padding;
   }
 }

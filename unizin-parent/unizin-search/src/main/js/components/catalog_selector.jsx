@@ -54,14 +54,17 @@ export default class CatalogSelector extends React.Component {
 
         return (
             <aside className={styles.filters} aria-label="Filter catalogs">
-                <h1 aria-hidden="true">Catalogs</h1>
-                <form role="form" className={styles.group}>
-                  <fieldset>
-                    <ul>
-                        {this.renderCatalogs()}
-                    </ul>
-                  </fieldset>
-                </form>
+                <div className={styles.header} aria-hidden="true">Catalogs</div>
+                <fieldset>
+                  <legend>
+                    <span className="aural">Show results from these Catalogs</span>
+                    <span aria-hidden="true">Catalogs</span>
+                  </legend>
+
+                  <ul>
+                      {this.renderCatalogs()}
+                  </ul>
+                </fieldset>
             </aside>
         )
     }

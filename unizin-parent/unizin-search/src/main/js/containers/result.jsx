@@ -56,9 +56,9 @@ class Result extends React.Component {
             <Focus>
                 <main className={styles.result} role="main">
                   <div className={styles.header}>
-                    <button onClick={this.props.history.goBack} role="button">
+                    <a onClick={this.props.history.goBack} role="button" className={secondaryBtnClasses}>
                         <FontAwesome name='arrow-left' /> Back to results
-                    </button>
+                    </a>
 
                     <ul className={styles.controls}>
                       <li>
@@ -82,7 +82,7 @@ class Result extends React.Component {
                       <div className={styles.details}>
                         <h1>{document.title}</h1>
 
-                        <h2>Author: {creators}</h2>
+                        <div className={styles.author}>Author: {joinAuthors(document.properties['hrv:creator'])}</div>
 
                         <div className={styles.description}>
                           {description}
@@ -92,7 +92,7 @@ class Result extends React.Component {
                     </div>
 
                     <aside role="complementary">
-                      <h1>Additional information</h1>
+                      <div className={styles.header}>Additional information</div>
                       <ul className={styles.group}>
                         <li><span>Format</span>{type}</li>
                         <li><span>File size</span>{size}</li>

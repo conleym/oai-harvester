@@ -11,6 +11,7 @@ button,
   text-decoration: none;
   font-family: $decorative_font;
   transition: all $transition_fast;
+  cursor: pointer;
 
   &:hover {
     background: lighten($gray_purple, 20%);

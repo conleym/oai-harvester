@@ -5,7 +5,7 @@ $decorative_font: "Roboto Slab", serif;
 $font_color: black;
 $border_color: darken(white, 20%);
 $purple: #8056c7;
-$gray_purple: #81788e;
+$gray_purple: #79678F;
 
 // transitions
 $transition_fast: .25s;
@@ -44,7 +44,7 @@ $cover_height: $cover_width * $cover_aspect_ratio;
   font-family: $default_font;
   font-weight: 300;
 
-  h1 {
+  h2 {
     font-family: $default_font;
     font-size: 1rem;
     font-weight: 300;
