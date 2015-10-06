@@ -9,6 +9,7 @@ public class OAIConstants {
     public static final String OAI_NS_URI = "http://www.openarchives.org/OAI/2.0/";
     public static final String DC_NS_URI = "http://purl.org/dc/elements/1.1/";
     public static final String OAI_DC_NS_URI = "http://www.openarchives.org/OAI/2.0/oai_dc/";
+    public static final String XSI_NS_URI = "http://www.w3.org/2001/XMLSchema-instance";
     public static final QName RESUMPTION_TOKEN = new QName(OAI_NS_URI, "resumptionToken");
     public static final QName CURSOR = new QName("cursor");
     public static final QName COMPLETE_LIST_SIZE = new QName("completeListSize");
@@ -17,6 +18,7 @@ public class OAIConstants {
     public static final QName REQUEST = new QName(OAI_NS_URI, "request");
 
     public static class OAIRecordContext implements NamespaceContext {
+
 
         @Override
         public String getNamespaceURI(String prefix) {
@@ -30,6 +32,9 @@ public class OAIConstants {
                 break;
             case "oai_dc":
                 result = OAI_DC_NS_URI;
+                break;
+            case "xsi":
+                result = XSI_NS_URI;
                 break;
             default:
                 result = null;
