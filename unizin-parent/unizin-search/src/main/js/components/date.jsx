@@ -26,23 +26,8 @@ export default class Date extends React.Component {
   }
 
   render() {
-      // dates will come back as either a string or an array
-      if (typeof this.props.date === 'string') {
-          return <Time formattedDate={this.formatString(this.props.date)} dateTime={this.props.date} />
-      } else {
-          // iterate over each date and render the <Time /> component
-          const dates = this.props.date
-          return (
-            <ul>
-                {dates.map((date, index) => {
-                    return (
-                      <li key={'date' + index}>
-                          <Time formattedDate={this.formatString(date)} dateTime={date} />
-                      </li>
-                    )
-                })}
-            </ul>
-          )
-      }
+      const date = (typeof this.props.date === 'string') ? this.props.date : this.props.date[0]
+
+      return <Time formattedDate={this.formatString(date)} dateTime={date} />
   }
 }
