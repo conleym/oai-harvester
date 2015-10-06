@@ -92,7 +92,7 @@ class Result extends React.Component {
                     </div>
 
                     <aside role="complementary">
-                      <h2 className={styles.header}>Additional information</h2>
+                      <div className={styles.header}>Additional information</div>
                       <ul className={styles.group}>
                         <li><span>Format</span>{type}</li>
                         <li><span>File size</span>{size}</li>
