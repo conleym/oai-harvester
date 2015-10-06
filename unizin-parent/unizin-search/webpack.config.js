@@ -4,6 +4,7 @@ var path = require('path')
 var webpack = require('webpack')
 var ExtractTextPlugin = require("extract-text-webpack-plugin")
 var extractText = new ExtractTextPlugin("catalog_search.css")
+var autoprefixer = require('autoprefixer')
 
 var devtool = 'source-map'
 var env = {
@@ -67,9 +68,18 @@ module.exports = {
                 query: {
                     cacheDirectory: true,
                 }
+            },
+            {
+                test:   /\.css$/,
+                loader: "style-loader!css-loader!postcss-loader"
             }
         ]
     },
+    postcss: [
+        autoprefixer({
+            browsers: ['last 2 versions']
+        })
+    ],
     plugins: [
         new webpack.DefinePlugin({
             'process.env': env
