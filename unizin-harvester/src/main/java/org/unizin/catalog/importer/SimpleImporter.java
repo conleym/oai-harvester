@@ -108,6 +108,8 @@ public class SimpleImporter {
                 writer.add(event);
                 writer.add(
                         eventFactory.createNamespace(OAIConstants.OAI_NS_URI));
+                writer.add(
+                        eventFactory.createNamespace("xsi", OAIConstants.XSI_NS_URI));
                 do {
                     event = reader.nextEvent();
                     writer.add(event);
