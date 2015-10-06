@@ -24,6 +24,7 @@
     "glob": "^5.0.15",
     "history": "^1.9.1",
     "lodash.difference": "^3.2.2",
+    "moment": "^2.10.6",
     "native-promise-only": "^0.8.1",
     "node-sass": "^3.3.3",
     "react": "^0.13.3",

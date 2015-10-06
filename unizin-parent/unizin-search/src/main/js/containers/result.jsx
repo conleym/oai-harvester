@@ -9,6 +9,7 @@ import { Link } from 'react-router'
 import classNames from 'classnames'
 import { joinAuthors } from '../components/search_results.jsx'
 import FontAwesome from 'react-fontawesome'
+import Date from '../components/date.jsx'
 
 const { func, func: dispatchFunc, shape, string, any } = React.PropTypes
 
@@ -85,7 +86,7 @@ class Result extends React.Component {
                     <li><span>Format</span>{document.type}</li>
                     <li><span>File size</span>{(document.properties["common:size"])}</li>
                     <li><span>Language</span>{document.properties["hrv:language"]}</li>
-                    <li><span>Date added</span>{document.properties["hrv:date"]}</li>
+                    <li><span>Dates</span><Date date={document.properties["hrv:date"]} /></li>
                     <li><span>Rights</span>{document.properties["hrv:rights"]}</li>
                   </ul>
                 </aside>
