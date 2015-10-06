@@ -28,15 +28,21 @@ ssh $VM_NAME "true" || exit 1
 
 mvn clean package
 
-SRC=$(ls ./search-package/target/search-package-*.zip)
-FILE=$(basename $SRC)
+SEARCH_SRC=$(ls ./search-package/target/search-package-*.zip)
+SEARCH_FILE=$(basename $SEARCH_SRC)
+scp $SEARCH_SRC $VM_NAME:/tmp/$SEARCH_FILE
 
-scp $SRC $VM_NAME:/tmp/$FILE
+
+INGEST_SRC=$(ls ./ingest-package/target/ingest-package-*.zip)
+INGEST_FILE=$(basename $INGEST_SRC)
+scp $INGEST_SRC $VM_NAME:/tmp/$INGEST_FILE
 
 ssh -q $VM_NAME << EOF
 set -ex
 sudo service nuxeo stop
 sudo nuxeoctl mp-remove unizin-search || true
-sudo nuxeoctl mp-install /tmp/$FILE
+sudo nuxeoctl mp-remove unizin-ingest || true
+sudo nuxeoctl mp-install /tmp/$SEARCH_FILE
+sudo nuxeoctl mp-install /tmp/$INGEST_FILE
 sudo service nuxeo start
 EOF
