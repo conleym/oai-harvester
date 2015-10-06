@@ -57,9 +57,9 @@ module.exports = {
                 test   : /\.scss$/,
                 loader: extractText.extract([
                     'css-loader?sourceMap&localIdentName=' + css,
+                    'postcss-loader',
                     'resolve-url',
-                    'sass?sourceMap',
-                    'postcss-loader'
+                    'sass?sourceMap'
                 ].join("!"))
             },
             {
