@@ -36,7 +36,7 @@ scp $SRC $VM_NAME:/tmp/$FILE
 ssh -q $VM_NAME << EOF
 set -ex
 sudo service nuxeo stop
-sudo nuxeoctl mp-remove unizin-search
+sudo nuxeoctl mp-remove unizin-search || true
 sudo nuxeoctl mp-install /tmp/$FILE
 sudo service nuxeo start
 EOF
