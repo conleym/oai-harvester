@@ -50,14 +50,15 @@ module.exports = {
             {
                 test: /\.css$/,
                 loader: extractText.extract(
-                    'css-loader?localIdentName=' + css
+                    'css?localIdentName=' + css,
+                    'postcss'
                 )
             },
             {
                 test   : /\.scss$/,
                 loader: extractText.extract([
-                    'css-loader?sourceMap&localIdentName=' + css,
-                    'postcss-loader',
+                    'css?sourceMap&localIdentName=' + css,
+                    'postcss',
                     'resolve-url',
                     'sass?sourceMap'
                 ].join("!"))
