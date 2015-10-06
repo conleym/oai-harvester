@@ -49,10 +49,11 @@ module.exports = {
         loaders: [
             {
                 test: /\.css$/,
-                loader: extractText.extract(
+                loader: extractText.extract([
                     'css?localIdentName=' + css,
-                    'postcss'
-                )
+                    'postcss',
+                    'resolve-url'
+                ].join("!"))
             },
             {
                 test   : /\.scss$/,
