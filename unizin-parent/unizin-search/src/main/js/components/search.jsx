@@ -59,7 +59,7 @@ export default class Search extends React.Component {
                     <div className={styles.header}>
                       { criteria.text == null ? (
                         <div className={styles.brand}>
-                          <img src={brandURL} />
+                          <img src={brandURL} alt="Unizin Content Discovery Tool Logo" title="Logo" />
                           <h1>Content discovery tool</h1>
                         </div>
                       ) : null}
