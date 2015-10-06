@@ -4,6 +4,7 @@ import SearchResults from '../components/search_results.jsx'
 import Footer from '../components/footer.jsx'
 import CatalogSelector from '../components/catalog_selector.jsx'
 import classNames from 'classnames'
+import Focus from './focus.jsx'
 
 const { any, number, func, string, arrayOf, shape } = React.PropTypes
 
@@ -53,45 +54,47 @@ export default class Search extends React.Component {
         const brandURL = require('file!../../resources/skin/resources/brand.svg')
 
         return (
-            <main className={mainClasses} role="main">
-              <div className={styles.header}>
-                { criteria.text == null ? (
-                  <div className={styles.brand}>
-                    <img src={brandURL} />
-                    <h1>Content discovery tool</h1>
-                  </div>
-                ) : null}
-                <form className={styles.search} onSubmit={onSearch} role="search"
-                      aria-label="Search for catalog items">
+            <Focus key={criteria.text}>
+                <main className={mainClasses} role="main">
+                    <div className={styles.header}>
+                      { criteria.text == null ? (
+                        <div className={styles.brand}>
+                          <img src={brandURL} />
+                          <h1>Content discovery tool</h1>
+                        </div>
+                      ) : null}
+                      <form className={styles.search} onSubmit={onSearch} role="search"
+                            aria-label="Search for catalog items">
 
-                    <input
-                        key={criteria.text}
-                        defaultValue={criteria.text}
-                        type="text"
-                        id="searchInput"
-                        ref="searchInput"
-                        placeholder="Enter search criteria" />
-                    <label htmlFor="searchInput" className="aural">Enter search criteria</label>
-                    <input type="submit" value="Search" className={searchBtnClasses} />
-                </form>
-              </div>
-              <div className={styles['results-container']}>
-                { criteria.text != null ? (
-                    <CatalogSelector
-                        onChange={changeCatalog}
-                        selected={selectedCatalogs}
-                        catalogs={allCatalogs} />
-                ) : null}
-                { criteria.text != null ? (
-                    <SearchResults
-                        selectPage={selectPage}
-                        page={page}
-                        criteria={criteria}
-                        results={searchResults} />
-                ) : null}
-              </div>
-              <Footer className={footerClasses} />
-            </main>
+                            <input
+                                key={criteria.text}
+                                defaultValue={criteria.text}
+                                type="text"
+                                id="searchInput"
+                                ref="searchInput"
+                                placeholder="Enter search criteria" />
+                            <label htmlFor="searchInput" className="aural">Enter search criteria</label>
+                            <input type="submit" value="Search" className={searchBtnClasses} />
+                        </form>
+                    </div>
+                    <div className={styles['results-container']}>
+                        { criteria.text != null ? (
+                            <CatalogSelector
+                                onChange={changeCatalog}
+                                selected={selectedCatalogs}
+                                catalogs={allCatalogs} />
+                        ) : null}
+                        { criteria.text != null ? (
+                            <SearchResults
+                                selectPage={selectPage}
+                                page={page}
+                                criteria={criteria}
+                                results={searchResults} />
+                        ) : null}
+                    </div>
+                    <Footer className={footerClasses} />
+                </main>
+            </Focus>
         )
     }
 }
