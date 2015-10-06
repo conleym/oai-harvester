@@ -4,6 +4,7 @@ var path = require('path')
 var webpack = require('webpack')
 var ExtractTextPlugin = require("extract-text-webpack-plugin")
 var extractText = new ExtractTextPlugin("catalog_search.css")
+var autoprefixer = require('autoprefixer')
 
 var devtool = 'source-map'
 var env = {
@@ -48,14 +49,17 @@ module.exports = {
         loaders: [
             {
                 test: /\.css$/,
-                loader: extractText.extract(
-                    'css-loader?localIdentName=' + css
-                )
+                loader: extractText.extract([
+                    'css?localIdentName=' + css,
+                    'postcss',
+                    'resolve-url'
+                ].join("!"))
             },
             {
                 test   : /\.scss$/,
                 loader: extractText.extract([
-                    'css-loader?sourceMap&localIdentName=' + css,
+                    'css?sourceMap&localIdentName=' + css,
+                    'postcss',
                     'resolve-url',
                     'sass?sourceMap'
                 ].join("!"))
@@ -83,6 +87,11 @@ module.exports = {
         sourceMapFilename: "[hash].[file].map",
         chunkFilename: '[hash].[id].engage.js',
     },
+    postcss: [
+        autoprefixer({
+            browsers: ['last 2 versions']
+        })
+    ],
     devServer: {
         // contentBase: 'dist/release/',
         port: 9595,
