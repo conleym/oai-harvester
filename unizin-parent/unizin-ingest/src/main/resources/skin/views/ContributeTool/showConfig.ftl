@@ -8,9 +8,9 @@
     http://www.imsglobal.org/xsd/imsbasiclti_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imsbasiclti_v1p0.xsd
     http://www.imsglobal.org/xsd/imslticm_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd
     http://www.imsglobal.org/xsd/imslticp_v1p0 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
-    <blti:launch_url>${nuxeoURL}${basePath}/catalog</blti:launch_url>
-    <blti:title>Asa Catalog Search</blti:title>
-    <blti:description>Unizin Catalog Search</blti:description>
+    <blti:launch_url>${nuxeoURL}${basePath}/contribute</blti:launch_url>
+    <blti:title>Catalog Contribute</blti:title>
+    <blti:description>Unizin Catalog Contribute</blti:description>
     <blti:extensions platform="canvas.instructure.com">
         <lticm:property name="privacy_level">public</lticm:property>
         <lticm:property name="domain">${nuxeoHost}</lticm:property>
