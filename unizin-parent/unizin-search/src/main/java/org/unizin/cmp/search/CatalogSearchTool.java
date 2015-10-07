@@ -4,6 +4,7 @@ import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 import org.nuxeo.runtime.api.Framework;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -42,7 +43,10 @@ public class CatalogSearchTool extends ModuleRoot {
 
     // This is the real way that Canvas will LTI over
     @POST
-    public Object doPost(@Context HttpServletRequest request) {
+    public Object doPost(@Context HttpServletRequest request) throws
+            LoginException {
+        String user = request.getUserPrincipal().getName();
+        Framework.loginAsUser(user);
     	Map<String, String[]> params = request.getParameterMap();
     	String ext_content_return_url = params.get("ext_content_return_url")[0];
 
@@ -56,7 +60,10 @@ public class CatalogSearchTool extends ModuleRoot {
     @POST
     @Path("showLaunch")
     @Produces("text/html;charset=UTF-8")
-    public Object showLaunch(@Context HttpServletRequest request) {
+    public Object showLaunch(@Context HttpServletRequest request) throws
+            LoginException {
+        String user = request.getUserPrincipal().getName();
+        Framework.loginAsUser(user);
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry<String, String[]> item :
                 request.getParameterMap().entrySet()) {
