@@ -14,5 +14,19 @@
   <description>Nuxeo functionality to allow LTI-authenticated users to contribute
   documents to the content repository</description>
 
+  <dependencies>
+
+    <dependency>
+      <groupId>org.nuxeo.ecm.webengine</groupId>
+      <artifactId>nuxeo-webengine-core</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+    </dependency>
+
+  </dependencies>
+
 
 </project>
