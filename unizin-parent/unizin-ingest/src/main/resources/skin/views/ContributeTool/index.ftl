@@ -1,5 +1,5 @@
 <@extends src="base.ftl">
-<@block name="title">Catalog Search Tool</@block>
+<@block name="title">Catalog Contribute</@block>
 <@block name="stylesheets">
 <link rel="stylesheet" href="${jsPath!skinPath}/contribute.css" type="text/css">
 </@block>
