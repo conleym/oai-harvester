@@ -1,20 +1,13 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { fetchCatalogs } from '../actions/search.js'
 
-const { any, node, func } = React.PropTypes
+const { any, node } = React.PropTypes
 
-class App extends React.Component {
+export default class App extends React.Component {
     static displayName = 'App'
 
     static propTypes = {
         history: any,
         children: node.isRequired,
-        fetchCatalogs: func.isRequired,
-    }
-
-    componentWillMount() {
-        this.props.fetchCatalogs()
     }
 
     render() {
@@ -25,12 +18,3 @@ class App extends React.Component {
         return this.props.children
     }
 }
-
-function mapStateToProps(state) {
-    return {}
-}
-
-export default connect(
-  mapStateToProps,
-  { fetchCatalogs }
-)(App)

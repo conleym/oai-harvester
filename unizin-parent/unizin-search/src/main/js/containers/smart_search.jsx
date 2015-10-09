@@ -1,26 +1,8 @@
 import React from 'react'
-import { connect } from 'react-redux'
 import { changeCatalog, searchFor } from '../actions/search.js'
 import { routeSearchFor } from '../actions/route.js'
-import difference from 'lodash.difference'
 import { selectResults } from '../selectors.js'
 import Search from '../components/search.jsx'
-
-function loadData(props) {
-    const { criteria } = props
-    const { search, catalogs = [] } = props.location.query
-    let { page = 1 } = props.location.query
-    page = parseInt(page, 10)
-
-
-    if (criteria == null
-        || criteria.page != page
-        || search !== criteria.text
-        || difference(criteria.catalogs, catalogs).length > 0
-        || difference(catalogs, criteria.catalogs).length > 0) {
-        props.searchFor(search, catalogs, page)
-    }
-}
 
 // The props are passed in from the router and connect. This doesn't seem very
 // useful for this file
@@ -32,14 +14,6 @@ class SmartSearch extends React.Component {
     constructor(props, context) {
         super(props, context)
         this.selectPage = this.selectPage.bind(this)
-    }
-
-    componentWillMount() {
-        loadData(this.props)
-    }
-
-    componentWillReceiveProps(nextProps) {
-        loadData(nextProps)
     }
 
     selectPage(page) {
@@ -89,17 +63,54 @@ class SmartSearch extends React.Component {
     }
 }
 
+import { selectCatalogs } from '../selectors.js'
 function mapStateToProps(state, props) {
     const { search, catalogs = [], page = 1 } = props.location.query
 
     return {
-        allCatalogs: state.catalogs,
+        allCatalogs: selectCatalogs(state),
         criteria: state.criteria,
         searchResults: selectResults(search, catalogs, page)(state)
     }
 }
 
-export default connect(
-  mapStateToProps,
-  { changeCatalog, searchFor, routeSearchFor }
+import { fetchCatalogs } from '../actions/search.js'
+import smartLoader from './smart_loader.jsx'
+
+
+export default smartLoader(
+    {
+        inputFilter: (state, props) => {
+            const params = {
+                catalogCount: Object.keys(selectCatalogs(state)).length
+            }
+            const { search, catalogs = [], page = 1 } = props.location.query
+
+            if (search != null) {
+                params.search = search
+                // Filter needs to
+                params.catalogs = catalogs //.join('\n')
+                params.page = page
+            }
+
+            // console.log('search params', paramtat)
+            return params
+        },
+        isReady: (({catalogCount}, state) => catalogCount > 0),
+        loader: (dispatch, params) => {
+            if (params.catalogCount == 0) {
+                dispatch( fetchCatalogs() )
+            }
+
+            if (params.search) {
+                const { search, catalogs, page } = params
+                dispatch(
+                    searchFor(search, catalogs /*.split('\n') */, page)
+                )
+
+            }
+        }
+    },
+    mapStateToProps,
+    { fetchCatalogs, changeCatalog, searchFor, routeSearchFor }
 )(SmartSearch)
