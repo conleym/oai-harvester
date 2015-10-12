@@ -87,11 +87,10 @@ export default smartLoader(
             if (search != null) {
                 params.search = search
                 // Filter needs to
-                params.catalogs = catalogs //.join('\n')
+                params.catalogs = catalogs
                 params.page = page
             }
 
-            // console.log('search params', paramtat)
             return params
         },
         isReady: (({catalogCount}, state) => catalogCount > 0),
@@ -103,7 +102,7 @@ export default smartLoader(
             if (params.search) {
                 const { search, catalogs, page } = params
                 dispatch(
-                    searchFor(search, catalogs /*.split('\n') */, page)
+                    searchFor(search, catalogs, page)
                 )
 
             }
