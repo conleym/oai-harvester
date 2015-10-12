@@ -3,7 +3,6 @@ package org.unizin.cmp.importer;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -20,9 +19,9 @@ import javax.xml.xpath.XPathFactory;
 
 import org.joda.time.DateTime;
 import org.nuxeo.ecm.core.api.Blob;
-import org.nuxeo.ecm.core.api.ClientException;
 import org.nuxeo.ecm.core.api.blobholder.AbstractBlobHolder;
 import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
+import org.nuxeo.ecm.core.api.impl.blob.ByteArrayBlob;
 import org.nuxeo.ecm.platform.importer.source.SourceNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +52,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 		this.properties = parseProperties(xpath, document);
 		
 		this.properties.put("hrv:sourceRepository", String.valueOf(baseURI));
-		// TODO: support other encodings based on input?
-		this.properties.put("hrv:content", new String(bytes, 
-				StandardCharsets.UTF_8));
+		this.properties.put("hrv:rawMetadataContent", new ByteArrayBlob(bytes));	
 	}
 
 
@@ -178,7 +175,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 			}
 
 			@Override
-			public Blob getBlob() throws ClientException {
+			public Blob getBlob() {
 				return null;
 			}
 
@@ -188,7 +185,7 @@ public final class OAIRecordSourceNode implements SourceNode {
 			}
 
 			@Override
-			public Calendar getModificationDate() throws ClientException {
+			public Calendar getModificationDate() {
 				return lastModified;
 			}
 		};

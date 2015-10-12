@@ -8,7 +8,7 @@ final class XML {
 	static XMLInputFactory inputFactory() {
 		final XMLInputFactory factory = XMLInputFactory.newFactory();
 		// Force coalescing of adjacent character events into a single event.
-		factory.setProperty("javax.xml.stream.isCoalescing", true);
+		factory.setProperty(XMLInputFactory.IS_COALESCING, true);
 		return factory;
 	}
 
