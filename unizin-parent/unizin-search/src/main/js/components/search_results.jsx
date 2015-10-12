@@ -73,12 +73,12 @@ export default class SearchResults extends React.Component {
                 <ul className={styles.controls}>
                   <li>
                     <Link to={routeInsert(result).route} className={insertBtnClasses}  aria-label={insertLabel} role="button">
-                      <FontAwesome name='plus' /> Insert
+                      <FontAwesome name='plus' aria-hidden='true' /> Insert
                     </Link>
                   </li>
                   <li>
                     <a href={previewUrl} target="_blank" className={previewBtnClasses} role="button" aria-label={previewLabel}>
-                      <FontAwesome name='eye' /> Preview
+                      <FontAwesome name='eye' aria-hidden='true' /> Preview
                     </a>
                   </li>
                 </ul>
