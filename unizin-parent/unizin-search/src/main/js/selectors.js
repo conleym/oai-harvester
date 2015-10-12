@@ -15,3 +15,5 @@ export const selectResults = (text, catalogs, page) => (state) => {
         entities: []
     }
 }
+
+export const selectCatalogs = (state) => state.catalogs

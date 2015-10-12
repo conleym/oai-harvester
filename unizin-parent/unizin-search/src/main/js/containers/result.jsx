@@ -1,6 +1,6 @@
 import React from 'react'
 import Cover from '../components/cover.jsx'
-import { connect } from 'react-redux'
+import smartLoader from './smart_loader.jsx'
 import { ensureDocument } from '../actions/documents.js'
 import { routeInsert, routePreviewUrl } from '../actions/route.js'
 import Footer from '../components/footer.jsx'
@@ -13,38 +13,26 @@ import Date from '../components/date.jsx'
 import { checkValue } from '../actions/utils.js'
 import Focus from '../components/focus.jsx'
 
-const { func, func: dispatchFunc, shape, string, any } = React.PropTypes
+const { func, shape, object } = React.PropTypes
 
 class Result extends React.Component {
     static displayName = 'Result'
 
     static propTypes = {
-        ensureDocument: dispatchFunc.isRequired,
-        params: shape({
-            uid: string.isRequired
-        }).isRequired,
-        document: any,
+        document: object.isRequired,
         history: shape({
             goBack: func.isRequired
         }).isRequired,
     }
 
-    componentDidMount() {
-        this.props.ensureDocument(this.props.params.uid)
-    }
-
     render() {
         const { document } = this.props
-        if (!document) {
-            return null
-        }
 
         const previewUrl = routePreviewUrl(document).url
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
 
         // document attributes
-        const creators = checkValue(joinAuthors(document.properties['hrv:creator']))
         const type = checkValue(document.type)
         const size = checkValue(document.properties["common:size"])
         const language = checkValue(document.properties["hrv:language"])
@@ -117,7 +105,18 @@ function mapStateToProps(state, props) {
     }
 }
 
-export default connect(
-  mapStateToProps,
-  { ensureDocument }
+export default smartLoader(
+    {
+        inputFilter(state, props) {
+            return { uid: props.params.uid }
+        },
+        isReady: ({uid}, state) => (state.documents[uid] != null),
+        loader(dispatch, params, lastParams) {
+            if (params.uid != lastParams.uid) {
+                dispatch(ensureDocument(params.uid))
+            }
+        }
+    },
+    mapStateToProps,
+    { }
 )(Result)
