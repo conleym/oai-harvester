@@ -3,6 +3,9 @@ import { changeCatalog, searchFor } from '../actions/search.js'
 import { routeSearchFor } from '../actions/route.js'
 import { selectResults } from '../selectors.js'
 import Search from '../components/search.jsx'
+import { selectCatalogs } from '../selectors.js'
+import { fetchCatalogs } from '../actions/search.js'
+import smartLoader from './smart_loader.jsx'
 
 // The props are passed in from the router and connect. This doesn't seem very
 // useful for this file
@@ -63,7 +66,6 @@ class SmartSearch extends React.Component {
     }
 }
 
-import { selectCatalogs } from '../selectors.js'
 function mapStateToProps(state, props) {
     const { search, catalogs = [], page = 1 } = props.location.query
 
@@ -73,10 +75,6 @@ function mapStateToProps(state, props) {
         searchResults: selectResults(search, catalogs, page)(state)
     }
 }
-
-import { fetchCatalogs } from '../actions/search.js'
-import smartLoader from './smart_loader.jsx'
-
 
 export default smartLoader(
     {
