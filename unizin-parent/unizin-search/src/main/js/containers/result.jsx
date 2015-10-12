@@ -45,18 +45,18 @@ class Result extends React.Component {
                 <main className={styles.result} role="main">
                   <div className={styles.header}>
                     <button onClick={this.props.history.goBack} className={secondaryBtnClasses}>
-                        <FontAwesome name='arrow-left' /> Back to results
+                        <FontAwesome name='arrow-left' aria-hidden='true' /> Back to results
                     </button>
 
                     <ul className={styles.controls}>
                       <li>
                         <Link to={routeInsert(document).route} className={primaryBtnClasses} role="button">
-                          <FontAwesome name='plus' /> Insert
+                          <FontAwesome name='plus' aria-hidden='true' /> Insert
                         </Link>
                       </li>
                       <li>
                         <a href={previewUrl} target="_blank" className={secondaryBtnClasses} role="button">
-                          <FontAwesome name='eye' /> Preview
+                          <FontAwesome name='eye' aria-hidden='true' /> Preview
                         </a>
                       </li>
                     </ul>
