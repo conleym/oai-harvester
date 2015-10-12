@@ -6,6 +6,8 @@ $font_color: black;
 $border_color: darken(white, 20%);
 $purple: #8056c7;
 $gray_purple: #79678F;
+$error_color: darken(saturate(adjust_hue($purple, 94), 19), 5);
+$error_bg_color: lighten(saturate(adjust_hue($purple, 94), 19), 36);
 
 // transitions
 $transition_fast: .25s;
