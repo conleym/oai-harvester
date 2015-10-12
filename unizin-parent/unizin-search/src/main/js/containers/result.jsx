@@ -44,9 +44,9 @@ class Result extends React.Component {
             <Focus>
                 <main className={styles.result} role="main">
                   <div className={styles.header}>
-                    <a onClick={this.props.history.goBack} role="button" className={secondaryBtnClasses}>
+                    <button onClick={this.props.history.goBack} className={secondaryBtnClasses}>
                         <FontAwesome name='arrow-left' /> Back to results
-                    </a>
+                    </button>
 
                     <ul className={styles.controls}>
                       <li>
