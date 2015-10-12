@@ -11,7 +11,7 @@ import { joinAuthors } from '../components/search_results.jsx'
 import FontAwesome from 'react-fontawesome'
 import Date from '../components/date.jsx'
 import { checkValue } from '../actions/utils.js'
-import Focus from '../components/focus.jsx'
+import { Focus } from 'unizin-js-tools'
 
 const { func, shape, object } = React.PropTypes
 
