@@ -44,7 +44,25 @@
     position: absolute;
     transform: translate(-50%,-50%);
     top: 30%;
-    left: 50%;
+    left: calc(50% - 3rem);
     z-index: 2;
+  }
+
+  .controls {
+    position: absolute;
+    left: 50%;
+    bottom: 20%;
+    transform: translate(-50%,-50%);
+
+    ul {
+      :global {
+        animation: fadein 2s;
+      }
+    }
+
+    li {
+      display: inline-block;
+      margin: 0 1rem;
+    }
   }
 }

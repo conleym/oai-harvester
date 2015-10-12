@@ -25,6 +25,19 @@ export default class Insert extends React.Component {
         return null
     }
 
+    renderControls(document) {
+        if (document.loadError) {
+            return (
+                <ul>
+                    <li><button>Cancel</button></li>
+                    <li><button className='primary'>Try again</button></li>
+                </ul>
+            )
+        } else {
+            return <button>Cancel</button>
+        }
+    }
+
     render() {
         const { document } = this.props
         return (
@@ -33,6 +46,10 @@ export default class Insert extends React.Component {
                 <h1 aria-live='polite'>Preparing '{document.title}'</h1>
 
                 {this.renderError(document)}
+
+                <div className={styles.controls}>
+                  {this.renderControls(document)}
+                </div>
             </div>
         )
     }
