@@ -11,7 +11,9 @@
 
   span {
     display: block;
-    @include center;
+    :global {
+      @extend .center;
+    }
     color: lighten($font_color, 20%);
   }
 }
