@@ -32,35 +32,3 @@ $aside_width: calc(100% - #{$main_column_width});
 $cover_width: 4rem;
 $cover_aspect_ratio: 1.24;
 $cover_height: $cover_width * $cover_aspect_ratio;
-
-// calculations for cover width and height
-// default width is "4rem"
-@mixin cover($cover_width: 4rem) {
-  width: $cover_width;
-  height: calc(#{$cover_width} * #{$cover_aspect_ratio});
-}
-
-// Aside
-.aside {
-  word-wrap: break-word;
-  font-family: $default_font;
-  font-weight: 300;
-
-  h2 {
-    font-family: $default_font;
-    font-size: 1rem;
-    font-weight: 300;
-  }
-}
-
-.center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
-}
-
-@keyframes fadein {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
