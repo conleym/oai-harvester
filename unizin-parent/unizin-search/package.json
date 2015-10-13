@@ -7,9 +7,9 @@
   "scripts": {
     "build": "NODE_ENV=production webpack --bail",
     "lint": "eslint --ext js,jsx src/",
-    "start": "webpack-dev-server --https",
+    "start": "node server.js",
     "start-cert": "webpack-dev-server --https  --key server.key --cert server.crt --cacert server.crt",
-    "test": "babel-node src/main/js/tests.js"
+    "test": "testem"
   },
   "author": "",
   "dependencies": {
@@ -52,6 +52,7 @@
     "eslint-plugin-react": "^3.3.1",
     "redux-logger": "^1.0.6",
     "tape": "^4.2.0",
+    "testem": "^0.9.7",
     "webpack": "^1.12.1",
     "webpack-dev-server": "^1.11.0"
   }

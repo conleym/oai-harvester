@@ -1,11 +1,10 @@
 import test from 'tape'
-import { selectResults } from './selectors.js'
+import { selectResults } from '../selectors.js'
 
 const generateState = (text, catalogs, searchResults) => ({
     criteria: { text, catalogs },
     searchResults
 })
-
 
 test('selectResults requires the current criteria', assert => {
     const expected = {
