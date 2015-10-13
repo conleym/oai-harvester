@@ -1,6 +1,6 @@
 import React from 'react'
 import Cover from '../components/cover.jsx'
-import { connect } from 'react-redux'
+import smartLoader from './smart_loader.jsx'
 import { ensureDocument } from '../actions/documents.js'
 import { routeInsert, routePreviewUrl } from '../actions/route.js'
 import Footer from '../components/footer.jsx'
@@ -11,40 +11,28 @@ import { joinAuthors } from '../components/search_results.jsx'
 import FontAwesome from 'react-fontawesome'
 import Date from '../components/date.jsx'
 import { checkValue } from '../actions/utils.js'
-import Focus from '../components/focus.jsx'
+import { Focus } from 'unizin-js-tools'
 
-const { func, func: dispatchFunc, shape, string, any } = React.PropTypes
+const { func, shape, object } = React.PropTypes
 
 class Result extends React.Component {
     static displayName = 'Result'
 
     static propTypes = {
-        ensureDocument: dispatchFunc.isRequired,
-        params: shape({
-            uid: string.isRequired
-        }).isRequired,
-        document: any,
+        document: object.isRequired,
         history: shape({
             goBack: func.isRequired
         }).isRequired,
     }
 
-    componentDidMount() {
-        this.props.ensureDocument(this.props.params.uid)
-    }
-
     render() {
         const { document } = this.props
-        if (!document) {
-            return null
-        }
 
         const previewUrl = routePreviewUrl(document).url
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
 
         // document attributes
-        const creators = checkValue(joinAuthors(document.properties['hrv:creator']))
         const type = checkValue(document.type)
         const size = checkValue(document.properties["common:size"])
         const language = checkValue(document.properties["hrv:language"])
@@ -56,19 +44,19 @@ class Result extends React.Component {
             <Focus>
                 <main className={styles.result} role="main">
                   <div className={styles.header}>
-                    <a onClick={this.props.history.goBack} role="button" className={secondaryBtnClasses}>
-                        <FontAwesome name='arrow-left' /> Back to results
-                    </a>
+                    <button onClick={this.props.history.goBack} className={secondaryBtnClasses}>
+                        <FontAwesome name='arrow-left' aria-hidden='true' /> Back to results
+                    </button>
 
                     <ul className={styles.controls}>
                       <li>
                         <Link to={routeInsert(document).route} className={primaryBtnClasses} role="button">
-                          <FontAwesome name='plus' /> Insert
+                          <FontAwesome name='plus' aria-hidden='true' /> Insert
                         </Link>
                       </li>
                       <li>
                         <a href={previewUrl} target="_blank" className={secondaryBtnClasses} role="button">
-                          <FontAwesome name='eye' /> Preview
+                          <FontAwesome name='eye' aria-hidden='true' /> Preview
                         </a>
                       </li>
                     </ul>
@@ -117,7 +105,18 @@ function mapStateToProps(state, props) {
     }
 }
 
-export default connect(
-  mapStateToProps,
-  { ensureDocument }
+export default smartLoader(
+    {
+        inputFilter(state, props) {
+            return { uid: props.params.uid }
+        },
+        isReady: ({uid}, state) => (state.documents[uid] != null),
+        loader(dispatch, params, lastParams) {
+            if (params.uid != lastParams.uid) {
+                dispatch(ensureDocument(params.uid))
+            }
+        }
+    },
+    mapStateToProps,
+    { }
 )(Result)

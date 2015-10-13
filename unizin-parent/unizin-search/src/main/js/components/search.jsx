@@ -4,7 +4,7 @@ import SearchResults from '../components/search_results.jsx'
 import Footer from '../components/footer.jsx'
 import CatalogSelector from '../components/catalog_selector.jsx'
 import classNames from 'classnames'
-import Focus from './focus.jsx'
+import { Focus } from 'unizin-js-tools'
 
 const { any, number, func, string, arrayOf, shape } = React.PropTypes
 

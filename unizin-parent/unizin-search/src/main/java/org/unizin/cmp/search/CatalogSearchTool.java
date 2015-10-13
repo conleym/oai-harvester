@@ -1,17 +1,26 @@
 package org.unizin.cmp.search;
 
+import org.nuxeo.ecm.platform.api.login.UserIdentificationInfo;
+import org.nuxeo.ecm.platform.ui.web.auth.CachableUserIdentificationInfo;
+import org.nuxeo.ecm.platform.ui.web.auth.NXAuthConstants;
+import org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService;
 import org.nuxeo.ecm.webengine.model.WebObject;
 import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
 import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.api.login.LoginService;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import java.awt.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,10 +51,29 @@ public class CatalogSearchTool extends ModuleRoot {
 
     // This is the real way that Canvas will LTI over
     @POST
-    public Object doPost(@Context HttpServletRequest request) {
+    public Object doPost(@Context HttpServletRequest request) throws
+            LoginException {
+        Principal user = request.getUserPrincipal();
+        LoginService loginService = Framework.getService(LoginService.class);
+        // constructor takes a username/password, but we don't care about them
+        UserIdentificationInfo dummy = new UserIdentificationInfo("invalid", "invalid");
+        CachableUserIdentificationInfo userInfo =
+                new CachableUserIdentificationInfo(dummy);
+        userInfo.setLoginContext(loginService.loginAs(user.getName()));
+        userInfo.setAlreadyAuthenticated(true);
+        userInfo.setPrincipal(user);
+        PluggableAuthenticationService authService =
+                (PluggableAuthenticationService) Framework.getRuntime().getComponent(
+                        PluggableAuthenticationService.NAME);
+        HttpSession session = request.getSession();
+        session.setAttribute(NXAuthConstants.USERIDENT_KEY, userInfo);
+        authService.onAuthenticatedSessionCreated(request, session, userInfo);
     	Map<String, String[]> params = request.getParameterMap();
-    	String ext_content_return_url = params.get("ext_content_return_url")[0];
-
+        String[] urls = params.get("ext_content_return_url");
+        String ext_content_return_url = "http://invalid.example.com";
+        if (urls != null) {
+             ext_content_return_url = urls[0];
+        }
     	return getView("index").arg("jsPath",
     			Framework.getProperty(
     					"org.unizin.catalogSearch.jsPath"))
@@ -56,7 +84,10 @@ public class CatalogSearchTool extends ModuleRoot {
     @POST
     @Path("showLaunch")
     @Produces("text/html;charset=UTF-8")
-    public Object showLaunch(@Context HttpServletRequest request) {
+    public Object showLaunch(@Context HttpServletRequest request) throws
+            LoginException {
+        String user = request.getUserPrincipal().getName();
+        Framework.loginAsUser(user);
         Map<String, Object> params = new HashMap<>();
         for (Map.Entry<String, String[]> item :
                 request.getParameterMap().entrySet()) {

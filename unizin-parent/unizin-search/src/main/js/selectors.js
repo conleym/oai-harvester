@@ -15,3 +15,19 @@ export const selectResults = (text, catalogs, page) => (state) => {
         entities: []
     }
 }
+
+export const selectCatalogs = (state) => state.catalogs
+
+export const selectDocument = (id) => (state) => state.documents[id]
+
+export const selectDocumentLoadError = (id) => (state) => state.documentLoadErrors[id]
+
+export const isDocumentReady = (id) => (state) => {
+    const doc = selectDocument(id)(state)
+
+    if (doc && doc.properties && doc.properties['file:content'] != null) {
+        return true
+    }
+
+    return false
+}

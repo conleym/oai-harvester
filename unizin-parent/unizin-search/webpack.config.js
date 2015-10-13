@@ -45,6 +45,17 @@ module.exports = {
     entry: {
         catalog_search: "./main.js",
     },
+    // https://github.com/webpack/webpack/issues/811#issuecomment-75451797
+    resolve: {
+        extensions: ['', '.js', '.jsx'],
+        fallback: path.join(__dirname, "node_modules")
+    },
+    resolveLoader: {
+        fallback: path.join(__dirname, "node_modules")
+    },
+    node: {
+        fs: 'empty'
+    },
     module: {
         loaders: [
             {
