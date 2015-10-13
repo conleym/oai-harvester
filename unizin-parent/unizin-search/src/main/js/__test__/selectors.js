@@ -1,5 +1,5 @@
 import test from 'tape'
-import { selectResults } from '../selectors.js'
+import { selectResults, isDocumentReady } from '../selectors.js'
 
 const generateState = (text, catalogs, searchResults) => ({
     criteria: { text, catalogs },
@@ -37,4 +37,28 @@ test('selectResults requires the current criteria', assert => {
     assert.deepEqual(actualText, expected)
 
     assert.end()
+})
+
+import { selectDocument } from '../selectors.js'
+
+test('documentImport checks whether a document has file:content', assert => {
+    const isReady = isDocumentReady('b1cc5bdf')
+    const store = {
+        documents: {
+            'b1cc5bdf': {
+                properties: { }
+            }
+        }
+    }
+
+    assert.equal(selectDocument('b1cc5bdf')(store), store.documents['b1cc5bdf'])
+
+    assert.equal(isReady(store), false)
+
+    store.documents['b1cc5bdf'].properties['file:content'] = 'about:blank'
+
+    assert.equal(isReady(store), true)
+
+    assert.end()
+
 })
