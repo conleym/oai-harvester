@@ -41,7 +41,7 @@ $cover_height: $cover_width * $cover_aspect_ratio;
 }
 
 // Aside
-@mixin aside {
+.aside {
   word-wrap: break-word;
   font-family: $default_font;
   font-weight: 300;

@@ -102,7 +102,9 @@ $result_cover_width: 145px;
       right: 0;
       border-left: 1px solid $border_color;
       overflow-y: scroll;
-      @include aside;
+      :global {
+        @extend .aside;
+      }
 
       .header {
         margin: 0;

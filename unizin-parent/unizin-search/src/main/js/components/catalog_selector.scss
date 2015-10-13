@@ -1,7 +1,9 @@
 @import '../variables.scss';
 
 :local .filters {
-  @include aside;
+  :global {
+    @extend .aside;
+  }
   position: fixed;
   top: $header_height;
   left: 0;
