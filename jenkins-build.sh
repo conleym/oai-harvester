@@ -6,3 +6,6 @@ export JAVA_HOME="/var/lib/jenkins/tools/hudson.model.JDK/Java_1.8"
 export M2_HOME="/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/nuxeo"
 "${M2_HOME}/bin/mvn" -f unizin-parent/ "$@"
 "${M2_HOME}/bin/mvn" -f unizin-harvester/ "$@"
+
+cd unizin-parent/unizin-search/
+npm run ci
