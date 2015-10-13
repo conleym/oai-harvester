@@ -10,6 +10,7 @@ import org.nuxeo.ecm.automation.test.AutomationFeature;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.PathRef;
+import org.nuxeo.ecm.core.api.blobholder.BlobHolder;
 import org.nuxeo.ecm.core.io.DocumentPipe;
 import org.nuxeo.ecm.core.io.DocumentReader;
 import org.nuxeo.ecm.core.io.DocumentWriter;
@@ -23,6 +24,8 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(FeaturesRunner.class)
 @Features(AutomationFeature.class)
@@ -58,5 +61,7 @@ public class CopyFromSourceRepositoryTest {
         chain.add(CopyFromSourceRepository.ID);
         DocumentModel outputDoc =
                 (DocumentModel) automationService.run(context, chain);
+        BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
+        assertNotNull(bh.getBlob());
     }
 }
