@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
 Bundle-SymbolicName: org.unizin.cmp.search
 Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;name=catalog
+Nuxeo-Component: OSGI-INF/search-operations-contrib.xml
