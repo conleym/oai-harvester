@@ -1,6 +1,6 @@
 import { FETCH_CATALOGS, CHANGE_CATALOG, SEARCH_FOR, SEARCH_RESULTS } from './actions/search.js'
 import { LOCATION_CHANGED } from './actions/route.js'
-import { DOCUMENT, DOCUMENT_LOAD_ERROR } from './actions/documents.js'
+import { DOCUMENT, DOCUMENT_LOAD_ERROR, CLEAR_DOCUMENT_LOAD_ERROR } from './actions/documents.js'
 
 export function documents(state = {}, action) {
     if (action.type === DOCUMENT) {
@@ -9,15 +9,25 @@ export function documents(state = {}, action) {
             [action.payload.uid]: action.payload
         }
     }
+
+    return state
+}
+
+export function documentLoadErrors(state = {}, action) {
+    if (action.type === CLEAR_DOCUMENT_LOAD_ERROR) {
+        const {
+            [action.payload.id]: message,
+            // This is a clone of state without the `[id]`
+            ...newState
+        } = state
+
+        return newState
+    }
     if (action.type === DOCUMENT_LOAD_ERROR) {
-        const { id } = action.payload
-        const doc = {
-            ...state[id],
-            loadError: action.payload.message
-        }
+        const { id, message } = action.payload
         return {
             ...state,
-            [id]: doc
+            [id]: message
         }
     }
 
@@ -83,3 +93,25 @@ export function catalogs(state = {}, action) {
     }
     return state
 }
+
+/*
+import { DOCUMENT_IMPORT } from './actions/documents.js'
+
+export function documentImports(state = {}, action) {
+
+    switch (action.type) {
+    case DOCUMENT_IMPORT: {
+        const { id, done, error } = action.payload
+        return {
+            ...state,
+            [id]: {
+                done,
+                error
+            }
+        }
+    }
+    }
+
+    return state
+}
+*/

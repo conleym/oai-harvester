@@ -1,34 +1,75 @@
 import React from 'react'
-import { connect } from 'react-redux'
-import { waitForDocument } from '../actions/documents.js'
+import smartLoader from './smart_loader.jsx'
+import { ensureDocument, documentImport } from '../actions/documents.js'
+import { routeReturnUrl} from '../actions/route.js'
+import { isDocumentReady, selectDocumentLoadError } from '../selectors.js'
 import Insert from '../components/insert.jsx'
 
-const { func: dispatchFunc, shape, string, any } = React.PropTypes
+const { func, func: dispatchFunc, shape, string, object, bool } = React.PropTypes
 
 class SmartInsert extends React.Component {
     static displayName = 'SmartInsert'
 
     static propTypes = {
-        waitForDocument: dispatchFunc.isRequired,
+        uid: string.isRequired,
+        history: shape({
+            goBack: func.isRequired
+        }).isRequired,
+        documentImport: dispatchFunc.isRequired,
+        routeReturnUrl: dispatchFunc.isRequired,
         params: shape({
             uid: string.isRequired
         }).isRequired,
-        document: any
+        document: object.isRequired,
+        ready: bool,
+        loadError: string,
     }
 
-    componentWillMount() {
-        this.props.waitForDocument(this.props.params.uid)
+    constructor(props, context) {
+        super(props, context)
+        this.onCancel = this.onCancel.bind(this)
+        this.onTryAgain = this.onTryAgain.bind(this)
+    }
+
+
+    componentDidMount() {
+        this.maybeRedirect()
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        this.maybeRedirect()
+    }
+
+    maybeRedirect() {
+        const { document, ready } = this.props
+
+        if (ready) {
+            window.location = this.props.routeReturnUrl(document).url
+        }
+    }
+
+    foo = () => {
+        this.something
+    }
+
+    onCancel() {
+        this.props.history.goBack()
+    }
+
+    onTryAgain() {
+        this.props.documentImport(this.props.uid)
     }
 
     render() {
-        const { document } = this.props
-        if (document && document.title) {
-            return (
-                <Insert document={document} />
-            )
-        }
+        const { document, loadError } = this.props
 
-        return null
+        return (
+            <Insert
+                document={document}
+                loadError={loadError}
+                onCancel={this.onCancel}
+                onTryAgain={this.onTryAgain} />
+        )
     }
 }
 
@@ -36,11 +77,26 @@ function mapStateToProps(state, props) {
     const { uid } = props.params
 
     return {
-        document: state.documents[uid]
+        uid,
+        document: state.documents[uid],
+        ready: isDocumentReady(uid)(state),
+        loadError: selectDocumentLoadError(uid)(state),
     }
 }
 
-export default connect(
-  mapStateToProps,
-  { waitForDocument }
+export default smartLoader(
+    {
+        inputFilter(state, props) {
+            return { uid: props.params.uid }
+        },
+        isReady: ({uid}, state) => (state.documents[uid] != null),
+        loader(dispatch, params, lastParams) {
+            if (params.uid != lastParams.uid) {
+                dispatch(ensureDocument(params.uid))
+                dispatch(documentImport(params.uid))
+            }
+        }
+    },
+    mapStateToProps,
+    { documentImport, routeReturnUrl }
 )(SmartInsert)
