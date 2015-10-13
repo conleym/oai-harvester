@@ -93,25 +93,3 @@ export function catalogs(state = {}, action) {
     }
     return state
 }
-
-/*
-import { DOCUMENT_IMPORT } from './actions/documents.js'
-
-export function documentImports(state = {}, action) {
-
-    switch (action.type) {
-    case DOCUMENT_IMPORT: {
-        const { id, done, error } = action.payload
-        return {
-            ...state,
-            [id]: {
-                done,
-                error
-            }
-        }
-    }
-    }
-
-    return state
-}
-*/

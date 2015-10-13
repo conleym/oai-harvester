@@ -48,10 +48,6 @@ class SmartInsert extends React.Component {
         }
     }
 
-    foo = () => {
-        this.something
-    }
-
     onCancel() {
         this.props.history.goBack()
     }
