@@ -1,8 +1,9 @@
 import { httpGET, json, encodeURL } from './utils.js'
 import DataLoader from 'dataloader'
-import { routeReturnUrl } from './route.js'
+import { selectDocument } from '../selectors.js'
 
 export const DOCUMENT_LOAD_ERROR = 'DOCUMENT_LOAD_ERROR'
+export const CLEAR_DOCUMENT_LOAD_ERROR = 'CLEAR_DOCUMENT_LOAD_ERROR'
 export const DOCUMENT = 'DOCUMENT'
 
 const documentLoader = new DataLoader(docIds => {
@@ -41,50 +42,52 @@ export function ensureDocument(id) {
     }
 }
 
-function documentReady(doc) {
-    if (doc && doc.properties && doc.properties['file:content'] != null) {
-        return true
-    }
-
-    return false
-}
-
-const selectDocument = (id) => (state) => state.documents[id]
-
 function nxDownloadContent(id) {
     // TODO: Make an API request for Nuxeo to download the content
 }
 
+const DOCUMENT_IMPORT_TIMEOUT = 30000
+const DOCUMENT_IMPORT_INTERVAL = 10000
 
-const POLL_TIMEOUT = 30000
-const POLL_INTERVAL = 10000
+import { isDocumentReady } from '../selectors.js'
 
-export function waitForDocument(id) {
+export function documentImport(id) {
     const selector = selectDocument(id)
+    const isReady = isDocumentReady(id)
 
     return (dispatch, getState) => {
-        if (documentReady(selector(getState()))) {
-            const document = selector(getState())
-            window.location = routeReturnUrl(document).url
-            return
+        dispatch({
+            type: CLEAR_DOCUMENT_LOAD_ERROR,
+            payload: { id }
+        })
+
+        let isDone = false
+        const done = (error) => {
+            if (!isDone && error != null) {
+                return dispatch({
+                    type: DOCUMENT_LOAD_ERROR,
+                    payload: {
+                        id,
+                        message: error
+                    }
+                })
+            }
+            isDone = true
         }
 
-        let hasTimedOut = false
-        setTimeout(() => { hasTimedOut = true }, POLL_TIMEOUT)
+        if (isReady(getState())) {
+            return done()
+        }
 
         nxDownloadContent(id)
 
+        setTimeout(() => {
+            done('Timeout')
+        }, DOCUMENT_IMPORT_TIMEOUT)
+
         function poll() {
-            if (hasTimedOut) {
-                dispatch({
-                    type: DOCUMENT_LOAD_ERROR,
-                    payload: {
-                        message: 'Timeout',
-                        id ,
-                    },
-                })
-                return
-            }
+            if (isDone) { return }
+
             documentLoader.clear(id)
             documentLoader.load(id).then((doc) => {
                 dispatch({
@@ -93,20 +96,12 @@ export function waitForDocument(id) {
                 })
                 return selector(getState())
             }).then((document) => {
-                if (documentReady(document)) {
-                    window.location = routeReturnUrl(document).url
-                    return
+                if (isReady(getState())) {
+                    return done()
                 }
-                setTimeout(poll, POLL_INTERVAL)
+                setTimeout(poll, DOCUMENT_IMPORT_INTERVAL)
             }).catch((error) => {
-                dispatch({
-                    type: DOCUMENT_LOAD_ERROR,
-                    payload: {
-                        message: error.message,
-                        id,
-                    },
-                })
-
+                return done(error.message)
             })
         }
 
