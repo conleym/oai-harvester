@@ -150,8 +150,10 @@ public class CopyFromSourceRepository  {
             doc.setPropertyValue(STATUS_PROP, "success");
             session.saveDocument(doc);
         } else {
-            LOG.warn("failed to retrieve {}: {}", uri,
-                     fileResponse.getStatusLine());
+            String msg = fileResponse.getStatusLine().toString();
+            doc.setPropertyValue(STATUS_PROP, String.format("failed: %s", msg));
+            session.saveDocument(doc);
+            LOG.error("failed to retrieve {}: {}", uri, msg);
         }
     }
 }
