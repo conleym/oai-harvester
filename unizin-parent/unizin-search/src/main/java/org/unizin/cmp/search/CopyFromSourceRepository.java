@@ -80,6 +80,10 @@ public class CopyFromSourceRepository  {
                 session.saveDocument(doc);
                 return doc;
             }
+        } else {
+            doc.setPropertyValue(STATUS_PROP,
+                                 "failed: no public fulltext link found");
+            session.saveDocument(doc);
         }
         return doc;
     }
