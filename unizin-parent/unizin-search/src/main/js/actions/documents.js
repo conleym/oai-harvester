@@ -1,6 +1,6 @@
 import { httpGET, json, encodeURL } from './utils.js'
 import DataLoader from 'dataloader'
-import { selectDocument } from '../selectors.js'
+import { selectDocument, isDocumentReady } from '../selectors.js'
 
 export const DOCUMENT_LOAD_ERROR = 'DOCUMENT_LOAD_ERROR'
 export const CLEAR_DOCUMENT_LOAD_ERROR = 'CLEAR_DOCUMENT_LOAD_ERROR'
@@ -42,14 +42,8 @@ export function ensureDocument(id) {
     }
 }
 
-function nxDownloadContent(id) {
-    // TODO: Make an API request for Nuxeo to download the content
-}
-
 const DOCUMENT_IMPORT_TIMEOUT = 30000
 const DOCUMENT_IMPORT_INTERVAL = 10000
-
-import { isDocumentReady } from '../selectors.js'
 
 export function documentImport(id) {
     const selector = selectDocument(id)
@@ -79,7 +73,7 @@ export function documentImport(id) {
             return done()
         }
 
-        nxDownloadContent(id)
+        documentImport.nxDownloadContent(id)
 
         setTimeout(() => {
             done('Timeout')
@@ -88,8 +82,7 @@ export function documentImport(id) {
         function poll() {
             if (isDone) { return }
 
-            documentLoader.clear(id)
-            documentLoader.load(id).then((doc) => {
+            documentImport.refreshDocument(id).then((doc) => {
                 dispatch({
                     type: DOCUMENT,
                     payload: doc
@@ -108,3 +101,13 @@ export function documentImport(id) {
         poll()
     }
 }
+// These are just being attached so they can be mocked in tests.
+Object.assign(documentImport, {
+    nxDownloadContent(id) {
+        // TODO: Make an API request for Nuxeo to download the content
+    },
+    refreshDocument(id) {
+        documentLoader.clear(id)
+        return documentLoader.load(id)
+    }
+})
