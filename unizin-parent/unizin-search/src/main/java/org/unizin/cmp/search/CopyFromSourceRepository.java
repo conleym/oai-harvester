@@ -151,9 +151,9 @@ public class CopyFromSourceRepository  {
             session.saveDocument(doc);
         } else {
             String msg = fileResponse.getStatusLine().toString();
+            LOG.error("failed to retrieve {}: {}", uri, msg);
             doc.setPropertyValue(STATUS_PROP, String.format("failed: %s", msg));
             session.saveDocument(doc);
-            LOG.error("failed to retrieve {}: {}", uri, msg);
         }
     }
 }
