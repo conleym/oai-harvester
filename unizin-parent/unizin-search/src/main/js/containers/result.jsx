@@ -7,6 +7,7 @@ import Footer from '../components/footer.jsx'
 import styles from './result.scss'
 import { Link } from 'react-router'
 import classNames from 'classnames'
+import pluralize from 'pluralize'
 import { joinAuthors } from '../components/search_results.jsx'
 import FontAwesome from 'react-fontawesome'
 import Date from '../components/date.jsx'
@@ -31,6 +32,8 @@ class Result extends React.Component {
         const previewUrl = routePreviewUrl(document).url
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
+
+        const authorLabel = pluralize('Author', document.properties['hrv:creator'].length)
 
         // document attributes
         const type = checkValue(document.type)
@@ -70,7 +73,7 @@ class Result extends React.Component {
                       <div className={styles.details}>
                         <h1>{document.title}</h1>
 
-                        <div className={styles.author}>Author: {joinAuthors(document.properties['hrv:creator'])}</div>
+                        <div className={styles.author}>{authorLabel}: {joinAuthors(document.properties['hrv:creator'])}</div>
 
                         <div className={styles.description}>
                           {description}
