@@ -25,6 +25,15 @@ class Result extends React.Component {
         }).isRequired,
     }
 
+    constructor(props,context) {
+        super(props,context)
+        this.state = { expanded: false }
+    }
+
+    updateExpanded() {
+      this.setState({ expanded: !this.state.expanded })
+    }
+
     render() {
         const { document } = this.props
 
@@ -70,7 +79,10 @@ class Result extends React.Component {
                       <div className={styles.details}>
                         <h1>{document.title}</h1>
 
-                        <div className={styles.author}>Author: {joinAuthors(document.properties['hrv:creator'])}</div>
+                        <div className={styles.author}>
+                          Author: {joinAuthors(document.properties['hrv:creator'])}
+                        </div>
+                        <button onClick={this.updateExpanded}>More</button>
 
                         <div className={styles.description}>
                           {description}
