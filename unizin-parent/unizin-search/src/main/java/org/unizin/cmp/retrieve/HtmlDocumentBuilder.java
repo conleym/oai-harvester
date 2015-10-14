@@ -7,14 +7,13 @@ import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 import java.io.IOException;
 
 public class HtmlDocumentBuilder extends DocumentBuilder {
@@ -23,13 +22,17 @@ public class HtmlDocumentBuilder extends DocumentBuilder {
     public Document parse(InputSource inputSource) throws
             SAXException, IOException {
 
-        XMLReader xmlReader = new Parser();
-        xmlReader.setFeature(Parser.namespacesFeature, false);
-        xmlReader.setFeature(Parser.namespacePrefixesFeature, false);
+        Parser parser = new Parser();
+        parser.setFeature(Parser.namespacesFeature, false);
+        parser.setFeature(Parser.namespacePrefixesFeature, false);
+        parser.setFeature(Parser.ignoreBogonsFeature, true);
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            SAXTransformerFactory stf = (SAXTransformerFactory) TransformerFactory.newInstance();
+            TransformerHandler handler = stf.newTransformerHandler();
             DOMResult domResult = new DOMResult();
-            transformer.transform(new SAXSource(xmlReader, inputSource), domResult);
+            handler.setResult(domResult);
+            parser.setContentHandler(handler);
+            parser.parse(inputSource);
             return (Document) domResult.getNode();
         } catch (TransformerException e) {
             throw new SAXException(e);

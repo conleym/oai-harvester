@@ -101,19 +101,21 @@ public class CopyFromSourceRepository  {
             finalUri = locations.get(locations.size() - 1);
         }
         if (blobPath != null) {
-            retrieveContent(doc, client, blobPath, finalUri);
+            retrieveContent(doc, client, new URI(blobPath), finalUri);
         }
 
     }
 
     private void retrieveContent(DocumentModel doc, HttpClient client,
-                                 String blobPath, URI uri) throws
+                                 URI blobPath, URI uri) throws
             URISyntaxException,
             IOException {
         URIBuilder uriBuilder = new URIBuilder();
         uriBuilder.setScheme(uri.getScheme());
         uriBuilder.setHost(uri.getHost());
-        uriBuilder.setPath(blobPath);
+        uriBuilder.setPort(uri.getPort());
+        uriBuilder.setPath(blobPath.getPath());
+        uriBuilder.setCustomQuery(blobPath.getQuery());
         URI fullPdfUri = uriBuilder.build();
         LOG.info("Attempting to retrieve {}", fullPdfUri);
         HttpGet fileRequest = new HttpGet(fullPdfUri);
