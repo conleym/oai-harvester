@@ -2,6 +2,8 @@ package org.unizin.cmp.search.operations;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
+import org.hamcrest.Matchers;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,24 +23,35 @@ import org.nuxeo.ecm.core.io.DocumentWriter;
 import org.nuxeo.ecm.core.io.impl.DocumentPipeImpl;
 import org.nuxeo.ecm.core.io.impl.plugins.DocumentModelWriter;
 import org.nuxeo.ecm.core.io.impl.plugins.NuxeoArchiveReader;
+import org.nuxeo.ecm.core.test.DefaultRepositoryInit;
+import org.nuxeo.ecm.core.test.TransactionalFeature;
+import org.nuxeo.ecm.core.test.annotations.Granularity;
+import org.nuxeo.ecm.core.test.annotations.RepositoryConfig;
+import org.nuxeo.ecm.core.work.api.WorkManager;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.unizin.cmp.search.CopyFromSourceRepository;
+import org.unizin.cmp.search.RetrieveCopyFromSourceRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 
 @RunWith(FeaturesRunner.class)
-@Features(AutomationFeature.class)
+@Features({TransactionalFeature.class, AutomationFeature.class})
+@RepositoryConfig(init = DefaultRepositoryInit.class, cleanup = Granularity.METHOD)
 @Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.search"})
 public class CopyFromSourceRepositoryTest {
 
@@ -51,7 +64,13 @@ public class CopyFromSourceRepositoryTest {
     @Inject
     CoreSession session;
 
-    private DocumentModel createTestDoc() throws IOException {
+    @Inject
+    WorkManager workManager;
+
+    DocumentModel inputDoc;
+    byte[] pdfResponseBody;
+
+    DocumentModel createTestDoc() throws IOException {
         InputStream archiveStream = getClass().getResourceAsStream("/testdoc.zip");
         DocumentReader reader = new NuxeoArchiveReader(archiveStream);
         DocumentWriter writer = new DocumentModelWriter(session, "/");
@@ -63,36 +82,69 @@ public class CopyFromSourceRepositoryTest {
         return session.getDocument(new PathRef("/Untitled.1444280484660"));
     }
 
-    @Test
-    public void testCopyFromSourceRepository() throws
-        OperationException,
-        IOException {
+    @Before
+    public void setUp() throws Exception {
+        inputDoc = createTestDoc();
         byte[] htmlResponseBody = ByteStreams.toByteArray(
-            getClass().getResourceAsStream("/testdocresponse.html"));
-        byte[] pdfResponseBody = ByteStreams.toByteArray(
-            getClass().getResourceAsStream(("/testdocpage8.pdf")));
+                getClass().getResourceAsStream("/testdocresponse.html"));
+        pdfResponseBody = ByteStreams.toByteArray(
+                getClass().getResourceAsStream(("/testdocpage8.pdf")));
         stubFor(get(urlEqualTo("/2027/loc.ark:/13960/t6252864g"))
-                    .willReturn(aResponse().withStatus(303).withHeader(
-                        "Location", "http://localhost:9231/htmlout")));
+                        .willReturn(aResponse().withStatus(303).withHeader(
+                                "Location", "http://localhost:9231/htmlout")));
         stubFor(get(urlEqualTo("/htmlout"))
-                    .willReturn(aResponse()
-                                    .withHeader("Content-Type", "text/html; charset=utf-8")
-                                    .withBody(htmlResponseBody)));
+                        .willReturn(aResponse().withHeader(
+                                "Content-Type", "text/html; charset=utf-8")
+                                            .withBody(htmlResponseBody)));
         stubFor(get(urlEqualTo("/cgi/imgsrv/download/pdf?id=loc.ark%3A%2F13960%2Ft6252864g;orient=0;size=100"))
-                    .willReturn(aResponse()
-                                    .withHeader("Content-Type",
-                                                "application/pdf")
-                                    .withBody(pdfResponseBody)));
-        DocumentModel inputDoc = createTestDoc();
+                        .willReturn(aResponse().withHeader(
+                                "Content-Type", "application/pdf")
+                                            .withBody(pdfResponseBody)));
+    }
+
+    @Test
+    public void testCopyFromSourceRepository() throws OperationException,
+            IOException {
         OperationContext context = new OperationContext(session);
         context.setInput(inputDoc);
         OperationChain chain = new OperationChain("testCopyFromSourceRepository");
         chain.add(CopyFromSourceRepository.ID);
         DocumentModel outputDoc =
-            (DocumentModel) automationService.run(context, chain);
+                (DocumentModel) automationService.run(context, chain);
         BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
         Blob blob = bh.getBlob();
         assertNotNull(blob);
         assertArrayEquals(pdfResponseBody, blob.getByteArray());
+        assertEquals("success", outputDoc.getPropertyValue(CopyFromSourceRepository.STATUS_PROP));
+    }
+
+    @Test
+    public void testRequestCopyFromSourceRepository() throws
+            OperationException, IOException, InterruptedException {
+        OperationContext context = new OperationContext(session);
+        context.setInput(inputDoc);
+        OperationChain chain = new OperationChain("testRequestCopyFromSourceRepository");
+        chain.add(RetrieveCopyFromSourceRepository.ID);
+        DocumentModel outputDoc =
+                (DocumentModel) automationService.run(context, chain);
+        workManager.awaitCompletion(10, TimeUnit.SECONDS);
+        BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
+        Blob blob = bh.getBlob();
+        assertNotNull(blob);
+        assertArrayEquals(pdfResponseBody, blob.getByteArray());
+    }
+
+    @Test
+    public void testFailure() throws OperationException {
+        OperationContext context = new OperationContext(session);
+        inputDoc.setPropertyValue("hrv:identifier", new String[] {"http://localhost:9231/nonexistent"});
+        session.saveDocument(inputDoc);
+        context.setInput(inputDoc);
+        OperationChain chain = new OperationChain("testFailure");
+        chain.add(CopyFromSourceRepository.ID);
+        DocumentModel outputDoc =
+                (DocumentModel) automationService.run(context, chain);
+        assertThat((String) outputDoc.getPropertyValue(CopyFromSourceRepository.STATUS_PROP),
+                   Matchers.startsWith("failed"));
     }
 }

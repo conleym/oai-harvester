@@ -1,4 +1,4 @@
-package org.unizin.cmp.search.operations;
+package org.unizin.cmp.search;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -41,6 +41,7 @@ public class CopyFromSourceRepository  {
     public static final String ID = "UnizinCMP.CopyFromSourceRepository";
     public static final Logger LOG =
         LoggerFactory.getLogger(CopyFromSourceRepository.class);
+    public static final String STATUS_PROP = "hrv:retrievalStatus";
 
     @Context
     CoreSession session;
@@ -52,6 +53,8 @@ public class CopyFromSourceRepository  {
             LOG.warn("{} called on document without Harvested facet", ID);
             return doc;
         }
+        doc.setPropertyValue(STATUS_PROP, "pending");
+        session.saveDocument(doc);
         List<String> identifiers =
             Arrays.asList((String[]) doc.getPropertyValue("hrv:identifier"));
         Optional<String> remoteUrl = identifiers.stream().filter(
@@ -62,6 +65,9 @@ public class CopyFromSourceRepository  {
                 uri = new URI(remoteUrl.get());
             } catch (URISyntaxException e) {
                 LOG.error("Error parsing uri", e);
+                doc.setPropertyValue(STATUS_PROP,
+                                     String.format("failed: %s", e.getMessage()));
+                session.saveDocument(doc);
                 return doc;
             }
             LOG.info("Attempting to retrieve {}", uri);
@@ -69,6 +75,9 @@ public class CopyFromSourceRepository  {
                 retrieve(doc, uri);
             } catch (IOException | URISyntaxException e) {
                 LOG.error("Error retrieving uri", e);
+                doc.setPropertyValue(STATUS_PROP,
+                                     String.format("failed: %s", e.getMessage()));
+                session.saveDocument(doc);
                 return doc;
             }
         }
@@ -85,6 +94,12 @@ public class CopyFromSourceRepository  {
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet getRequest = new HttpGet(uri);
         HttpResponse resp = client.execute(getRequest, httpContext);
+        if (resp.getStatusLine().getStatusCode() != 200) {
+            doc.setPropertyValue(STATUS_PROP,
+                                 String.format("failed: %s", resp.getStatusLine().getReasonPhrase()));
+            session.saveDocument(doc);
+            return;
+        }
         URI finalUri = getRequest.getURI();
         RedirectLocations locations = (RedirectLocations)
             httpContext.getAttribute(HttpClientContext.REDIRECT_LOCATIONS);
@@ -132,6 +147,7 @@ public class CopyFromSourceRepository  {
             blob.setMimeType(fileEntity.getContentType().getValue());
             blob.setFilename("retrievedFile");
             bh.setBlob(blob);
+            doc.setPropertyValue(STATUS_PROP, "success");
             session.saveDocument(doc);
         } else {
             LOG.warn("failed to retrieve {}: {}", uri,
