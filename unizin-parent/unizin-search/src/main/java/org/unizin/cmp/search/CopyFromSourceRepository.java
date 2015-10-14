@@ -127,6 +127,10 @@ public class CopyFromSourceRepository  {
         Element blobLink = htmlDoc.select("a[id=fullPdfLink][rel=allow]").first();
         if (blobLink != null) {
             retrieveContent(doc, client, new URI(blobLink.attr("abs:href")));
+        } else {
+            doc.setPropertyValue(STATUS_PROP,
+                                 "failed: no public fulltext link found");
+            session.saveDocument(doc);
         }
 
     }
