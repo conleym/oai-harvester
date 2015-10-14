@@ -17,5 +17,6 @@
       @extend .center;
     }
     color: lighten($font_color, 20%);
+    font-size: .6rem;
   }
 }
