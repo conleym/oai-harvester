@@ -30,8 +30,18 @@ class Result extends React.Component {
         this.state = { expanded: false }
     }
 
-    updateExpanded() {
-      this.setState({ expanded: !this.state.expanded })
+    onClick() {
+        this.setState({ expanded: !this.state.expanded })
+    }
+
+    showMoreLess(authString,buttonLabel) {
+        if (authString.length > 64) {
+            return(
+                <button onClick={this.onClick.bind(this)} className='simple'>
+                  {buttonLabel}
+                </button>
+            )
+        }
     }
 
     render() {
@@ -48,6 +58,13 @@ class Result extends React.Component {
         const dateAdded = checkValue(document.properties["hrv:date"])
         const rights = checkValue(document.properties["hrv:rights"])
         const description = checkValue(document.properties['hrv:description'])
+
+        const buttonLabel = (this.state.expanded) ? "Show fewer authors" : "Show more authors"
+        const authorClasses = (this.state.expanded) ? classNames(styles.author, styles.expanded) : styles.author
+
+        // map author string to test length and determine id "More/Less" button is needed
+        let authString = ""
+        document.properties['hrv:creator'].map(m => authString += m)
 
         return (
             <Focus>
@@ -79,10 +96,10 @@ class Result extends React.Component {
                       <div className={styles.details}>
                         <h1>{document.title}</h1>
 
-                        <div className={styles.author}>
+                        <div className={authorClasses}>
                           Author: {joinAuthors(document.properties['hrv:creator'])}
                         </div>
-                        <button onClick={this.updateExpanded}>More</button>
+                        {this.showMoreLess(authString,buttonLabel)}
 
                         <div className={styles.description}>
                           {description}
