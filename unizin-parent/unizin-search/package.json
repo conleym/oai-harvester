@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack --bail",
-    "ci": "testem ci --port 11001 && npm run lint",
+    "ci": "webpack --config ./webpack.test.config.js && testem ci --port 11001 >tests.tap 2>&1 && npm run lint",
     "lint": "eslint --ext js,jsx src/",
     "start": "node server.js",
     "start-cert": "webpack-dev-server --https  --key server.key --cert server.crt --cacert server.crt",
