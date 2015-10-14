@@ -76,9 +76,9 @@ public class CopyFromSourceRepositoryTest {
                         "Location", "http://localhost:9231/htmlout")));
         stubFor(get(urlEqualTo("/htmlout"))
                     .willReturn(aResponse()
-                                    .withHeader("Content-Type", "text/html")
+                                    .withHeader("Content-Type", "text/html; charset=utf-8")
                                     .withBody(htmlResponseBody)));
-        stubFor(get(urlEqualTo("/cgi/imgsrv/download/pdf?id=loc.ark:/13960/t6252864g;orient=0;size=100"))
+        stubFor(get(urlEqualTo("/cgi/imgsrv/download/pdf?id=loc.ark%3A%2F13960%2Ft6252864g;orient=0;size=100"))
                     .willReturn(aResponse()
                                     .withHeader("Content-Type",
                                                 "application/pdf")
