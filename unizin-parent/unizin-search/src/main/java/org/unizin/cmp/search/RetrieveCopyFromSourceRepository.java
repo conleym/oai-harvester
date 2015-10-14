@@ -6,7 +6,6 @@ import org.nuxeo.ecm.automation.core.annotations.OperationMethod;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.repository.RepositoryManager;
 import org.nuxeo.ecm.core.work.api.WorkManager;
-import org.nuxeo.runtime.transaction.TransactionHelper;
 
 @Operation(id = RetrieveCopyFromSourceRepository.ID,
            label = "Request copy from source repository",
@@ -22,8 +21,6 @@ public class RetrieveCopyFromSourceRepository {
 
     @OperationMethod
     public DocumentModel run(DocumentModel doc) {
-        TransactionHelper.commitOrRollbackTransaction();
-        TransactionHelper.startTransaction();
         workManager.schedule(new RetrieveCopyWork(
                                      repositoryManager.getDefaultRepositoryName(),
                                      doc.getId()));

@@ -31,6 +31,7 @@ import org.nuxeo.ecm.core.work.api.WorkManager;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
+import org.nuxeo.runtime.transaction.TransactionHelper;
 import org.unizin.cmp.search.CopyFromSourceRepository;
 import org.unizin.cmp.search.RetrieveCopyFromSourceRepository;
 
@@ -121,6 +122,8 @@ public class CopyFromSourceRepositoryTest {
     @Test
     public void testRequestCopyFromSourceRepository() throws
             OperationException, IOException, InterruptedException {
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
         OperationContext context = new OperationContext(session);
         context.setInput(inputDoc);
         OperationChain chain = new OperationChain("testRequestCopyFromSourceRepository");
