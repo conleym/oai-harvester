@@ -6,6 +6,7 @@ import Cover from './cover.jsx'
 import Pager from './pager.jsx'
 import Loading from './loading.jsx'
 import classNames from 'classnames'
+import pluralize from 'pluralize'
 import FontAwesome from 'react-fontawesome'
 import { checkValue } from '../actions/utils.js'
 
@@ -18,10 +19,6 @@ function normalizeAuthor(name) {
     if (first == null) { return name }
 
     return `${first} ${last}`
-}
-
-function pluralize(count, string) {
-    return (count > 1) ? `${string}s` : string
 }
 
 export const joinAuthors = (authors) => authors.map(normalizeAuthor).join(', ')
@@ -59,7 +56,7 @@ export default class SearchResults extends React.Component {
         const previewBtnClasses = classNames("btn", styles.btn, styles.preview)
         const previewLabel = "Preview " + title
 
-        const authorLabel = pluralize(result.properties['hrv:creator'].length, 'Author')
+        const authorLabel = pluralize('Author', result.properties['hrv:creator'].length)
         const creators = checkValue(joinAuthors(result.properties['hrv:creator']))
 
         return (
