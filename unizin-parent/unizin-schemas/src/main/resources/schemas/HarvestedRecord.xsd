@@ -34,4 +34,6 @@
   <xs:element name="sourceRepository" type="xs:string"/>
   <xs:element name="oaiIdentifier" type="xs:string"/>
 
+  <xs:element name="retrievalStatus" type="xs:string"/>
+
 </xs:schema>
