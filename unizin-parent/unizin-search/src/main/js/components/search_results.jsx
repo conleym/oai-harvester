@@ -20,6 +20,10 @@ function normalizeAuthor(name) {
     return `${first} ${last}`
 }
 
+function pluralize(count, string) {
+    return (count > 1) ? `${string}s` : string
+}
+
 export const joinAuthors = (authors) => authors.map(normalizeAuthor).join(', ')
 
 export default class SearchResults extends React.Component {
@@ -55,6 +59,7 @@ export default class SearchResults extends React.Component {
         const previewBtnClasses = classNames("btn", styles.btn, styles.preview)
         const previewLabel = "Preview " + title
 
+        const authorLabel = pluralize(result.properties['hrv:creator'].length, 'Author')
         const creators = checkValue(joinAuthors(result.properties['hrv:creator']))
 
         return (
@@ -67,7 +72,7 @@ export default class SearchResults extends React.Component {
                 </Link>
 
                 <ul className={styles.metadata}>
-                    <li>Author: {creators}</li>
+                    <li className={styles.authors}>{authorLabel}: {creators}</li>
                 </ul>
 
                 <ul className={styles.controls}>
