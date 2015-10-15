@@ -112,7 +112,7 @@ export function documentImport(id) {
         }
 
         // Nothing needs to happen here if the process is successful
-        poll({
+        documentImport.poll({
             timeout: DOCUMENT_IMPORT_TIMEOUT,
             interval: DOCUMENT_IMPORT_INTERVAL,
             action,
@@ -130,6 +130,7 @@ export function documentImport(id) {
 }
 // These are just being attached so they can be mocked in tests.
 Object.assign(documentImport, {
+    poll,
     nxDownloadContent(id) {
         const url = encodeURL`/nuxeo/site/api/v1/id/${id}/@op/UnizinCMP.RetrieveCopyFromSourceRepository`
         return httpPOST(url, { params: {} })
