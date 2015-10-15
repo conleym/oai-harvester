@@ -43,7 +43,7 @@ module.exports = {
     context: path.join(__dirname, 'src', 'main', 'js'),
     devtool: devtool,
     entry: {
-        catalog_search: "./main.js",
+        catalog_search: ["./main.js"],
     },
     // https://github.com/webpack/webpack/issues/811#issuecomment-75451797
     resolve: {

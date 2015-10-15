@@ -19,6 +19,7 @@ testsCompiler.watch({}, function (err, stats) {
 
 
 var port = config.devServer.port
+config.entry.catalog_search.unshift("webpack-dev-server/client?https://localhost:9595")
 
 // Primary app
 new WebpackDevServer(webpack(config), {
