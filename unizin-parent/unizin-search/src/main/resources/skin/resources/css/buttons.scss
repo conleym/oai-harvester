@@ -27,4 +27,14 @@ button,
       background: darken($purple, 20%);
     }
   }
+
+  &.simple {
+    border: none;
+    padding: 0;
+
+    &:hover {
+        background: none;
+        text-decoration: underline;
+    }
+  }
 }

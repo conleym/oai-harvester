@@ -76,7 +76,17 @@ $result_cover_width: 145px;
         font-weight: bold;
         font-family: $decorative_font;
         font-size: 1rem;
-        padding: 1rem 0;
+        padding: 1rem 0 .25rem 0;
+        transition: all .25s;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.expanded {
+          white-space: normal;
+          overflow: visible;
+        }
       }
 
       .cover {
@@ -93,6 +103,7 @@ $result_cover_width: 145px;
       .description {
         font-size: .875rem;
         line-height: 1.3rem;
+        padding-top: 2rem;
       }
     }
 
