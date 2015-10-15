@@ -42,8 +42,35 @@ export function ensureDocument(id) {
     }
 }
 
-const DOCUMENT_IMPORT_TIMEOUT = 30000
-const DOCUMENT_IMPORT_INTERVAL = 10000
+function poll({ action, interval, timeout }) {
+    const RETRY = Symbol('Retry')
+    return new Promise((resolve, reject) => {
+        let done = false
+        setTimeout(() => {
+            done = true
+            reject(new Error('Timeout'))
+        }, timeout)
+
+        function next() {
+            action(RETRY).then((result) => {
+                if (result !== RETRY) {
+                    return resolve(result)
+                }
+
+                if (!done) {
+                    setTimeout(function() {
+                        next()
+                    }, interval)
+                }
+            }).catch(err => reject(err))
+        }
+
+        next()
+    })
+}
+
+const DOCUMENT_IMPORT_TIMEOUT = 3000
+const DOCUMENT_IMPORT_INTERVAL = 1000
 
 export function documentImport(id) {
     const selector = selectDocument(id)
@@ -55,50 +82,41 @@ export function documentImport(id) {
             payload: { id }
         })
 
-        let isDone = false
-        const done = (error) => {
-            if (!isDone && error != null) {
-                return dispatch({
-                    type: DOCUMENT_LOAD_ERROR,
-                    payload: {
-                        id,
-                        message: error
-                    }
-                })
-            }
-            isDone = true
-        }
-
         if (isReady(getState())) {
-            return done()
+            return
         }
 
         documentImport.nxDownloadContent(id)
 
-        setTimeout(() => {
-            done('Timeout')
-        }, DOCUMENT_IMPORT_TIMEOUT)
-
-        function poll() {
-            if (isDone) { return }
-
-            documentImport.refreshDocument(id).then((doc) => {
+        function action(retry) {
+            return documentImport.refreshDocument(id).then((doc) => {
                 dispatch({
                     type: DOCUMENT,
                     payload: doc
                 })
-                return selector(getState())
-            }).then((document) => {
+                const document = selector(getState())
                 if (isReady(getState())) {
-                    return done()
+                    return document
                 }
-                setTimeout(poll, DOCUMENT_IMPORT_INTERVAL)
-            }).catch((error) => {
-                return done(error.message)
+                return retry
             })
         }
 
-        poll()
+        // Nothing needs to happen here if the process is successful
+        poll({
+            timeout: DOCUMENT_IMPORT_TIMEOUT,
+            interval: DOCUMENT_IMPORT_INTERVAL,
+            action,
+        }).catch((error) => {
+            return dispatch({
+                type: DOCUMENT_LOAD_ERROR,
+                payload: {
+                    id,
+                    message: error.message
+                }
+            })
+        })
+
     }
 }
 // These are just being attached so they can be mocked in tests.
