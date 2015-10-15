@@ -1,6 +1,6 @@
-import { httpGET, json, encodeURL } from './utils.js'
+import { httpGET, httpPOST, json, encodeURL } from './utils.js'
 import DataLoader from 'dataloader'
-import { selectDocument, isDocumentReady } from '../selectors.js'
+import { selectDocument, selectRetrievalStatus, isDocumentReady } from '../selectors.js'
 
 export const DOCUMENT_LOAD_ERROR = 'DOCUMENT_LOAD_ERROR'
 export const CLEAR_DOCUMENT_LOAD_ERROR = 'CLEAR_DOCUMENT_LOAD_ERROR'
@@ -42,12 +42,44 @@ export function ensureDocument(id) {
     }
 }
 
+function poll({ action, interval, timeout }) {
+    const RETRY = Symbol('Retry')
+    return new Promise((resolve, reject) => {
+        let done = false
+        const timer = setTimeout(() => {
+            done = true
+            reject(new Error('Timeout'))
+        }, timeout)
+
+        function next() {
+            action(RETRY).then((result) => {
+                if (result !== RETRY) {
+                    clearTimeout(timer)
+                    return resolve(result)
+                }
+
+                if (!done) {
+                    setTimeout(function() {
+                        next()
+                    }, interval)
+                }
+            }).catch(err => {
+                clearTimeout(timer)
+                reject(err)
+            })
+        }
+
+        next()
+    })
+}
+
 const DOCUMENT_IMPORT_TIMEOUT = 30000
 const DOCUMENT_IMPORT_INTERVAL = 10000
 
 export function documentImport(id) {
-    const selector = selectDocument(id)
+    const getDocument = selectDocument(id)
     const isReady = isDocumentReady(id)
+    const getStatus = selectRetrievalStatus(id)
 
     return (dispatch, getState) => {
         dispatch({
@@ -55,56 +87,53 @@ export function documentImport(id) {
             payload: { id }
         })
 
-        let isDone = false
-        const done = (error) => {
-            if (!isDone && error != null) {
-                return dispatch({
-                    type: DOCUMENT_LOAD_ERROR,
-                    payload: {
-                        id,
-                        message: error
-                    }
-                })
-            }
-            isDone = true
-        }
-
         if (isReady(getState())) {
-            return done()
+            return
         }
 
         documentImport.nxDownloadContent(id)
 
-        setTimeout(() => {
-            done('Timeout')
-        }, DOCUMENT_IMPORT_TIMEOUT)
-
-        function poll() {
-            if (isDone) { return }
-
-            documentImport.refreshDocument(id).then((doc) => {
+        function action(retry) {
+            return documentImport.refreshDocument(id).then((doc) => {
                 dispatch({
                     type: DOCUMENT,
                     payload: doc
                 })
-                return selector(getState())
-            }).then((document) => {
-                if (isReady(getState())) {
-                    return done()
+                const status = getStatus(getState())
+                if (status === 'success') {
+                    return getDocument(getState())
                 }
-                setTimeout(poll, DOCUMENT_IMPORT_INTERVAL)
-            }).catch((error) => {
-                return done(error.message)
+                if (status.slice(0, 7) === 'failed:') {
+                    throw new Error(status.slice(7).trim())
+                }
+
+                return retry
             })
         }
 
-        poll()
+        // Nothing needs to happen here if the process is successful
+        documentImport.poll({
+            timeout: DOCUMENT_IMPORT_TIMEOUT,
+            interval: DOCUMENT_IMPORT_INTERVAL,
+            action,
+        }).catch((error) => {
+            return dispatch({
+                type: DOCUMENT_LOAD_ERROR,
+                payload: {
+                    id,
+                    message: error.message
+                }
+            })
+        })
+
     }
 }
 // These are just being attached so they can be mocked in tests.
 Object.assign(documentImport, {
+    poll,
     nxDownloadContent(id) {
-        // TODO: Make an API request for Nuxeo to download the content
+        const url = encodeURL`/nuxeo/site/api/v1/id/${id}/@op/UnizinCMP.RetrieveCopyFromSourceRepository`
+        return httpPOST(url, { params: {} })
     },
     refreshDocument(id) {
         documentLoader.clear(id)

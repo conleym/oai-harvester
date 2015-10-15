@@ -1,9 +1,10 @@
 
 const spies = []
 const BACKUP = Symbol('Spy Backup')
-export function spyOn(obj, method, fake = createSpy()) {
-    fake[BACKUP] = obj[method]
-    obj[method] = fake
+export function spyOn(obj, method, fake) {
+    const spy = createSpy(fake)
+    spy[BACKUP] = obj[method]
+    obj[method] = spy
 
     spies.push({ obj, method })
 
@@ -14,10 +15,13 @@ export function restoreSpy(obj, method) {
 }
 
 
-export function createSpy() {
+export function createSpy(fake) {
     const spy = function(...args) {
         spy.calls++
         spy.args.push(args)
+        if (fake) {
+            return fake.apply(this, args)
+        }
     }
     spy.calls = 0
     spy.args = []
