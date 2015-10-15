@@ -127,6 +127,8 @@ public class CopyFromSourceRepositoryTest {
         chain.add(RetrieveCopyFromSourceRepository.ID);
         DocumentModel outputDoc =
                 (DocumentModel) automationService.run(context, chain);
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
         workManager.awaitCompletion(10, TimeUnit.SECONDS);
         BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
         Blob blob = bh.getBlob();
@@ -147,6 +149,8 @@ public class CopyFromSourceRepositoryTest {
         chain.add(RetrieveCopyFromSourceRepository.ID);
         DocumentModel outputDoc =
                 (DocumentModel) automationService.run(context, chain);
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
         workManager.awaitCompletion(10, TimeUnit.SECONDS);
         BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
         Blob blob = bh.getBlob();
