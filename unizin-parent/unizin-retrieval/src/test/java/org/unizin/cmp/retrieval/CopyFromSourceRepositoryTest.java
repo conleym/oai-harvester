@@ -43,10 +43,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.unizin.cmp.retrieval.CopyFromSourceRepository.*;
 
 
 @RunWith(FeaturesRunner.class)
@@ -108,32 +106,55 @@ public class CopyFromSourceRepositoryTest {
         OperationContext context = new OperationContext(session);
         context.setInput(inputDoc);
         OperationChain chain = new OperationChain("testCopyFromSourceRepository");
-        chain.add(CopyFromSourceRepository.ID);
+        chain.add(ID);
         DocumentModel outputDoc =
                 (DocumentModel) automationService.run(context, chain);
         BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
         Blob blob = bh.getBlob();
         assertNotNull(blob);
         assertArrayEquals(pdfResponseBody, blob.getByteArray());
-        assertEquals("success", outputDoc.getPropertyValue(CopyFromSourceRepository.STATUS_PROP));
+        assertEquals("success", outputDoc.getPropertyValue(STATUS_PROP));
     }
 
     @Test
-    public void testRequestCopyFromSourceRepository() throws
+    public void testRetrieveCopyFromSourceRepository() throws
             OperationException, IOException, InterruptedException {
         TransactionHelper.commitOrRollbackTransaction();
         TransactionHelper.startTransaction();
         OperationContext context = new OperationContext(session);
         context.setInput(inputDoc);
-        OperationChain chain = new OperationChain("testRequestCopyFromSourceRepository");
+        OperationChain chain = new OperationChain("testRetrieveCopyFromSourceRepository");
         chain.add(RetrieveCopyFromSourceRepository.ID);
         DocumentModel outputDoc =
                 (DocumentModel) automationService.run(context, chain);
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
         workManager.awaitCompletion(10, TimeUnit.SECONDS);
         BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
         Blob blob = bh.getBlob();
         assertNotNull(blob);
         assertArrayEquals(pdfResponseBody, blob.getByteArray());
+    }
+
+    @Test
+    public void testNoSimultaneousDownloads() throws
+            OperationException, InterruptedException, IOException {
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
+        inputDoc.setPropertyValue(STATUS_PROP, "pending");
+        session.saveDocument(inputDoc);
+        OperationContext context = new OperationContext(session);
+        context.setInput(inputDoc);
+        OperationChain chain = new OperationChain("testNoSimultaneousDownloads");
+        chain.add(RetrieveCopyFromSourceRepository.ID);
+        DocumentModel outputDoc =
+                (DocumentModel) automationService.run(context, chain);
+        TransactionHelper.commitOrRollbackTransaction();
+        TransactionHelper.startTransaction();
+        workManager.awaitCompletion(10, TimeUnit.SECONDS);
+        BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
+        Blob blob = bh.getBlob();
+        assertNull(blob);
     }
 
     @Test
@@ -143,10 +164,10 @@ public class CopyFromSourceRepositoryTest {
         session.saveDocument(inputDoc);
         context.setInput(inputDoc);
         OperationChain chain = new OperationChain("testFailure");
-        chain.add(CopyFromSourceRepository.ID);
+        chain.add(ID);
         DocumentModel outputDoc =
                 (DocumentModel) automationService.run(context, chain);
-        assertThat((String) outputDoc.getPropertyValue(CopyFromSourceRepository.STATUS_PROP),
+        assertThat((String) outputDoc.getPropertyValue(STATUS_PROP),
                    Matchers.startsWith("failed"));
     }
 }
