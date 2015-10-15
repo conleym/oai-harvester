@@ -20,6 +20,25 @@ export function httpGET(url, options = {}) {
     })
 }
 
+export function httpPOST(url, data, options = {}) {
+    options = {
+        ...options,
+        body: JSON.stringify(data),
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            ...options.headers,
+        },
+        credentials: 'include',
+    }
+
+    return fetch(url, options).catch(e => {
+        console.warn('ERROR', e) // eslint-disable-line no-console
+        console.warn(e.stack) // eslint-disable-line no-console
+        throw e
+    })
+}
+
 function weave(a, b) {
     if (a.length !== b.length + 1) {
         // I just need this for handling tagged template litterals, where the

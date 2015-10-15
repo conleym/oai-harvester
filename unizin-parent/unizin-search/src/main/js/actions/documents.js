@@ -1,4 +1,4 @@
-import { httpGET, json, encodeURL } from './utils.js'
+import { httpGET, httpPOST, json, encodeURL } from './utils.js'
 import DataLoader from 'dataloader'
 import { selectDocument, isDocumentReady } from '../selectors.js'
 
@@ -104,7 +104,8 @@ export function documentImport(id) {
 // These are just being attached so they can be mocked in tests.
 Object.assign(documentImport, {
     nxDownloadContent(id) {
-        // TODO: Make an API request for Nuxeo to download the content
+        const url = encodeURL`/nuxeo/site/api/v1/id/${id}/@op/UnizinCMP.RetrieveCopyFromSourceRepository`
+        return httpPOST(url, { params: {} })
     },
     refreshDocument(id) {
         documentLoader.clear(id)
