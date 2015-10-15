@@ -2,6 +2,11 @@
 
 var SAUCE_USERNAME = process.env.SAUCE_USERNAME
 var SAUCE_ACCESS_KEY = process.env.SAUCE_ACCESS_KEY
+var TESTEM_PORT = process.env.TESTEM_PORT
+
+if (TESTEM_PORT == null) {
+    TESTEM_PORT = 11001
+}
 
 // SAUCE_CONNECT_DOWNLOAD_ON_INSTALL=true npm install saucie -g
 // https://github.com/airportyh/testem/tree/master/examples/saucelabs
@@ -13,7 +18,7 @@ function saucie() {
     var args = Array.prototype.slice.call(arguments)
     return ([
         'saucie',
-        '--url "http://localhost:11001"',
+        '--url "http://localhost:' + TESTEM_PORT + '"',
         '--username ' + SAUCE_USERNAME,
         '--accesskey ' + SAUCE_ACCESS_KEY,
         // Making your test sharable means that it is only accessible to people
