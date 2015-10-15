@@ -1,4 +1,6 @@
 @import '../variables.scss';
+@import '../mixins.scss';
+
 $result_left_padding: $cover_width + $global_padding + 1rem;
 $result_cover_width: 145px;
 
@@ -74,7 +76,17 @@ $result_cover_width: 145px;
         font-weight: bold;
         font-family: $decorative_font;
         font-size: 1rem;
-        padding: 1rem 0;
+        padding: 1rem 0 .25rem 0;
+        transition: all .25s;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &.expanded {
+          white-space: normal;
+          overflow: visible;
+        }
       }
 
       .cover {
@@ -91,6 +103,7 @@ $result_cover_width: 145px;
       .description {
         font-size: .875rem;
         line-height: 1.3rem;
+        padding-top: 2rem;
       }
     }
 
@@ -102,7 +115,9 @@ $result_cover_width: 145px;
       right: 0;
       border-left: 1px solid $border_color;
       overflow-y: scroll;
-      @include aside;
+      :global {
+        @extend .aside;
+      }
 
       .header {
         margin: 0;

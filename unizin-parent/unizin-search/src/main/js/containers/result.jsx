@@ -7,6 +7,7 @@ import Footer from '../components/footer.jsx'
 import styles from './result.scss'
 import { Link } from 'react-router'
 import classNames from 'classnames'
+import pluralize from 'pluralize'
 import { joinAuthors } from '../components/search_results.jsx'
 import FontAwesome from 'react-fontawesome'
 import Date from '../components/date.jsx'
@@ -25,12 +26,34 @@ class Result extends React.Component {
         }).isRequired,
     }
 
+    constructor(props,context) {
+        super(props,context)
+        this.state = { expanded: false }
+    }
+
+    onClick() {
+        this.setState({ expanded: !this.state.expanded })
+    }
+
+    showMoreLess(authString,buttonLabel) {
+        if (authString.length > 64) {
+            const awesome = (this.state.expanded) ? 'caret-up' : 'caret-down'
+            return(
+                <button onClick={this.onClick.bind(this)} className='simple'>
+                  <FontAwesome name={awesome} aria-hidden='true' /> {buttonLabel}
+                </button>
+            )
+        }
+    }
+
     render() {
         const { document } = this.props
 
         const previewUrl = routePreviewUrl(document).url
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
+
+        const authorLabel = pluralize('Author', document.properties['hrv:creator'].length)
 
         // document attributes
         const type = checkValue(document.type)
@@ -39,6 +62,15 @@ class Result extends React.Component {
         const dateAdded = checkValue(document.properties["hrv:date"])
         const rights = checkValue(document.properties["hrv:rights"])
         const description = checkValue(document.properties['hrv:description'])
+
+        const buttonLabel = (this.state.expanded) ? "Show fewer authors" : "Show more authors"
+        const authorClasses = classNames(styles.author, {
+            [styles.expanded]: (this.state.expanded)
+        })
+
+        // map author string to test length and determine id "More/Less" button is needed
+        let authString = ""
+        document.properties['hrv:creator'].map(m => authString += m)
 
         return (
             <Focus>
@@ -70,7 +102,10 @@ class Result extends React.Component {
                       <div className={styles.details}>
                         <h1>{document.title}</h1>
 
-                        <div className={styles.author}>Author: {joinAuthors(document.properties['hrv:creator'])}</div>
+                        <div className={authorClasses}>
+                          {authorLabel}: {joinAuthors(document.properties['hrv:creator'])}
+                        </div>
+                        {this.showMoreLess(authString,buttonLabel)}
 
                         <div className={styles.description}>
                           {description}

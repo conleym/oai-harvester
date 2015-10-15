@@ -1,4 +1,5 @@
 @import '../variables.scss';
+@import '../globals.scss';
 
 :local .search {
   position: relative;
@@ -34,7 +35,9 @@
     background: $header_bg_color;
 
     .brand {
-      @include center;
+      :global {
+        @extend .center;
+      }
       transform: translate(-50%,-175%);
       width: 80%;
       height: 150px;
@@ -52,7 +55,9 @@
 
     .header {
       border: none;
-      @include center;
+      :global {
+        @extend .center;
+      }
       width: 70%;
 
       input[type='text'] {
@@ -66,7 +71,9 @@
     }
 
     .footer {
-      @include center;
+      :global {
+        @extend .center;
+      }
       width: 160px;
       transform: translate(-50%, 350%);
       height: 25px;

@@ -118,11 +118,25 @@ $single_page_results_header_height: 80px;
     color: lighten($font_color, 20%);
 
     li {
-      display: inline-block;
-      margin-right: 1rem;
+      margin: 0;
 
       &:last-of-type {
         margin-right: 0;
+      }
+
+      &.authors {
+        span {
+          display: block;
+          float: left;
+        }
+
+        span:last-of-type {
+          white-space: nowrap;
+          margin-left: .2rem;
+          overflow: hidden;
+          width: 85%;
+          text-overflow: ellipsis;
+        }
       }
     }
   }

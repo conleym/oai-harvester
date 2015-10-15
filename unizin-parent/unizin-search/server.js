@@ -9,9 +9,12 @@ var config = require('./webpack.config')
 var tests = require('./webpack.test.config')
 var testsCompiler = webpack(tests)
 
-testsCompiler.watch({}, function (err) {
+testsCompiler.watch({}, function (err, stats) {
     if (err) console.log(err)
-    //console.log('Test file bundled');
+    if (stats.hasErrors()) {
+        var jsonStats = stats.toJson()
+        console.warn(jsonStats.errors.join('\n'))
+    }
 })
 
 
