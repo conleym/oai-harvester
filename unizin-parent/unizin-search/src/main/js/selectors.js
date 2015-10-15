@@ -22,11 +22,16 @@ export const selectDocument = (id) => (state) => state.documents[id]
 
 export const selectDocumentLoadError = (id) => (state) => state.documentLoadErrors[id]
 
-export const isDocumentReady = (id) => (state) => {
+export const selectRetrievalStatus = (id) => (state) => {
     const doc = selectDocument(id)(state)
 
-    return (doc
+    const status = (doc
         && doc.properties
-        && doc.properties['hrv:retrievalStatus'] == 'success'
-    )
+        && doc.properties['hrv:retrievalStatus'])
+
+    return (status != null) ? status : ''
+}
+
+export const isDocumentReady = (id) => (state) => {
+    return selectRetrievalStatus(id)(state) === 'success'
 }

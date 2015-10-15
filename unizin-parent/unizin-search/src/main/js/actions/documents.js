@@ -1,6 +1,6 @@
 import { httpGET, httpPOST, json, encodeURL } from './utils.js'
 import DataLoader from 'dataloader'
-import { selectDocument, isDocumentReady } from '../selectors.js'
+import { selectDocument, selectRetrievalStatus, isDocumentReady } from '../selectors.js'
 
 export const DOCUMENT_LOAD_ERROR = 'DOCUMENT_LOAD_ERROR'
 export const CLEAR_DOCUMENT_LOAD_ERROR = 'CLEAR_DOCUMENT_LOAD_ERROR'
@@ -46,7 +46,7 @@ function poll({ action, interval, timeout }) {
     const RETRY = Symbol('Retry')
     return new Promise((resolve, reject) => {
         let done = false
-        setTimeout(() => {
+        const timer = setTimeout(() => {
             done = true
             reject(new Error('Timeout'))
         }, timeout)
@@ -54,6 +54,7 @@ function poll({ action, interval, timeout }) {
         function next() {
             action(RETRY).then((result) => {
                 if (result !== RETRY) {
+                    clearTimeout(timer)
                     return resolve(result)
                 }
 
@@ -62,7 +63,10 @@ function poll({ action, interval, timeout }) {
                         next()
                     }, interval)
                 }
-            }).catch(err => reject(err))
+            }).catch(err => {
+                clearTimeout(timer)
+                reject(err)
+            })
         }
 
         next()
@@ -73,8 +77,9 @@ const DOCUMENT_IMPORT_TIMEOUT = 30000
 const DOCUMENT_IMPORT_INTERVAL = 10000
 
 export function documentImport(id) {
-    const selector = selectDocument(id)
+    const getDocument = selectDocument(id)
     const isReady = isDocumentReady(id)
+    const getStatus = selectRetrievalStatus(id)
 
     return (dispatch, getState) => {
         dispatch({
@@ -94,10 +99,14 @@ export function documentImport(id) {
                     type: DOCUMENT,
                     payload: doc
                 })
-                const document = selector(getState())
-                if (isReady(getState())) {
-                    return document
+                const status = getStatus(getState())
+                if (status === 'success') {
+                    return getDocument(getState())
                 }
+                if (status.slice(0, 7) === 'failed:') {
+                    throw new Error(status.slice(7).trim())
+                }
+
                 return retry
             })
         }
