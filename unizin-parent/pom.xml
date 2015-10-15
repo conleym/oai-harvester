@@ -17,7 +17,7 @@
 
   <groupId>org.unizin.cmp</groupId>
   <artifactId>unizin-parent</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Unizin CMP</name>
   <description>Nuxeo extensions and metadata schemas to implement an LTI tool
@@ -27,6 +27,7 @@
   <modules>
     <module>unizin-schemas</module>
     <module>unizin-search</module>
+    <module>unizin-retrieval</module>
     <module>search-package</module>
     <module>unizin-ingest</module>
     <module>ingest-package</module>

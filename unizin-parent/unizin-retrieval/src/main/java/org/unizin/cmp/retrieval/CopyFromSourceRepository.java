@@ -1,4 +1,4 @@
-package org.unizin.cmp.search;
+package org.unizin.cmp.retrieval;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;

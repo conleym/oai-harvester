@@ -1,4 +1,4 @@
-package org.unizin.cmp.search.operations;
+package org.unizin.cmp.retrieval;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
@@ -28,12 +28,11 @@ import org.nuxeo.ecm.core.test.TransactionalFeature;
 import org.nuxeo.ecm.core.test.annotations.Granularity;
 import org.nuxeo.ecm.core.test.annotations.RepositoryConfig;
 import org.nuxeo.ecm.core.work.api.WorkManager;
+import org.nuxeo.ecm.platform.test.PlatformFeature;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 import org.nuxeo.runtime.transaction.TransactionHelper;
-import org.unizin.cmp.search.CopyFromSourceRepository;
-import org.unizin.cmp.search.RetrieveCopyFromSourceRepository;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -51,9 +50,9 @@ import static org.junit.Assert.assertThat;
 
 
 @RunWith(FeaturesRunner.class)
-@Features({TransactionalFeature.class, AutomationFeature.class})
+@Features({TransactionalFeature.class, AutomationFeature.class, PlatformFeature.class})
 @RepositoryConfig(init = DefaultRepositoryInit.class, cleanup = Granularity.METHOD)
-@Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.search"})
+@Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval"})
 public class CopyFromSourceRepositoryTest {
 
     @Rule

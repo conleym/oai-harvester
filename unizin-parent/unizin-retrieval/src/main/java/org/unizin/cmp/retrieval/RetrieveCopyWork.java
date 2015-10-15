@@ -1,4 +1,4 @@
-package org.unizin.cmp.search;
+package org.unizin.cmp.retrieval;
 
 import org.nuxeo.ecm.automation.AutomationService;
 import org.nuxeo.ecm.automation.OperationContext;

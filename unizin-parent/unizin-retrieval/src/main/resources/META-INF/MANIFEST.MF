@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: org.unizin.cmp.retrieval
+Nuxeo-Component: OSGI-INF/search-operations-contrib.xml
+Import-Package: org.apache.commons.httpclient,
+ org.apache.commons.httpclient.methods,
+ org.apache.commons.httpclient.params
