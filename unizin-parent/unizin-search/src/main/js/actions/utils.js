@@ -23,6 +23,7 @@ export function httpGET(url, options = {}) {
 export function httpPOST(url, data, options = {}) {
     options = {
         ...options,
+        method: 'POST',
         body: JSON.stringify(data),
         headers: {
             Accept: 'application/json',
