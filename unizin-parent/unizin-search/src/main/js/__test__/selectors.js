@@ -41,7 +41,7 @@ test('selectResults requires the current criteria', assert => {
 
 import { selectDocument } from '../selectors.js'
 
-test('documentImport checks whether a document has file:content', assert => {
+test('documentImport checks a "success" in hrv:retrievalStatus', assert => {
     const isReady = isDocumentReady('b1cc5bdf')
     const store = {
         documents: {
@@ -55,7 +55,7 @@ test('documentImport checks whether a document has file:content', assert => {
 
     assert.equal(isReady(store), false)
 
-    store.documents['b1cc5bdf'].properties['file:content'] = 'about:blank'
+    store.documents['b1cc5bdf'].properties['hrv:retrievalStatus'] = 'success'
 
     assert.equal(isReady(store), true)
 
