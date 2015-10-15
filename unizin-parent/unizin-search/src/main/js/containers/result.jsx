@@ -36,9 +36,10 @@ class Result extends React.Component {
 
     showMoreLess(authString,buttonLabel) {
         if (authString.length > 64) {
+            const awesome = (this.state.expanded) ? 'caret-up' : 'caret-down'
             return(
                 <button onClick={this.onClick.bind(this)} className='simple'>
-                  {buttonLabel}
+                  <FontAwesome name={awesome} aria-hidden='true' /> {buttonLabel}
                 </button>
             )
         }
@@ -60,7 +61,9 @@ class Result extends React.Component {
         const description = checkValue(document.properties['hrv:description'])
 
         const buttonLabel = (this.state.expanded) ? "Show fewer authors" : "Show more authors"
-        const authorClasses = (this.state.expanded) ? classNames(styles.author, styles.expanded) : styles.author
+        const authorClasses = classNames(styles.author, {
+            [styles.expanded]: (this.state.expanded)
+        })
 
         // map author string to test length and determine id "More/Less" button is needed
         let authString = ""
