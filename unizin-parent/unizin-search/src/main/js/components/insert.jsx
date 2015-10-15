@@ -46,7 +46,7 @@ export default class Insert extends React.Component {
         const { document, loadError } = this.props
         return (
             <div className={styles.insert}>
-                <FontAwesome name='refresh' spin aria-hidden='true' className={styles.fa} />
+                <FontAwesome name='refresh' spin={loadError == null} aria-hidden='true' className={styles.fa} />
                 <h1 aria-live='polite'>Preparing '{document.title}'</h1>
 
                 {this.renderError(loadError)}
