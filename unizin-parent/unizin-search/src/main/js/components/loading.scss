@@ -33,7 +33,7 @@
     // hack for animation issue that css-loader is generating
     // https://github.com/webpack/css-loader/issues/65`
     :global {
-        animation: 3s opacity infinite;
+        animation: 2.5s quarter-opacity infinite;
     }
   }
 }
