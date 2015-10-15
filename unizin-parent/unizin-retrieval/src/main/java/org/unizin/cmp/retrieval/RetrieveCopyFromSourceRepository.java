@@ -30,7 +30,7 @@ public class RetrieveCopyFromSourceRepository {
             session.save();
             workManager.schedule(new RetrieveCopyWork(
                     repositoryManager.getDefaultRepositoryName(),
-                    doc.getId()));
+                    doc.getId()), true);
         }
         return doc;
     }
