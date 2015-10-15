@@ -21,4 +21,4 @@ Important paths to know:
 ========================
 
 * `/etc/nuxeo/nuxeo.conf`
-* `/var/lib/nuxeo/server/nxserver/bundles/unizin-search-1.0-SNAPSHOT.jar`
+* `/var/lib/nuxeo/server/nxserver/bundles/unizin-search-1.0.0-SNAPSHOT.jar`
