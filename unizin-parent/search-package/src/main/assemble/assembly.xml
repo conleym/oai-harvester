@@ -60,6 +60,7 @@
           <artifact groupId="xml-apis" artifactId="xml-apis"/>
           <artifact groupId="org.apache.commons" artifactId="commons-lang3"/>
           <artifact groupId="javax.servlet.jsp" artifactId="jsp-api"/>
+          <artifact groupId="javax.el" artifactId="el-api"/>
           <artifact groupId="commons-logging" artifactId="commons-logging"/>
         </excludes>
       </artifact:set>

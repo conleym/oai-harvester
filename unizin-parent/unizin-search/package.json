@@ -29,6 +29,7 @@
     "moment": "^2.10.6",
     "native-promise-only": "^0.8.1",
     "node-sass": "^3.3.3",
+    "pluralize": "^1.2.1",
     "postcss-loader": "^0.6.0",
     "react": "^0.13.3",
     "react-fontawesome": "^0.3.3",
