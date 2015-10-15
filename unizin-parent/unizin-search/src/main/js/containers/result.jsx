@@ -39,7 +39,7 @@ class Result extends React.Component {
         if (authString.length > 64) {
             const awesome = (this.state.expanded) ? 'caret-up' : 'caret-down'
             return(
-                <button onClick={this.onClick.bind(this)} className='simple'>
+                <button onClick={this.onClick.bind(this)} className='simple' aria-hidden='true'>
                   <FontAwesome name={awesome} aria-hidden='true' /> {buttonLabel}
                 </button>
             )
