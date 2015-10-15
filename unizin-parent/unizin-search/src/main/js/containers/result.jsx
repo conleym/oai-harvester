@@ -67,6 +67,7 @@ class Result extends React.Component {
         const authorClasses = classNames(styles.author, {
             [styles.expanded]: (this.state.expanded)
         })
+        const creators = checkValue(joinAuthors(document.properties['hrv:creator']))
 
         // map author string to test length and determine id "More/Less" button is needed
         let authString = ""
@@ -103,7 +104,7 @@ class Result extends React.Component {
                         <h1>{document.title}</h1>
 
                         <div className={authorClasses}>
-                          {authorLabel}: {joinAuthors(document.properties['hrv:creator'])}
+                          {authorLabel}: {creators}
                         </div>
                         {this.showMoreLess(authString,buttonLabel)}
 
