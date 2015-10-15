@@ -48,7 +48,7 @@ export default class SearchResults extends React.Component {
 
         // insert button
         const insertLabel = "Insert " + title + " into your page"
-        const insertBtnClasses = classNames("btn", styles.btn)
+        const insertBtnClasses = classNames("btn", styles.btn, "primary")
 
         // preview button
         const previewUrl = routePreviewUrl(result).url
