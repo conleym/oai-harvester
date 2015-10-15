@@ -6,6 +6,7 @@ import Cover from './cover.jsx'
 import Pager from './pager.jsx'
 import Loading from './loading.jsx'
 import classNames from 'classnames'
+import pluralize from 'pluralize'
 import FontAwesome from 'react-fontawesome'
 import { checkValue } from '../actions/utils.js'
 
@@ -55,6 +56,7 @@ export default class SearchResults extends React.Component {
         const previewBtnClasses = classNames("btn", styles.btn, styles.preview)
         const previewLabel = "Preview " + title
 
+        const authorLabel = pluralize('Author', result.properties['hrv:creator'].length)
         const creators = checkValue(joinAuthors(result.properties['hrv:creator']))
 
         return (
@@ -67,7 +69,7 @@ export default class SearchResults extends React.Component {
                 </Link>
 
                 <ul className={styles.metadata}>
-                    <li>Author: {creators}</li>
+                    <li className={styles.authors}>{authorLabel}: {creators}</li>
                 </ul>
 
                 <ul className={styles.controls}>
