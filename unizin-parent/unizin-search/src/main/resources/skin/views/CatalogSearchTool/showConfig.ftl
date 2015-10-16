@@ -18,7 +18,7 @@
         <lticm:options name="editor_button">
             <lticm:property name="enabled">true</lticm:property>
             <lticm:property name="icon_url">${nuxeoURL}${skinPath}/icon.png</lticm:property>
-            <lticm:property name="selection_width">1280</lticm:property>
+            <lticm:property name="selection_width">1024</lticm:property>
             <lticm:property name="selection_height">768</lticm:property>
         </lticm:options>
     </blti:extensions>
