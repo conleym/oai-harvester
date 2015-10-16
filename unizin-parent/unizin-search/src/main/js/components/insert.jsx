@@ -51,12 +51,15 @@ export default class Insert extends React.Component {
                 <div className={styles.messaging}>
                     <h1>
                       <FontAwesome name='refresh' spin={loadError == null} aria-hidden='true' className={styles.fa} />
-                      Copying Content
+                      Copying content...
                     </h1>
 
                     <p>
-                      Unizin is currently locating <strong>{document.title}</strong> from its originating source. Once we've
-                      located the content, we'll create a copy that is always available for you and your students.
+                      Unizin is locating <strong>{document.title}</strong> in its source repository.
+                    </p>
+
+                    <p>
+                      Once located, we'll create a copy that is always available for you and your students.
                     </p>
 
                     <p>
