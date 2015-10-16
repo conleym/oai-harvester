@@ -10,15 +10,15 @@
     animation: fadein 2s;
   }
 
-  h1 {
+  .messaging {
     :global {
       @extend .center;
     }
-    width: calc(80% - (#{$global_padding}*2));
-    font-family: 'Roboto Slab', serif;
-    font-size: 1.5rem;
-    padding-top: 2rem;
-    text-align: center;
+    width: calc(70% - (#{$global_padding}*2));
+  }
+
+  .fa {
+    margin-right: 1rem;
   }
 
   // error messaging
@@ -39,20 +39,12 @@
     border-right: none;
   }
 
-  .fa {
-    font-size: 6rem;
-    position: absolute;
-    transform: translate(-50%,-50%);
-    top: 30%;
-    left: calc(50% - 3rem);
-    z-index: 2;
+  li {
+    list-style-type: decimal;
   }
 
   .controls {
-    position: absolute;
-    left: 50%;
-    bottom: 20%;
-    transform: translate(-50%,-50%);
+    padding-top: 2rem;
 
     ul {
       :global {
@@ -63,6 +55,10 @@
     li {
       display: inline-block;
       margin: 0 1rem;
+
+      &:first-of-type {
+        margin-left: 0;
+      }
     }
   }
 }
