@@ -46,7 +46,7 @@ test("documentImport tells Nuxeo to download the content if it isn't ready", ass
     assert.end()
 })
 
-test("documentImport polls every 10 seconds for 30 seconds", assert => {
+test("documentImport polls every 10 seconds for 5 minutes", assert => {
     const dispatch = createSpy()
     const getState = function() {
         return { documents: { foo: { } } }
@@ -61,7 +61,7 @@ test("documentImport polls every 10 seconds for 30 seconds", assert => {
 
     assert.equal(documentImport.poll.calls, 1, 'poll was called once')
     const { timeout, interval } = documentImport.poll.args[0][0]
-    assert.equal(timeout, 30000, 'timeout: 30 seconds')
+    assert.equal(timeout, 5 * 60 * 1000, 'timeout: 30 seconds')
     assert.equal(interval, 10000, 'interva: 10 seconds')
 
     restoreAllSpies()

@@ -73,8 +73,8 @@ function poll({ action, interval, timeout }) {
     })
 }
 
-const DOCUMENT_IMPORT_TIMEOUT = 30000
-const DOCUMENT_IMPORT_INTERVAL = 10000
+const DOCUMENT_IMPORT_TIMEOUT = 5 * 60 * 1000
+const DOCUMENT_IMPORT_INTERVAL = 10 * 1000
 
 export function documentImport(id) {
     const getDocument = selectDocument(id)
