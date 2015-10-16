@@ -156,6 +156,7 @@ public class CopyFromSourceRepository  {
             blob.setFilename("retrievedFile");
             bh.setBlob(blob);
             doc.setPropertyValue(STATUS_PROP, "success");
+            LOG.info("Successfully retrieved {}", uri);
             session.saveDocument(doc);
         } else {
             String msg = fileResponse.getStatusLine().toString();

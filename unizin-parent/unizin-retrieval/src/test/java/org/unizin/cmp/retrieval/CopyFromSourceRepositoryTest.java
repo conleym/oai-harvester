@@ -129,6 +129,7 @@ public class CopyFromSourceRepositoryTest {
                 (DocumentModel) automationService.run(context, chain);
         TransactionHelper.commitOrRollbackTransaction();
         TransactionHelper.startTransaction();
+        assertEquals("pending", outputDoc.getPropertyValue(STATUS_PROP));
         workManager.awaitCompletion(10, TimeUnit.SECONDS);
         BlobHolder bh = outputDoc.getAdapter(BlobHolder.class);
         Blob blob = bh.getBlob();
