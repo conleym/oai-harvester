@@ -1,13 +1,10 @@
 package org.unizin.cmp.search;
 
-import org.nuxeo.ecm.platform.api.login.UserIdentificationInfo;
-import org.nuxeo.ecm.platform.ui.web.auth.CachableUserIdentificationInfo;
-import org.nuxeo.ecm.platform.ui.web.auth.NXAuthConstants;
-import org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService;
-import org.nuxeo.ecm.webengine.model.WebObject;
-import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
-import org.nuxeo.runtime.api.Framework;
-import org.nuxeo.runtime.api.login.LoginService;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
@@ -17,12 +14,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import java.awt.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.nuxeo.ecm.platform.api.login.UserIdentificationInfo;
+import org.nuxeo.ecm.platform.ui.web.auth.CachableUserIdentificationInfo;
+import org.nuxeo.ecm.platform.ui.web.auth.NXAuthConstants;
+import org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService;
+import org.nuxeo.ecm.webengine.model.WebObject;
+import org.nuxeo.ecm.webengine.model.impl.ModuleRoot;
+import org.nuxeo.runtime.api.Framework;
+import org.nuxeo.runtime.api.login.LoginService;
 
 
 @Path("/catalog")
