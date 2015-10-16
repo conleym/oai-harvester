@@ -56,8 +56,8 @@ export function routeInsert(item) {
 }
 
 export function routeReturnUrl(item) {
-    const { path, title } = item
-    const url = location.protocol + '//' + location.hostname + path
+    const { properties, title } = item
+    const url = properties['file:content']['data']
 
     const query = encodeURL`?return_type=url&url=${url}&text=${title}&target=_blank`
 
