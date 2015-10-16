@@ -1,4 +1,5 @@
 @import '../variables.scss';
+@import '../globals.scss';
 
 :local .filters {
   :global {
@@ -24,10 +25,6 @@
     border-bottom: 1px solid $border_color;
   }
 
-  ul {
-    width: calc(100% - #{$global_padding} * 2);
-  }
-
   li {
     position: relative;
     margin-bottom: .5rem;
@@ -48,12 +45,6 @@
     font-size: .8rem;
     font-weight: 400;
     color: lighten($font_color, 20%);
-  }
-
-  fieldset {
-    border: none;
-    padding: 0;
-    margin: $global_padding;
   }
 
   input[type='checkbox'] {
