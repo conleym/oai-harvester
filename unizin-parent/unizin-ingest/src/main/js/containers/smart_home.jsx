@@ -1,6 +1,7 @@
 import React from 'react'
-import { connect } from 'react-redux';
-import { Link } from 'react-router'
+import setupDropzone from '../components/dropzone'
+import Home from '../components/home'
+import { connect } from 'react-redux'
 
 const { object } = React.PropTypes
 
@@ -11,16 +12,21 @@ class SmartHome extends React.Component {
         query: object.isRequired
     }
 
+    componentWillMount() {
+        const { Dropzone, Files, clickFileInput } = setupDropzone()
+        this.Dropzone = Dropzone
+        this.Files = Files
+        this.clickFileInput = clickFileInput
+    }
+
     render() {
         return (
-            <div>
-                Hello World
-                <pre>{JSON.stringify(this.props.query, null, 2)}</pre>
-
-                <Link to="/">Foo</Link>
-                <br/>
-                <Link to="/">Bar</Link>
-            </div>
+            <this.Dropzone>
+                <Home
+                    Files={this.Files}
+                    onSelectFile={this.clickFileInput}
+                    query={this.props.query} />
+            </this.Dropzone>
         )
     }
 }
