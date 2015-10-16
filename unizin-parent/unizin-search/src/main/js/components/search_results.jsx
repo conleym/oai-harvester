@@ -101,10 +101,13 @@ export default class SearchResults extends React.Component {
             [styles.singlePage]: (totalSize <= pageSize)
         })
 
+        // pluralize or singularize results label depeding on totalSize
+        const resultsLabel = pluralize('result', totalSize)
+
         return (
           <div className={wrapperClasses}>
             <div className={styles.header}>
-              <h1>{totalSize} results for {criteria.text}</h1>
+              <h1>{totalSize} {resultsLabel} for {criteria.text}</h1>
 
               <Pager
                   current={this.props.page}
