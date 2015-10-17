@@ -28,7 +28,7 @@ export function fetchSearchResults(text, catalogs, page) {
         params.currentPageIndex = parseInt(page, 10) - 1
     }
 
-    const url =  encodeURL`/nuxeo/site/api/v1/path/${PATH}/@search?${params}`
+    const url =  encodeURL`/nuxeo/site/api/v1/query?${params}`
     const options = {
         headers: {
             'X-NXDocumentProperties': '*'
