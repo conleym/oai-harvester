@@ -1,7 +1,6 @@
 import React from 'react'
 import FontAwesome from 'react-fontawesome'
 import styles from './insert.scss'
-import classNames from 'classnames'
 
 const { shape, string, func } = React.PropTypes
 
