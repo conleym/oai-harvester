@@ -37,7 +37,6 @@ export function fetchSearchResults(text, catalogs, page) {
     return httpGET(url, options).then(json)
 }
 
-const PATH = 'default-domain'
 export function searchFor(text, catalogs, page) {
     return (dispatch, getState) => {
         dispatch({
