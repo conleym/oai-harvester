@@ -16,9 +16,8 @@ Vagrant.configure(2) do |config|
     vb.memory = "2048"
   end
 
-  config.vm.provision "shell", path: "bootstrap.sh"
-
-  config.vm.provision "puppet" do |puppet|
-    puppet.module_path = "modules"
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "ansible/playbook.yml"
   end
+
 end

@@ -1,0 +1,82 @@
+---
+- hosts: default
+  sudo: yes
+
+  tasks:
+    - name: Install WebUpd8 Team Java PPA (for Oracle Java)
+      apt_repository: repo='ppa:webupd8team/java' state=present
+
+    - name: Install Nuxeo APT repository key
+      apt_key: url=http://apt.nuxeo.org/nuxeo.key state=present
+      
+    - name: Add Nuxeo APT repository URL
+      apt_repository: repo='deb http://apt.nuxeo.org/ trusty fasttracks' state=present
+
+    - name: Update OS packages
+      apt: update_cache=yes cache_valid_time=86400 upgrade=dist
+
+    - name: Accept Oracle License
+      debconf:
+        name: oracle-java8-installer
+        question: 'shared/accepted-oracle-license-v1-1'
+        value: 'true'
+        vtype: 'select'
+
+    - name: Install Oracle Java 8
+      apt: name=oracle-java8-installer state=latest
+
+    - name: Download ffmpeg
+      get_url:
+        url: https://s3.amazonaws.com/courseload-public/debs/ffmpeg-nuxeo_2.7.2-1_amd64.deb
+        dest: /tmp/ffmpeg-nuxeo_2.7.2-1_amd64.deb
+
+    - name: Install ffmpeg
+      apt: deb=/tmp/ffmpeg-nuxeo_2.7.2-1_amd64.deb
+
+    - name: Install Nuxeo package
+      apt: update_cache=yes name=nuxeo state=present
+
+    - name: Set Postgres password
+      command: psql -p 5433 -c "ALTER USER nuxeo PASSWORD '{{ nuxeo_db_password }}'"
+      sudo_user: postgres
+      notify:
+        - Restart Nuxeo
+
+    - name: Install Apache mod_proxy
+      apt: name=libapache2-mod-proxy-html state=present
+
+    - name: Install ssl-cert snakeoil certificate
+      apt: name=ssl-cert state=present
+
+    - name: Enable Apache modules
+      apache2_module: name={{ item }} state=present
+      with_items:
+        - proxy
+        - proxy_http
+        - rewrite
+        - headers
+        - ssl
+      notify:
+        - Restart Apache
+
+    - name: Remove default site configuration
+      file: path=/etc/apache2/sites-enabled/000-default.conf state=absent
+      notify:
+        - Restart Apache
+
+    - name: Configure Apache as reverse proxy
+      template: src=apache.conf.jinja2 dest=/etc/apache2/sites-enabled/apache-nuxeo.conf
+      notify:
+        - Restart Apache
+
+    - name: Configure nuxeo.conf
+      template: src=nuxeo.conf.jinja2 dest=/etc/nuxeo/nuxeo.conf
+      notify:
+        - Restart Nuxeo
+
+  handlers:
+    - name: Restart Nuxeo
+      service: name=nuxeo state=restarted
+
+    - name: Restart Apache
+      service: name=apache2 state=restarted

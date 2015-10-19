@@ -1,0 +1,32 @@
+JAVA_OPTS=-Xms512m -Xmx1024m
+JAVA_OPTS=$JAVA_OPTS -Dfile.encoding=UTF-8 -Dmail.mime.decodeparameters=true
+JAVA_OPTS=$JAVA_OPTS -Djava.util.Arrays.useLegacyMergeSort=true
+JAVA_OPTS=$JAVA_OPTS -Xdebug -agentlib:jdwp=transport=dt_socket,address=18787,server=y,suspend=n
+JAVA_OPTS=$JAVA_OPTS -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=1089 -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false
+
+nuxeo.force.generation=true
+nuxeo.templates=postgresql
+nuxeo.url=https://{{ public_hostname }}/nuxeo
+elasticsearch.override.pageproviders=default_search,document_content,section_content,document_content,tree_children,default_document_suggestion,simple_search,advanced_search,nxql_search,DEFAULT_DOCUMENT_SUGGESTION,REST_API_SEARCH_ADAPTER
+elasticsearch.httpEnabled=true
+org.nuxeo.dev=true
+org.nuxeo.rest.stack.enable=true
+org.nuxeo.automation.trace=true
+nuxeo.log.dir=/var/log/nuxeo
+nuxeo.pid.dir=/var/run/nuxeo
+nuxeo.data.dir=/var/lib/nuxeo/data
+nuxeo.installer.installeduser=true
+nuxeo.bind.address=0.0.0.0
+nuxeo.server.http.port=8080
+nuxeo.server.ajp.port=0
+nuxeo.server.tomcat_admin.port=53885
+nuxeo.installer.useautopg=true
+nuxeo.installer.installedpg=true
+nuxeo.db.host=localhost
+nuxeo.db.port=5433
+nuxeo.db.name=nuxeo
+nuxeo.db.user=nuxeo
+nuxeo.db.password={{ nuxeo_db_password }}
+nuxeo.wizard.skippedpages=General,DB
+nuxeo.wizard.done=true
+jod.office.home=/usr/lib/libreoffice
