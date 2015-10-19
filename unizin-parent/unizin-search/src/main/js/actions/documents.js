@@ -59,9 +59,7 @@ function poll({ action, interval, timeout }) {
                 }
 
                 if (!done) {
-                    setTimeout(function() {
-                        next()
-                    }, interval)
+                    setTimeout(next, interval)
                 }
             }).catch(err => {
                 clearTimeout(timer)

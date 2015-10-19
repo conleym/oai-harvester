@@ -44,7 +44,9 @@ class SmartInsert extends React.Component {
         const { document, ready } = this.props
 
         if (ready) {
-            window.location = this.props.routeReturnUrl(document).url
+            process.nextTick(() => {
+                window.location = this.props.routeReturnUrl(document).url
+            })
         }
     }
 
