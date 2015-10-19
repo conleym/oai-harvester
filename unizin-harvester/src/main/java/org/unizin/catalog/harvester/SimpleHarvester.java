@@ -1,19 +1,19 @@
 package org.unizin.catalog.harvester;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLStreamException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.catalog.harvester.config.ConfigReader;
 import org.unizin.catalog.harvester.config.Repository;
 import org.unizin.catalog.harvester.oai.OAIClient;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class SimpleHarvester {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHarvester.class);
