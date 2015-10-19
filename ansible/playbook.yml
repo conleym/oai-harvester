@@ -36,9 +36,16 @@
     - name: Install Nuxeo package
       apt: update_cache=yes name=nuxeo state=present
 
+    - name: Try Postgres password
+      shell: PGPASSWORD={{ nuxeo_db_password }} psql -h localhost -p 5433 -U nuxeo -d nuxeo -q -c 'select 0'
+      ignore_errors: true
+      register: postgres_password_set
+      changed_when: postgres_password_set|failed
+
     - name: Set Postgres password
       command: psql -p 5433 -c "ALTER USER nuxeo PASSWORD '{{ nuxeo_db_password }}'"
       sudo_user: postgres
+      when: postgres_password_set|failed
       notify:
         - Restart Nuxeo
 
