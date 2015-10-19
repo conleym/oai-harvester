@@ -1,0 +1,8 @@
+:local(.hover) {
+    display: none
+}
+
+:global(.dz-drag-hover) :local(.hover) {
+    display: block
+
+}
