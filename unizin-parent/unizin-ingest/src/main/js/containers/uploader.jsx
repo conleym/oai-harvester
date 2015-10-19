@@ -25,9 +25,7 @@ class SmartHome extends React.Component {
 
         return (
             <this.Dropzone url={uploadURL}>
-                <Home
-                    Files={this.Files}
-                    onSelectFile={this.clickFileInput} />
+                {this.props.children}
             </this.Dropzone>
         )
     }

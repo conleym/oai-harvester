@@ -31,22 +31,22 @@ export default function generateDropzone()  {
             },
             map(transformer) {
                 const ret = []
-                files.forEach((value, key) => ret.push(transformer(value, key)))
+                let index = 0
+                files.forEach((value, key) => ret.push(transformer(value, key, index++)))
                 return ret
             }
         }
     }())
 
-    fileStore.on(() => {
-        fileStore.forEach(console.log.bind(console, 'file'))
-    })
-    window.fileStore = fileStore
-
     class Dropzone extends React.Component {
         static displayName = 'Dropzone'
 
         static propTypes = {
-            children: node
+            children: node,
+            url: React.PropTypes.oneOfType([
+                React.PropTypes.string,
+                React.PropTypes.func
+            ]).isRequired
         }
 
         constructor(props, context) {
@@ -91,50 +91,11 @@ export default function generateDropzone()  {
                         error: message
                     })
                 },
-                url: '/foo',
+                url: ::this.getUrl,
+                uploadMultiple: false,
                 parallelUploads: 1,
                 clickable: false
             })
-
-
-            // All of this was copied directly from dropzonejs.com
-            /* eslint-disable no-var, semi */
-            const minSteps = 6,
-                maxSteps = 60,
-                timeBetweenSteps = 100,
-                bytesPerStep = 100000;
-
-            dz.uploadFiles = function(files) {
-                var self = this;
-
-                for (var i = 0; i < files.length; i++) {
-
-                    var file = files[i];
-                    const totalSteps = Math.round(Math.min(maxSteps, Math.max(minSteps, file.size / bytesPerStep)));
-
-                    for (var step = 0; step < totalSteps; step++) {
-                        var duration = timeBetweenSteps * (step + 1);
-                        setTimeout(function(file, totalSteps, step) {
-                            return function() {
-                                file.upload = {
-                                    progress: 100 * (step + 1) / totalSteps,
-                                    total: file.size,
-                                    bytesSent: (step + 1) * file.size / totalSteps
-                                };
-
-                                self.emit('uploadprogress', file, file.upload.progress, file.upload.bytesSent);
-                                if (file.upload.progress == 100) {
-                                    file.status = Dropzone.SUCCESS;
-                                    self.emit("success", file, 'success', null);
-                                    self.emit("complete", file);
-                                    self.processQueue();
-                                }
-                            };
-                        }(file, totalSteps, step), duration);
-                    }
-                }
-            }
-            /* eslint-enable no-var, semi */
 
             global.dz = dz
         }
@@ -145,6 +106,14 @@ export default function generateDropzone()  {
 
         componentDidUpdate(prevProps, prevState) {
             hiddenInput = this.refs.hiddenInput
+        }
+
+        getUrl() {
+            const { url } = this.props
+            if (typeof url === 'function') {
+                return url(...arguments)
+            }
+            return url
         }
 
 
@@ -217,8 +186,9 @@ export default function generateDropzone()  {
 
             return (
                 <div>
-                    {fileStore.map((data, file) => (
+                    {fileStore.map((data, file, index) => (
                         <Template
+                            key={index}
                             filename={file.name}
                             progress={data.progress}
                             bytesSent={data.bytesSent}
