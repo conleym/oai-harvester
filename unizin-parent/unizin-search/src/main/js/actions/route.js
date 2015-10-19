@@ -59,7 +59,13 @@ export function routeReturnUrl(item) {
     const { properties, title } = item
     const url = properties['file:content']['data']
 
-    const query = encodeURL`?return_type=url&url=${url}&text=${title}&target=_blank`
+    const params = {
+        return_type: url,
+        url,
+        text: title,
+        target: '_blank',
+    }
+    const query = encodeURL`?${params}`
 
     return {
         url: window.lti_data.ext_content_return_url + query

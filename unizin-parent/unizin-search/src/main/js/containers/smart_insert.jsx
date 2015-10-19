@@ -1,7 +1,7 @@
 import React from 'react'
 import smartLoader from './smart_loader.jsx'
 import { ensureDocument, documentImport } from '../actions/documents.js'
-import { routeReturnUrl} from '../actions/route.js'
+import { routeReturnUrl } from '../actions/route.js'
 import { isDocumentReady, selectDocumentLoadError } from '../selectors.js'
 import Insert from '../components/insert.jsx'
 
@@ -16,7 +16,6 @@ class SmartInsert extends React.Component {
             goBack: func.isRequired
         }).isRequired,
         documentImport: dispatchFunc.isRequired,
-        routeReturnUrl: dispatchFunc.isRequired,
         params: shape({
             uid: string.isRequired
         }).isRequired,
@@ -44,9 +43,7 @@ class SmartInsert extends React.Component {
         const { document, ready } = this.props
 
         if (ready) {
-            process.nextTick(() => {
-                window.location = this.props.routeReturnUrl(document).url
-            })
+            window.location = routeReturnUrl(document).url
         }
     }
 
@@ -96,5 +93,5 @@ export default smartLoader(
         }
     },
     mapStateToProps,
-    { documentImport, routeReturnUrl }
+    { documentImport }
 )(SmartInsert)
