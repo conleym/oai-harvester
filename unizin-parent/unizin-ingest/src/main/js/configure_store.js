@@ -1,5 +1,5 @@
 import { compose, createStore, applyMiddleware } from 'redux'
-import { reduxReactRouter, routerStateReducer, ReduxRouter } from 'redux-router';
+import { reduxReactRouter } from 'redux-router'
 import { routes } from './containers/root.jsx'
 import { useQueries } from 'history'
 import createHistory from 'history/lib/createHashHistory'

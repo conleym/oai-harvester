@@ -1,6 +1,5 @@
 import React from 'react'
 import setupDropzone from '../components/dropzone'
-import Home from '../components/home'
 import smartLoader from './smart_loader'
 import { getBatchId } from '../actions/uploads'
 
@@ -8,7 +7,8 @@ class SmartHome extends React.Component {
     static displayName = 'SmartHome'
 
     static propTypes = {
-        batchId: React.PropTypes.string.isRequired
+        batchId: React.PropTypes.string.isRequired,
+        children: React.PropTypes.node.isRequired,
     }
 
     componentWillMount() {
