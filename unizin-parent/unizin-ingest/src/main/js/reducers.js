@@ -1,4 +1,10 @@
-import { SET_BATCH_ID } from './actions/uploads'
+import { 
+    SET_BATCH_ID,
+    UPLOAD,
+    UPLOAD_PROGRESS,
+    UPLOAD_ERROR,
+    UPLOAD_THUMBNAIL
+} from './actions/uploads'
 
 export { routerStateReducer as router } from 'redux-router'
 
@@ -14,12 +20,6 @@ export function batchId(state = null, action) {
     return state
 }
 
-import {
-    UPLOAD,
-    UPLOAD_PROGRESS,
-    UPLOAD_ERROR,
-    UPLOAD_THUMBNAIL
-} from './actions/uploads'
 export function files(state = {}, action) {
 
 
