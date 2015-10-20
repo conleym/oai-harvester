@@ -6,7 +6,7 @@ export default class FileUpload extends React.Component {
     static displayName = 'FileUpload'
 
     static propTypes = {
-        filename: string.isRequired,
+        name: string.isRequired,
         size: number.isRequired,
         thumbnail: string,
         // 0 - 100
@@ -15,13 +15,14 @@ export default class FileUpload extends React.Component {
     }
 
     render() {
-        const { filename, size, thumbnail, progress, error } = this.props
+        const { name, size, thumbnail, progress, error } = this.props
 
         return (
             <div className="dz-preview dz-file-preview">
                 <div className="dz-details">
-                    {filename}
-                    {size}
+                    {name}
+                    <br/>
+                    Size: {size} (Units unknown)
                     <img src={thumbnail} />
                 </div>
                 <div className="dz-progress">

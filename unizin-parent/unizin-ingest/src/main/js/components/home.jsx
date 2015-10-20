@@ -8,11 +8,29 @@ export default class Home extends React.Component {
 
     static propTypes = {
         onSelectFile: func.isRequired,
-        Files: func.isRequired,
+        files: React.PropTypes.object.isRequired,
+    }
+
+    renderFiles() {
+        const { files } = this.props
+
+        return Object.keys(files).map((key) => {
+            const data = files[key]
+
+            return (
+                <FileUpload
+                    key={key}
+                    name={data.name}
+                    size={data.size}
+                    thumbnail={data.thumbnail}
+                    progress={data.progress}
+                    error={data.error} />
+            )
+        })
+
     }
 
     render() {
-        const { Files } = this.props
 
         return (
             <div>
@@ -20,7 +38,7 @@ export default class Home extends React.Component {
                     Upload
                 </button>
 
-                <Files Template={FileUpload} />
+                {this.renderFiles()}
             </div>
         )
     }

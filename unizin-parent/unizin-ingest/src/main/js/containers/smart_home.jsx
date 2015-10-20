@@ -1,5 +1,5 @@
 import React from 'react'
-import setupDropzone from '../components/dropzone'
+import Dropzone from '../components/dropzone'
 import Home from '../components/home'
 import smartLoader from './smart_loader'
 import { getBatchId } from '../actions/uploads'
@@ -8,33 +8,32 @@ class SmartHome extends React.Component {
     static displayName = 'SmartHome'
 
     static propTypes = {
-        batchId: React.PropTypes.string.isRequired
+        batchId: React.PropTypes.string.isRequired,
+        files: React.PropTypes.object.isRequired,
     }
 
-    componentWillMount() {
-        const { Dropzone, Files, clickFileInput } = setupDropzone()
-        this.Dropzone = Dropzone
-        this.Files = Files
-        this.clickFileInput = clickFileInput
+    onSelectFile() {
+        this.refs.Dropzone.selectFile()
     }
 
     render() {
-        const { batchId } = this.props
+        const { batchId, files } = this.props
 
         const uploadURL = `/nuxeo/api/v1/upload/${batchId}/0`
 
         return (
-            <this.Dropzone url={uploadURL}>
+            <Dropzone url={uploadURL} ref="Dropzone">
                 <Home
-                    Files={this.Files}
-                    onSelectFile={this.clickFileInput} />
-            </this.Dropzone>
+                    files={files}
+                    onSelectFile={::this.onSelectFile} />
+            </Dropzone>
         )
     }
 }
 
 function mapStateToProps(state) {
     return {
+        files: state.files,
         batchId: state.batchId
     }
 }
