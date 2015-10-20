@@ -1,0 +1,32 @@
+---
+- hosts: default
+  sudo: yes
+
+  tasks:
+    - name: Stop Nuxeo
+      service: name=nuxeo state=stopped
+
+    - shell: nuxeoctl mp-list | grep -q unizin-search
+      register: unizin_search_present
+      ignore_errors: True
+
+    - shell: nuxeoctl mp-list | grep -q unizin-ingest
+      register: unizin_ingest_present
+      ignore_errors: True
+
+    - name: Remove unizin-search
+      command: nuxeoctl mp-remove unizin-search
+      when: unizin_search_present|success
+
+    - name: Remove unizin-ingest
+      command: nuxeoctl mp-remove unizin-ingest
+      when: unizin_ingest_present|success
+
+    - name: Install unizin-search
+      command: nuxeoctl mp-install /unizin-cmp/unizin-parent/search-package/target/search-package-1.0.0-SNAPSHOT.zip
+
+    - name: Install unizin-ingest
+      command: nuxeoctl mp-install /unizin-cmp/unizin-parent/ingest-package/target/ingest-package-1.0.0-SNAPSHOT.zip
+
+    - name: Start Nuxeo
+      service: name=nuxeo state=started
