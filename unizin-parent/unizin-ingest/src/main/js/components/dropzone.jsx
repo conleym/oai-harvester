@@ -1,7 +1,6 @@
 import React from 'react'
 import DropzoneJS from 'dropzone'
 import { connect } from 'react-redux'
-import { EventEmitter } from 'events'
 import FontAwesome from 'react-fontawesome'
 import styles from './dropzone.scss'
 import { uploadFile, uploadProgress, uploadThumbnail, uploadError } from '../actions/uploads'
@@ -9,17 +8,21 @@ import { uploadFile, uploadProgress, uploadThumbnail, uploadError } from '../act
 DropzoneJS.autoDiscover = false
 /* eslint-disable react/no-multi-comp */
 
-const { node, func } = React.PropTypes
+const dispatchFunc = React.PropTypes.func.isRequired
 
 class Dropzone extends React.Component {
     static displayName = 'Dropzone'
 
     static propTypes = {
-        children: node,
+        children: React.PropTypes.node,
         url: React.PropTypes.oneOfType([
             React.PropTypes.string,
             React.PropTypes.func
-        ]).isRequired
+        ]).isRequired,
+        uploadFile: dispatchFunc,
+        uploadProgress: dispatchFunc,
+        uploadError: dispatchFunc,
+        uploadThumbnail: dispatchFunc,
     }
 
     constructor(props, context) {
@@ -114,7 +117,7 @@ class Dropzone extends React.Component {
                     type="file" />
                 <div className={styles.hover} >
                     <h1>
-                      <FontAwesome name='arrow-circle-down' aria-hidden='true' /> Drop to contribute
+                      <FontAwesome name="arrow-circle-down" aria-hidden /> Drop to contribute
                       <span>You will be presented with a form</span>
                     </h1>
                 </div>

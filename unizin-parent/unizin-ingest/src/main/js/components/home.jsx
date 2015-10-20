@@ -58,7 +58,7 @@ export default class Home extends React.Component {
                 </div>
                 <aside>
                   <button onClick={this.props.onSelectFile}>
-                      <FontAwesome name='arrow-circle-up' aria-hidden='true' /> Upload a file
+                      <FontAwesome name="arrow-circle-up" aria-hidden /> Upload a file
                   </button>
 
                   <p>Drag and drop a file from your local computer anywhere on this page to upload.</p>

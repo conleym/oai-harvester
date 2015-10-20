@@ -4,7 +4,7 @@
         "react/display-name": [1, { "acceptTranspilerName": true }],
         "react/jsx-boolean-value": 1,
         "react/jsx-no-undef": 1,
-        "react/jsx-quotes": 1,
+        "jsx-quotes": 1,
         "react/jsx-uses-react": 1,
         "react/jsx-uses-vars": 1,
         "react/no-did-mount-set-state": 1,

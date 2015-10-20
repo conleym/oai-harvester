@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
-const { any, node, func } = React.PropTypes
+const { any, node } = React.PropTypes
 
 class App extends React.Component {
     static displayName = 'App'

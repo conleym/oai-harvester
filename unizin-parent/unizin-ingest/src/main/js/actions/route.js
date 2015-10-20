@@ -1,4 +1,4 @@
-import { pushState } from 'redux-router';
+import { pushState } from 'redux-router'
 // import { encodeURL } from './utils.js'
 
 export function route(route, query) {

@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "NODE_ENV=production webpack --bail",
+    "ci": "npm run lint",
     "lint": "eslint --ext js,jsx src/",
     "start": "webpack-dev-server --https",
     "start-cert": "webpack-dev-server --https  --key server.key --cert server.crt --cacert server.crt",
