@@ -12,8 +12,17 @@
 :local .wrapper {
   aside {
     z-index: 1;
+    transition: opacity .25s;
+
     :global {
       @extend .aside;
     }
+  }
+}
+
+
+:global(.dz-drag-hover) {
+  aside {
+    opacity: 0;
   }
 }
