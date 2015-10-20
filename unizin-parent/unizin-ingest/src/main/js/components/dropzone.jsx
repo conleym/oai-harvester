@@ -2,6 +2,7 @@ import React from 'react'
 import DropzoneJS from 'dropzone'
 import { connect } from 'react-redux'
 import { EventEmitter } from 'events'
+import FontAwesome from 'react-fontawesome'
 import styles from './dropzone.scss'
 import { uploadFile, uploadProgress, uploadThumbnail, uploadError } from '../actions/uploads'
 
@@ -96,7 +97,8 @@ class Dropzone extends React.Component {
 
     render() {
         return (
-            <span>
+          <div className={styles.message}>
+            <form>
                 <input
                     key={this.state.inputKey}
                     onChange={::this.onChangeInput}
@@ -111,13 +113,14 @@ class Dropzone extends React.Component {
                     }}
                     type="file" />
                 <div className={styles.hover} >
-                    Drop to contribute
-                    <br/>
-                    You will be presented with a form
+                    <h1>
+                      <FontAwesome name='arrow-circle-down' aria-hidden='true' /> Drop to contribute
+                      <span>You will be presented with a form</span>
+                    </h1>
                 </div>
-
-                {this.props.children}
-            </span>
+            </form>
+            {this.props.children}
+          </div>
         )
     }
 }
