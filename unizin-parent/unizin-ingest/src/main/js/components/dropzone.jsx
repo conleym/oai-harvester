@@ -118,9 +118,8 @@ class Dropzone extends React.Component {
                       <span>You will be presented with a form</span>
                     </h1>
                 </div>
-
-                {this.props.children}
             </form>
+            {this.props.children}
           </div>
         )
     }
