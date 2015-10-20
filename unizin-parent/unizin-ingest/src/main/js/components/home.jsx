@@ -1,34 +1,44 @@
 import React from 'react'
-import { Link } from 'react-router'
 import FileUpload from './file_upload.jsx'
 
-const { object, func } = React.PropTypes
+const { func } = React.PropTypes
 
 export default class Home extends React.Component {
     static displayName = 'Home'
 
     static propTypes = {
-        query: object.isRequired,
         onSelectFile: func.isRequired,
-        Files: func.isRequired,
+        files: React.PropTypes.object.isRequired,
+    }
+
+    renderFiles() {
+        const { files } = this.props
+
+        return Object.keys(files).map((key) => {
+            const data = files[key]
+
+            return (
+                <FileUpload
+                    key={key}
+                    name={data.name}
+                    size={data.size}
+                    thumbnail={data.thumbnail}
+                    progress={data.progress}
+                    error={data.error} />
+            )
+        })
+
     }
 
     render() {
-        const { Files } = this.props
 
         return (
             <div>
                 <button onClick={this.props.onSelectFile}>
                     Upload
                 </button>
-                Hello World
-                <pre>{JSON.stringify(this.props.query, null, 2)}</pre>
 
-                <Link to="/">Foo</Link>
-                <br/>
-                <Link to="/">Bar</Link>
-
-                <Files Template={FileUpload} />
+                {this.renderFiles()}
             </div>
         )
     }
