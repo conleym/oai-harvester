@@ -38,7 +38,7 @@ for local development work.
 With a working VM, you should be able to build and install the Unizin
 packages with the following commands:
 
-    mycomputer:unizin-cmp $ mvn package
+    mycomputer:unizin-cmp $ mvn -f unizin-parent/pom.xml package
     mycomputer:unizin-cmp $ ansible-playbook ansible/update_mp.yml
 
 There are a few tricks to avoid this long server restart turnaround
