@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<component name="org.unizin.cmp.ingest.auth">
+
+     <extension
+      target="org.nuxeo.ecm.platform.ui.web.auth.service.PluggableAuthenticationService"
+      point="openUrl">
+       <openUrl name="ContributeLtiConfig">
+            <grantPattern>${org.nuxeo.ecm.contextPath}/site/contribute/config.xml</grantPattern>
+       </openUrl>
+     </extension>
+
+</component>
