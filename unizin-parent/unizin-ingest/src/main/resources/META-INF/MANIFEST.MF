@@ -1,3 +1,4 @@
 Manifest-Version: 1.0
 Bundle-SymbolicName: org.unizin.cmp.ingest
 Nuxeo-WebModule: org.nuxeo.ecm.webengine.app.WebEngineModule;name=contribute
+Nuxeo-Component: OSGI-INF/auth-contrib.xml
