@@ -46,6 +46,9 @@ public final class OAIXMLUtils {
 	 *            the event reader to close.
 	 */
 	public static void closeQuietly(final XMLEventReader reader) {
+		if (reader == null) {
+			return;
+		}
 		try {
 			reader.close();
 		} catch (XMLStreamException e) {
@@ -61,6 +64,9 @@ public final class OAIXMLUtils {
 	 *            the event writer to close.
 	 */
 	public static void closeQuietly(final XMLEventWriter writer) {
+		if (writer == null) {
+			return;
+		}
 		try {
 			writer.close();
 		} catch (final XMLStreamException e) {

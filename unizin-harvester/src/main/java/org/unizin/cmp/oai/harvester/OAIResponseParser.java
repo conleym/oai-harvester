@@ -1,0 +1,178 @@
+package org.unizin.cmp.oai.harvester;
+
+import static org.unizin.cmp.oai.OAI2Constants.ERROR;
+import static org.unizin.cmp.oai.OAI2Constants.ERROR_CODE_ATTR;
+import static org.unizin.cmp.oai.OAI2Constants.RESPONSE_DATE;
+import static org.unizin.cmp.oai.OAI2Constants.RESUMPTION_TOKEN;
+import static org.unizin.cmp.oai.OAI2Constants.RT_COMPLETE_LIST_SIZE_ATTR;
+import static org.unizin.cmp.oai.OAI2Constants.RT_CURSOR_ATTR;
+import static org.unizin.cmp.oai.OAI2Constants.RT_EXPIRATION_DATE_ATTR;
+
+import java.io.InputStream;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+
+import org.slf4j.Logger;
+import org.unizin.cmp.oai.OAIError;
+import org.unizin.cmp.oai.OAIXMLUtils;
+import org.unizin.cmp.oai.ResumptionToken;
+import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
+import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
+import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
+
+
+/**
+ * Internal-use-only class used to parse OAI-PMH responses on behalf of the
+ * harvester.
+ * <p>
+ * Instances can be reused for multiple harvests.
+ *
+ */
+final class OAIResponseParser {
+	private final XMLInputFactory inputFactory;
+	private final Logger logger;
+
+	OAIResponseParser(final XMLInputFactory inputFactory, final Logger logger) {
+		this.inputFactory = inputFactory;
+		this.logger = logger;
+	}
+
+	/**
+	 * Parse a response from an OAI repository and update the harvest state
+	 * appropriately.
+	 * 
+	 * @param in
+	 *            stream of the response content.
+	 * @param harvest
+	 *            the current harvest state.
+	 * @param eventHandler
+	 *            the event handler to which all {@code XMLEvents} will be sent.
+	 * @throws XMLStreamException
+	 *             if there's an error creating an {@link XMLEventReader} from
+	 *             this instance's input factory's
+	 *             {@link XMLInputFactory#createXMLEventReader(InputStream)}
+	 *             method.
+	 */
+	void parse(final InputStream in, final Harvest harvest,
+			final OAIEventHandler eventHandler)
+			throws XMLStreamException {
+		final XMLEventReader reader = inputFactory.createXMLEventReader(in);
+		final List<OAIError> errorList = new ArrayList<>();
+		try {
+			final ResumptionToken resumptionToken = readEvents(reader,
+					errorList, harvest, eventHandler);
+			logger.debug("Got resumption token {}", resumptionToken);
+			if (resumptionToken == null) {
+				// Cannot set resumptionToken to null (purposefully throws NPE).
+				//
+				// The token may be null in the following cases:
+				// 1. Non-list responses won't have resumption tokens.
+				// 2. The server doesn't send back an empty token in the last
+				// incomplete list of a list request (it's supposed to, but some
+				// don't).
+				harvest.stop();
+			} else {
+				final String token = resumptionToken.getToken();
+				if ("".equals(token)) {
+					// Harvest is done.
+					harvest.stop();
+				} else if (errorList.isEmpty()) {
+					// If there were errors, the client may wish to retry (not
+					// implemented yet).
+					// Only set the token if there are none.
+					harvest.setResumptionToken(resumptionToken);
+				}
+			}
+		} catch (final XMLStreamException e) {
+			throw new HarvesterXMLParsingException(e);
+		} finally {
+			// Other exceptions (if any) will be available as suppressed 
+			// exceptions of the protocol exception.
+			if (! errorList.isEmpty()) {
+				throw new OAIProtocolException(errorList);
+			}
+		}
+	}
+
+	private ResumptionToken readEvents(final XMLEventReader reader,
+			final List<OAIError> errorList, final Harvest harvest,
+			final OAIEventHandler eventHandler)
+					throws XMLStreamException {
+		try {
+			ResumptionToken resumptionToken = null;
+			while (reader.hasNext()) {
+				final XMLEvent event = reader.nextEvent();
+				logger.trace("Read event {}", event);
+				eventHandler.onEvent(event);
+				if (event.isStartElement()) {
+					final StartElement startElement = event.asStartElement();
+					if (isError(startElement)) {
+						final String message = reader.getElementText();
+						final String code = OAIXMLUtils.attributeValue(
+								startElement, ERROR_CODE_ATTR);
+						final OAIError error = new OAIError(code, message);
+						errorList.add(error);
+					} else if (isResumptionToken(startElement)) {
+						final String token = reader.getElementText();
+						final Long completeListSize = optionalAttributeValue(
+								startElement, RT_COMPLETE_LIST_SIZE_ATTR,
+								Long::parseLong);
+						final Long cursor = optionalAttributeValue(startElement,
+								RT_CURSOR_ATTR, Long::parseLong);
+						final Instant expirationDate = optionalAttributeValue(
+								startElement, RT_EXPIRATION_DATE_ATTR,
+								Instant::parse);
+						resumptionToken = new ResumptionToken(token,
+								completeListSize, cursor, expirationDate);
+					} else if (isResponseDate(startElement)) {
+						final String date = reader.getElementText();
+						try {
+							final Instant responseDate = Instant.parse(date);
+							harvest.setLastResponseDate(responseDate);
+						} catch (final DateTimeParseException e) {
+							logger.warn("Invalid responseDate.", e);
+						}
+					}
+				}
+			}
+			return resumptionToken;
+		} finally {
+			OAIXMLUtils.closeQuietly(reader);
+		}
+	}
+
+	private static boolean isError(final StartElement se) {
+		return ERROR.equals(se.getName());
+	}
+
+	private static boolean isResumptionToken(final StartElement se) {
+		return RESUMPTION_TOKEN.equals(se.getName());
+	}
+
+	private static boolean isResponseDate(final StartElement se) {
+		return RESPONSE_DATE.equals(se.getName());
+	}
+
+	private <T> T optionalAttributeValue(final StartElement se, 
+			final QName name, final Function<String, T> fun) {
+		final String value = OAIXMLUtils.attributeValue(se, name);
+		if (value != null) {
+			try {
+				return fun.apply(value);
+			} catch (final RuntimeException e) {
+				logger.warn("Exception parsing attribute " + name, e);
+			}
+		}
+		return null;
+	}
+}
