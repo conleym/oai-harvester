@@ -103,7 +103,43 @@ final class OAIResponseParser {
 			}
 		}
 	}
+	
+	private XMLEvent nextEvent(final XMLEventReader reader,
+			final OAIEventHandler eventHandler) throws XMLStreamException {
+		final XMLEvent event = reader.nextEvent();
+		logger.trace("Read event {}", event);
+		eventHandler.onEvent(event);
+		return event;
+	}
+	
+	
+	/**
+	 * Read the text content of a node until non-text is seen.
+	 * <p>
+	 * This is used in preference to {@link XMLEventReader#getElementText()},
+	 * because we want to pass all events from the input to the
+	 * {@code OAIEventHandler}, and that method eats the text events.
+	 * <p>
+	 * There is also no mixed content in any of the nodes we care about, so this
+	 * doesn't handle such cases, instead simply stopping at the first non-text
+	 * node.
+	 * 
+	 * @param reader
+	 * @param eventHandler
+	 * @return
+	 * @throws XMLStreamException
+	 */
+	private String readText(final XMLEventReader reader,
+			final OAIEventHandler eventHandler) throws XMLStreamException {
+		final StringBuilder sb = new StringBuilder();
+		while (reader.hasNext() && reader.peek().isCharacters()) {
+			final XMLEvent event = nextEvent(reader, eventHandler);
+			sb.append(event.asCharacters().getData());
+		}
+		return sb.toString();
+	}
 
+	
 	private ResumptionToken readEvents(final XMLEventReader reader,
 			final List<OAIError> errorList, final Harvest harvest,
 			final OAIEventHandler eventHandler)
@@ -111,19 +147,17 @@ final class OAIResponseParser {
 		try {
 			ResumptionToken resumptionToken = null;
 			while (reader.hasNext()) {
-				final XMLEvent event = reader.nextEvent();
-				logger.trace("Read event {}", event);
-				eventHandler.onEvent(event);
+				final XMLEvent event = nextEvent(reader, eventHandler);
 				if (event.isStartElement()) {
 					final StartElement startElement = event.asStartElement();
 					if (isError(startElement)) {
-						final String message = reader.getElementText();
+						final String message = readText(reader, eventHandler);
 						final String code = OAIXMLUtils.attributeValue(
 								startElement, ERROR_CODE_ATTR);
 						final OAIError error = new OAIError(code, message);
 						errorList.add(error);
 					} else if (isResumptionToken(startElement)) {
-						final String token = reader.getElementText();
+						final String token = readText(reader, eventHandler);
 						final Long completeListSize = optionalAttributeValue(
 								startElement, RT_COMPLETE_LIST_SIZE_ATTR,
 								Long::parseLong);
@@ -135,7 +169,7 @@ final class OAIResponseParser {
 						resumptionToken = new ResumptionToken(token,
 								completeListSize, cursor, expirationDate);
 					} else if (isResponseDate(startElement)) {
-						final String date = reader.getElementText();
+						final String date = readText(reader, eventHandler);
 						try {
 							final Instant responseDate = Instant.parse(date);
 							harvest.setLastResponseDate(responseDate);

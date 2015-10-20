@@ -19,6 +19,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.OAIXMLUtils;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
@@ -128,6 +129,18 @@ public final class Harvester extends Observable {
 		this.responseHandler = responseHandler;
 		harvest();
 	}
+	
+	/**
+	 * Stop the current harvest, if any.
+	 * <p>
+	 * This method can be called from at most one thread for the lifetime of the
+	 * harvest.
+	 */
+	public void stop() {
+		if (harvest != null) {
+			harvest.userStop();
+		}
+	}
 
 	private void harvest() {
 		harvest.start();
@@ -138,7 +151,8 @@ public final class Harvester extends Observable {
 				try (final InputStream in = is) { // Make sure streams get closed.
 					harvest.partialResponseRecieved();
 					final HarvestNotification notification = 
-							harvest.createNotification();
+							harvest.createNotification(
+									HarvestNotificationType.RESPONSE_RECEIVED);
 					sendToObservers(notification);
 					responseHandler.onResponseStart(notification);
 					responseParser.parse(in, harvest, 
@@ -156,7 +170,8 @@ public final class Harvester extends Observable {
 					throw new HarvesterException(e);
 				} finally {
 					final HarvestNotification notification = 
-							harvest.createNotification();
+							harvest.createNotification(
+									HarvestNotificationType.RESPONSE_PROCESSED);
 					responseHandler.onResponseEnd(notification);
 					sendToObservers(notification);
 				}
@@ -226,13 +241,15 @@ public final class Harvester extends Observable {
 	}
 
 	private void sendStartNotifications() {
-		final HarvestNotification notification = harvest.createNotification();
+		final HarvestNotification notification = harvest.createNotification(
+				HarvestNotificationType.HARVEST_STARTED);
 		responseHandler.onHarvestStart(notification);
 		sendToObservers(notification);
 	}
 
 	private void sendEndNotifications() {
-		final HarvestNotification notification = harvest.createNotification();
+		final HarvestNotification notification = harvest.createNotification(
+				HarvestNotificationType.HARVEST_ENDED);
 		responseHandler.onHarvestEnd(notification);
 		sendToObservers(notification);
 	}

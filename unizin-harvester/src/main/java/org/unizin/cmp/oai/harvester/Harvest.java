@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.ResumptionToken;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 
 /**
  * Internal-use-only mutable harvest state.
@@ -18,6 +19,7 @@ final class Harvest {
 	private final HarvestParams params;
 	private HttpUriRequest request;
 	private boolean isStarted;
+	private volatile boolean stoppedByUser;
 	private boolean hasError;
 	private ResumptionToken resumptionToken;
 	private Instant lastResponseDate;
@@ -27,11 +29,11 @@ final class Harvest {
 		this.params = params;
 	}
 	
-	HarvestNotification createNotification() {
+	HarvestNotification createNotification(final HarvestNotificationType type) {
 		final Map<String, Long> stats = new HashMap<>(1);
 		stats.put("partialListResponseCount", partialListResponseCount);
-		return new HarvestNotification(isStarted, hasError, resumptionToken,
-				stats);
+		return new HarvestNotification(type, isStarted, hasError, stoppedByUser,
+				resumptionToken, lastResponseDate, params, stats);
 	}
 	
 	void setLastResponseDate(final Instant lastResponseDate) {
@@ -72,11 +74,17 @@ final class Harvest {
 	
 	void start() {
 		isStarted = true;
-		
 	}
 	
 	void stop() {
 		isStarted = false;
+	}
+	
+	/**
+	 * This method should be called only from {@link Harvester#stop()}.
+	 */
+	void userStop() {
+		this.stoppedByUser = true;
 	}
 	
 	void error() {
@@ -88,23 +96,7 @@ final class Harvest {
 	}
 	
 	boolean hasNext() {
-		return isStarted && !hasError;
-	}
-	
-	@Override
-	public String toString() {
-		return new StringBuilder(this.getClass().getName())
-				.append("[")
-				.append("isStarted=")
-				.append(isStarted)
-				.append(", hasError=")
-				.append(hasError)
-				.append(", lastResponseDate=")
-				.append(lastResponseDate)
-				.append(", resumptionToken=")
-				.append(resumptionToken)
-				.append("]")
-				.toString();
+		return isStarted && !hasError && !stoppedByUser;
 	}
 }
 
