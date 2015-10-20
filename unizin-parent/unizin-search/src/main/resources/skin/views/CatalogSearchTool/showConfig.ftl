@@ -14,7 +14,7 @@
     <blti:extensions platform="canvas.instructure.com">
         <lticm:property name="privacy_level">public</lticm:property>
         <lticm:property name="domain">${nuxeoHost}</lticm:property>
-        <lticm:property name="text">Unizin Library</lticm:property>
+        <lticm:property name="text">Unizin Discover Tool</lticm:property>
         <lticm:options name="editor_button">
             <lticm:property name="enabled">true</lticm:property>
             <lticm:property name="icon_url">${nuxeoURL}${skinPath}/icon.png</lticm:property>
