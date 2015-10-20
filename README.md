@@ -10,7 +10,9 @@ for local development work.
 
 1. Install [VirtualBox](https://www.virtualbox.org/wiki/Downloads).
 
-2. Install [Vagrant](https://www.vagrantup.com/downloads.html).
+2. Install [Vagrant](https://www.vagrantup.com/downloads.html)
+   (version 1.7.3 is earliest that supports SSH autoconfig for
+   ansible).
 
 3. Install [Maven](https://maven.apache.org/install.html).
 
