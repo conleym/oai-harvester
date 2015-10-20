@@ -39,6 +39,7 @@ scp $INGEST_SRC $VM_NAME:/tmp/$INGEST_FILE
 
 ssh -q $VM_NAME << EOF
 set -ex
+sudo rm /var/lib/nuxeo/server/sdk/test-artifacts-sample.properties
 sudo service nuxeo stop
 sudo nuxeoctl mp-remove unizin-search || true
 sudo nuxeoctl mp-remove unizin-ingest || true
