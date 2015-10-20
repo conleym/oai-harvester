@@ -1,0 +1,19 @@
+@import '../variables.scss';
+@import '../globals.scss';
+
+:local .main {
+  width: $main_column_width;
+  height: $main_content_height;
+  float: left;
+  padding: $global_padding ($global_padding * 3);
+}
+
+
+:local .wrapper {
+  aside {
+    z-index: 1;
+    :global {
+      @extend .aside;
+    }
+  }
+}
