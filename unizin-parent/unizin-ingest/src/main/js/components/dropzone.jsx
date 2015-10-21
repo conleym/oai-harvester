@@ -38,14 +38,31 @@ class Dropzone extends React.Component {
         let nextKey = 0
 
         this.dz = new DropzoneJS(document.body, {
+            // turn off auto processing so it doesn't try to upload files we
+            // don't accept
+            autoProcessQueue: false,
             addedfile: (file) => {
+                // only accept the first file
+                if (fileKeys.size > 0) {
+                    this.dz.removeFile(file)
+                    return
+                }
+
                 const key = `file${nextKey++}`
                 fileKeys.set(file, key)
                 this.props.uploadFile(key, file)
+
+                // Doing this in the same tick caused Dropzone to throw
+                process.nextTick(() => {
+                    this.dz.processFile(file)
+                })
             },
             thumbnail: (file, dataUrl) => {
                 const key = fileKeys.get(file)
-                this.props.uploadThumbnail(key, dataUrl)
+                // It may generate thumbnails for files that were rejected above
+                if (key) {
+                    this.props.uploadThumbnail(key, dataUrl)
+                }
             },
             uploadprogress: (file, progress, bytesSent) => {
                 const key = fileKeys.get(file)
