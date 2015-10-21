@@ -41,7 +41,7 @@ public interface OAIResponseHandler {
 	 * Always called, regardless of the nature of the HTTP response from the
 	 * server. 
 	 * <p>
-	 * For list requests, this will be called just before each partial list
+	 * For list requests, this will be called just before each incomplete list
 	 * received from the server is processed.
 	 *  
 	 * @param notification
@@ -55,7 +55,7 @@ public interface OAIResponseHandler {
 	 * Called whether processing succeeded or failed. Check the notification
 	 * object for more information.
 	 * <p>
-	 * For list requests, this will be called just after each partial list
+	 * For list requests, this will be called just after each incomplete list
 	 * received from the server is processed. 
 	 * 
 	 * @param notification 

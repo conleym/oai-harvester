@@ -38,8 +38,8 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 			LoggerFactory.getLogger(MergingOAIResponseHandler.class);
 
 	/**
-	 * Filter that skips certain elements in order to make a series of partial 
-	 * list responses appear as a single complete list.
+	 * Filter that skips certain elements in order to make a series of
+	 * incomplete list responses appear as a single complete list.
 	 * 
 	 * All but the first of the following are skipped:
 	 * <ul>

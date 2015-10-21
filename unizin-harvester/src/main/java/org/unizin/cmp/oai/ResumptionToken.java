@@ -7,7 +7,7 @@ import java.util.Optional;
 /**
  * Container for information supplied as part of a <a href=
  * "http://www.openarchives.org/OAI/openarchivesprotocol.html#FlowControl">
- * resumption token</a> in a partial list response.
+ * resumption token</a> in an incomplete list response.
  *
  */
 public final class ResumptionToken {
@@ -23,7 +23,7 @@ public final class ResumptionToken {
 	 * @param token
 	 *            the resumption token (i.e., the content of all text nodes
 	 *            which are children of the {@code resumptionToken} element in
-	 *            the partial list response).
+	 *            the incomplete list response).
 	 * 
 	 * @throws NullPointerException
 	 *             if {@code token} is {@code null}.
@@ -38,16 +38,19 @@ public final class ResumptionToken {
 	 * @param token
 	 *            the resumption token (i.e., the content of all text nodes
 	 *            which are children of the {@code resumptionToken} element in
-	 *            the partial list response).
+	 *            the incomplete list response).
 	 * @param completeListSize
 	 *            the value of the {@code completeListSize} attribute on the
-	 *            {@code resumptionToken} element in the partial list response.
+	 *            {@code resumptionToken} element in the incomplete list
+	 *            response.
 	 * @param cursor
 	 *            the value of the {@code cursor} attribute on the
-	 *            {@code resumptionToken} element in the partial list response.
+	 *            {@code resumptionToken} element in the incomplete list
+	 *            response.
 	 * @param expirationDate
 	 *            the value of the {@code expirationDate} attribute on the
-	 *            {@code resumptionToken} element in the partial list response.
+	 *            {@code resumptionToken} element in the incomplete list
+	 *            response.
 	 * @throws NullPointerException
 	 *             if {@code token} is {@code null}.
 	 */

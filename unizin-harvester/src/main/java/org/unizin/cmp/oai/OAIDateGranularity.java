@@ -5,6 +5,14 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
 
 
+/**
+ * Enumeration of standard <a href=
+ * "http://www.openarchives.org/OAI/openarchivesprotocol.html#Datestamp">
+ * datestamp granularities</a> used to specify dates for selective harvesting.
+ * <p>
+ * All compliant repositories must support the {@link #DAY} granularity.
+ * {@link #SECOND} is optional.
+ */
 public enum OAIDateGranularity {
 	DAY(DateTimeFormatter.ISO_LOCAL_DATE),
 	SECOND(new DateTimeFormatterBuilder()
@@ -21,11 +29,24 @@ public enum OAIDateGranularity {
 	public TemporalAccessor parse(final String string) {
 		return formatter.parse(string);
 	}
-	
+
 	public String format(final TemporalAccessor ta) {
 		return formatter.format(ta);
 	}
 	
+	/**
+	 * Get an instance from a format string.
+	 * <p>
+	 * The format string should be the value of the {@code granularity} from a
+	 * repository's <a href=
+	 * "http://www.openarchives.org/OAI/openarchivesprotocol.html#Identify">
+	 * Identify response</a>.
+	 * 
+	 * @param format
+	 *            the format string.
+	 * @return the corresponding granularity, or {@code null} if the format is
+	 *         not recognized.
+	 */
 	public static OAIDateGranularity fromFormat(final String format) {
 		switch(format) {
 			case "YYYY-MM-DD":

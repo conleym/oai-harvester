@@ -63,23 +63,39 @@ final class OAIResponseParser {
 	 *             {@link XMLInputFactory#createXMLEventReader(InputStream)}
 	 *             method.
 	 */
-	void parse(final InputStream in, final Harvest harvest,
-			final OAIEventHandler eventHandler)
+	void parse(final InputStream in, final Harvest harvest, final OAIEventHandler eventHandler)
 			throws XMLStreamException {
 		final XMLEventReader reader = inputFactory.createXMLEventReader(in);
 		final List<OAIError> errorList = new ArrayList<>();
+		/*
+		 * Here, we need some gymnastics to ensure that protocol exceptions have
+		 * "priority", i.e., that other exceptions encountered are suppressed in
+		 * favor of protocol exceptions.
+		 * 
+		 * If there were protocol errors, any exception thrown in the try block
+		 * will be added to the protocol exception as a suppressed exceptions
+		 * Otherwise, the exception thrown from the try block, if any, will be
+		 * thrown.
+		 * 
+		 * This is basically the opposite of the priority handling used to
+		 * suppress exceptions thrown in finally blocks in the harvester proper.
+		 */
+		RuntimeException tryException = null;
 		try {
-			final ResumptionToken resumptionToken = readEvents(reader,
-					errorList, harvest, eventHandler);
+			final ResumptionToken resumptionToken = readEvents(reader, errorList, harvest, eventHandler);
 			logger.debug("Got resumption token {}", resumptionToken);
 			if (resumptionToken == null) {
-				// Cannot set resumptionToken to null (purposefully throws NPE).
-				//
-				// The token may be null in the following cases:
-				// 1. Non-list responses won't have resumption tokens.
-				// 2. The server doesn't send back an empty token in the last
-				// incomplete list of a list request (it's supposed to, but some
-				// don't).
+				/*
+				 * Cannot set Harvest's resumptionToken to null (purposefully
+				 * throws NPE).
+				 * 
+				 * The token may be null in the following cases:
+				 *  1. Non-list responses won't have resumption tokens.
+				 *  
+				 *  2. The server doesn't send back an empty token in the last
+				 *     incomplete list of a list request (it's supposed to, but
+				 *     some don't).
+				 */
 				harvest.stop();
 			} else {
 				final String token = resumptionToken.getToken();
@@ -94,12 +110,19 @@ final class OAIResponseParser {
 				}
 			}
 		} catch (final XMLStreamException e) {
-			throw new HarvesterXMLParsingException(e);
+			tryException = new HarvesterXMLParsingException(e);
+		} catch (final RuntimeException e) {
+			tryException = e;
 		} finally {
-			// Other exceptions (if any) will be available as suppressed 
-			// exceptions of the protocol exception.
-			if (! errorList.isEmpty()) {
-				throw new OAIProtocolException(errorList);
+			if (!errorList.isEmpty()) {
+				final OAIProtocolException e = new OAIProtocolException(
+						errorList);
+				if (tryException != null) {
+					e.addSuppressed(tryException);
+				}
+				throw e;
+			} else if (tryException != null) {
+				throw tryException;
 			}
 		}
 	}

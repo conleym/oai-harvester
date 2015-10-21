@@ -29,7 +29,7 @@ public final class OAIProtocolException extends HarvesterException {
 		this.errors = Collections.unmodifiableList(errors);
 	}
 	
-	public List<OAIError> getErrors() { 
+	public List<OAIError> getOAIErrors() { 
 		return Collections.unmodifiableList(errors);
 	}
 }

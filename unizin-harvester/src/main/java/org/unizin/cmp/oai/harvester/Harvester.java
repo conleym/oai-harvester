@@ -165,7 +165,7 @@ public final class Harvester extends Observable {
 	 *            the code to run inside the corresponding {@code finally}
 	 *            block.
 	 */
-	private void suppressHandlerExceptionsInCall(final Runnable tryCall,
+	 private static void suppressExceptions(final Runnable tryCall,
 			final Runnable finallyCall) {
 		RuntimeException caught = null;
 		try {
@@ -194,7 +194,7 @@ public final class Harvester extends Observable {
 	}
 	
 	private void harvest() {
-		suppressHandlerExceptionsInCall(this::harvestLoop, 
+		suppressExceptions(this::harvestLoop, 
 				this::sendHarvestEndNotifications);
 	}
 
@@ -203,11 +203,19 @@ public final class Harvester extends Observable {
 		sendHarvestStartNotifications();
 		final HarvestIterable iterable = new HarvestIterable();
 		for (final InputStream is : iterable) {
-			suppressHandlerExceptionsInCall(() -> handleResponse(is),
+			suppressExceptions(() -> handleResponse(is),
 					this::sendResponseEndNotifications);
 		}
 	}
 	
+	/**
+	 * Handles a single response from a repository, parsing its content and
+	 * triggering appropriate events.
+	 * 
+	 * @param is
+	 *            the content of the response. The stream will be closed by this
+	 *            method.
+	 */
 	private void handleResponse(final InputStream is) {
 		try (final InputStream in = is) { // Make sure streams get closed.
 			harvest.responseReceived();
@@ -227,8 +235,7 @@ public final class Harvester extends Observable {
 			 * errors have already been caught and wrapped inside the
 			 * parser.
 			 * 
-			 * IOException can only be thrown when closing one of the
-			 * streams.
+			 * IOException can only be thrown when closing the stream.
 			 */
 			harvest.error();
 			throw new HarvesterException(e);
@@ -256,7 +263,6 @@ public final class Harvester extends Observable {
 			throw new HarvesterException(e);
 		}
 	}
-	
 
 	/**
 	 * Get the content of an {@code HttpResponse}.
@@ -285,17 +291,31 @@ public final class Harvester extends Observable {
 			throw new HarvesterException(e);
 		}
 	}
-
+	
+	/**
+	 * Extract the entity from a response.
+	 * 
+	 * @param response
+	 *            the response from which the entity is to be extracted.
+	 * @return the response's entity.
+	 * @throws HarvesterException
+	 *             if the response has no entity.
+	 */
 	private HttpEntity entity(final HttpResponse response) {
 		final HttpEntity entity = response.getEntity();
 		if (entity == null) {
 			throw new HarvesterException(
-					String.format("Got null HTTP entity in response to request %s.",
+					String.format(
+							"Got null HTTP entity in response to request %s.",
 							harvest.getRequest()));
 		}
 		return entity;
 	}
 	
+	/**
+	 * Send a {@link HarvestNotificationType#HARVEST_STARTED} notification to
+	 * the harvest's response handler and to all registered observers.
+	 */
 	private void sendHarvestStartNotifications() {
 		final HarvestNotification notification = harvest.createNotification(
 				HarvestNotificationType.HARVEST_STARTED);
@@ -303,6 +323,10 @@ public final class Harvester extends Observable {
 		sendToObservers(notification);
 	}
 	
+	/**
+	 * Send a {@link HarvestNotificationType#HARVEST_ENDED} notification to the
+	 * harvest's response handler and to all registered observers.
+	 */
 	private void sendHarvestEndNotifications() {
 		final HarvestNotification notification = harvest.createNotification(
 				HarvestNotificationType.HARVEST_ENDED);
@@ -310,6 +334,10 @@ public final class Harvester extends Observable {
 		sendToObservers(notification);
 	}
 	
+	/**
+	 * Send a {@link HarvestNotificationType#RESPONSE_PROCESSED} notification to
+	 * the harvest's response handler and to all registered observers.
+	 */
 	private void sendResponseEndNotifications() {
 		final HarvestNotification notification = 
 				harvest.createNotification(
@@ -318,6 +346,12 @@ public final class Harvester extends Observable {
 		sendToObservers(notification);
 	}
 	
+	/**
+	 * Send a notification to all registered observers.
+	 * 
+	 * @param notification
+	 *            the notification to send.
+	 */
 	private void sendToObservers(final HarvestNotification notification) {
 		setChanged();
 		notifyObservers(notification);

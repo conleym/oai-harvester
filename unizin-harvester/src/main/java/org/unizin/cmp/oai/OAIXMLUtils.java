@@ -15,7 +15,8 @@ import org.slf4j.LoggerFactory;
 
 
 public final class OAIXMLUtils {
-	private static final Logger LOGGER = LoggerFactory.getLogger(OAIXMLUtils.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(
+			OAIXMLUtils.class);
 	
 	
 	public static XMLEventFactory newEventFactory() {
@@ -33,7 +34,8 @@ public final class OAIXMLUtils {
 		return XMLOutputFactory.newFactory();
 	}
 	
-	public static String attributeValue(final StartElement se, final QName name) {
+	public static String attributeValue(final StartElement se, 
+			final QName name) {
 		final Attribute attr = se.getAttributeByName(name);
 		return (attr == null) ? null : attr.getValue();
 	}
