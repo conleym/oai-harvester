@@ -19,6 +19,8 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
@@ -31,6 +33,9 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
  *
  */
 public final class MergingOAIResponseHandler implements OAIResponseHandler {
+	
+	private static final Logger LOGGER = 
+			LoggerFactory.getLogger(MergingOAIResponseHandler.class);
 
 	/**
 	 * Filter that skips certain elements in order to make a series of partial 
@@ -83,12 +88,17 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 				// Start skipping some elements only after accepting the first
 				// start element PLUS its contents and matching end element.
 				final EndElement ee = event.asEndElement();
-				if (RESPONSE_DATE.equals(ee.getName())) {
+				final QName name =ee.getName();
+				if (RESPONSE_DATE.equals(name)) {
 					skipping = responseDate;
 					responseDate = true;
-				} else if (REQUEST.equals(ee.getName())) {
+				} else if (REQUEST.equals(name)) {
 					skipping = request;
 					request = true;
+				} else if (OAIVerb.isVerb(name)) {
+					skipping = true;
+				} else if (OAI_PMH.equals(name)) {
+					skipping = true;
 				}
 			} else if (event.isStartDocument()) {
 				skipping = startDoc || skipping;
@@ -131,10 +141,12 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 
 	@Override
 	public void onHarvestStart(final HarvestNotification notification) {
+		LOGGER.debug("Harvest has started.");
 	}
 
 	@Override
 	public void onHarvestEnd(final HarvestNotification notification) {
+		LOGGER.debug("Harvest has ended.");
 		try {
 			if (! notification.hasError()) {
 				/*

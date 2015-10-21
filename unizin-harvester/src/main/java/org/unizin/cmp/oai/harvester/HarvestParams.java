@@ -50,7 +50,11 @@ public final class HarvestParams {
 
 	public HarvestParams withFrom(final TemporalAccessor from, 
 			final OAIDateGranularity granularity) {
-		put(OAIRequestParameter.FROM, granularity.format(from));
+		return withFrom(granularity.format(from));
+	}
+	
+	public HarvestParams withFrom(final String from) {
+		put(OAIRequestParameter.FROM, from);
 		return this;
 	}
 	
@@ -76,7 +80,11 @@ public final class HarvestParams {
 
 	public HarvestParams withUntil(final TemporalAccessor until,
 			final OAIDateGranularity granularity) {
-		put(OAIRequestParameter.UNTIL, granularity.format(until));
+		return withUntil(granularity.format(until));
+	}
+	
+	public HarvestParams withUntil(final String until) {
+		put(OAIRequestParameter.UNTIL, until);
 		return this;
 	}
 

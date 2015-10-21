@@ -8,11 +8,17 @@ import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * {@link OAIEventHandler} with optional event filters. Events accepted by all
  * filters will be written to the supplied event writer.
  */
 public final class FilteringOAIEventHandler implements OAIEventHandler {
+	private static final Logger LOGGER = LoggerFactory.getLogger(
+			FilteringOAIEventHandler.class);
+	
 	private final XMLEventWriter eventWriter;
 	private final List<EventFilter> filters;
 
@@ -26,13 +32,23 @@ public final class FilteringOAIEventHandler implements OAIEventHandler {
 		this.filters = filters;
 	}
 
-	@Override
-	public void onEvent(final XMLEvent event) throws XMLStreamException {
+	private boolean accept(final XMLEvent event) {
 		for (final EventFilter filter : filters) {
 			if (! filter.accept(event)) {
-				return;
+				return false;
 			}
 		}
-		eventWriter.add(event);
+		return true;
+	}
+	
+	@Override
+	public void onEvent(final XMLEvent event) throws XMLStreamException {
+		final boolean accept = accept(event);
+		if (accept) {
+			LOGGER.trace("Accepting event {}", event);
+			eventWriter.add(event);
+		} else {
+			LOGGER.trace("Rejecting event {}", event);
+		}
 	}
 }
