@@ -36,8 +36,8 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 public final class Harvester extends Observable {
 	private static final Logger LOGGER = 
 			LoggerFactory.getLogger(Harvester.class);
-	
-	
+
+
 	public static final class Builder {
 		private HttpClient httpClient;
 		private OAIRequestFactory requestFactory = 
@@ -69,7 +69,6 @@ public final class Harvester extends Observable {
 			}
 			return new Harvester(httpClient, requestFactory, inputFactory);
 		}
-
 	}
 
 
@@ -112,7 +111,7 @@ public final class Harvester extends Observable {
 		this.requestFactory = requestFactory;
 		this.responseParser = new OAIResponseParser(inputFactory, LOGGER);
 	}
-	
+
 	private static void requireNamespaceAware(
 			final XMLInputFactory inputFactory) {
 		final Object val = inputFactory.getProperty(
@@ -129,7 +128,7 @@ public final class Harvester extends Observable {
 		this.responseHandler = responseHandler;
 		harvest();
 	}
-	
+
 	/**
 	 * Stop the current harvest, if any.
 	 * <p>
@@ -142,42 +141,98 @@ public final class Harvester extends Observable {
 		}
 	}
 
-	private void harvest() {
-		harvest.start();
-		sendStartNotifications();
+	/**
+	 * Safely run some code requiring a some corresponding {@code finally} block
+	 * without losing exceptions.
+	 * <p>
+	 * Suppose an exception, {@code E}, is thrown in a {@code try} block. We
+	 * need to run some code in the corresponding {@code finally} block that may
+	 * <em>also</em> throw an exception, {@code F}, but we don't want to lose
+	 * {@code E}.
+	 * <p>
+	 * There are four possibilities to consider:
+	 * <ol>
+	 * <li>Neither {@code E} nor {@code F} is thrown. This method will not
+	 * throw.
+	 * <li>{@code E} and {@code F} are both thrown. This method will throw
+	 * {@code E}, with {@code F} attached as a suppressed exception.
+	 * <li>Only {@code E} is thrown. This method will throw {@code E}.
+	 * <li>Only {@code F} is thrown. This method will throw {@code F}.
+	 * </ol>
+	 * 
+	 * @param tryCall
+	 *            the code to run inside a {@code try} block.
+	 * @param finallyCall
+	 *            the code to run inside the corresponding {@code finally}
+	 *            block.
+	 */
+	private void suppressHandlerExceptionsInCall(final Runnable tryCall,
+			final Runnable finallyCall) {
+		RuntimeException caught = null;
 		try {
-			final HarvestIterable iterable = new HarvestIterable();
-			for (final InputStream is : iterable) {
-				try (final InputStream in = is) { // Make sure streams get closed.
-					harvest.responseReceived();
-					final HarvestNotification notification = 
-							harvest.createNotification(
-									HarvestNotificationType.RESPONSE_RECEIVED);
-					sendToObservers(notification);
-					responseHandler.onResponseReceived(notification);
-					responseParser.parse(in, harvest, 
-							responseHandler.getEventHandler(notification));
-				} catch (final HarvesterException e) {
-					harvest.error();
-					throw e;
-				} catch (final XMLStreamException | IOException e) {
-					// Note: XMLStreamExceptions thrown due to XML parsing errors
-					// have already been caught and wrapped inside the parser.
-					//
-					// IOException can only be thrown when closing one of the
-					// streams.
-					harvest.error();
-					throw new HarvesterException(e);
-				} finally {
-					final HarvestNotification notification = 
-							harvest.createNotification(
-									HarvestNotificationType.RESPONSE_PROCESSED);
-					responseHandler.onResponseProcessed(notification);
-					sendToObservers(notification);
+			tryCall.run();
+		} catch (final RuntimeException bodyEx) {
+			caught = bodyEx;
+		} finally {
+			try {
+				finallyCall.run();
+			} catch (final RuntimeException finallyEx) {
+				if (caught == null) {
+					throw finallyEx;
+				} else {
+					caught.addSuppressed(finallyEx);
+					throw caught;
 				}
 			}
-		} finally {
-			sendEndNotifications();
+			/*
+			 * Finally call had no exceptions. Might still have to throw body
+			 * exception.
+			 */
+			if (caught != null) {
+				throw caught;
+			}
+		}
+	}
+	
+	private void harvest() {
+		suppressHandlerExceptionsInCall(this::harvestLoop, 
+				this::sendHarvestEndNotifications);
+	}
+
+	private void harvestLoop() {
+		harvest.start();
+		sendHarvestStartNotifications();
+		final HarvestIterable iterable = new HarvestIterable();
+		for (final InputStream is : iterable) {
+			suppressHandlerExceptionsInCall(() -> handleResponse(is),
+					this::sendResponseEndNotifications);
+		}
+	}
+	
+	private void handleResponse(final InputStream is) {
+		try (final InputStream in = is) { // Make sure streams get closed.
+			harvest.responseReceived();
+			final HarvestNotification notification = 
+					harvest.createNotification(
+							HarvestNotificationType.RESPONSE_RECEIVED);
+			sendToObservers(notification);
+			responseHandler.onResponseReceived(notification);
+			responseParser.parse(in, harvest, 
+					responseHandler.getEventHandler(notification));
+		} catch (final HarvesterException e) {
+			harvest.error();
+			throw e;
+		} catch (final XMLStreamException | IOException e) {
+			/*
+			 * Note: XMLStreamExceptions thrown due to XML parsing
+			 * errors have already been caught and wrapped inside the
+			 * parser.
+			 * 
+			 * IOException can only be thrown when closing one of the
+			 * streams.
+			 */
+			harvest.error();
+			throw new HarvesterException(e);
 		}
 	}
 
@@ -202,6 +257,7 @@ public final class Harvester extends Observable {
 			throw new HarvesterException(e);
 		}
 	}
+	
 
 	/**
 	 * Get the content of an {@code HttpResponse}.
@@ -240,18 +296,26 @@ public final class Harvester extends Observable {
 		}
 		return entity;
 	}
-
-	private void sendStartNotifications() {
+	
+	private void sendHarvestStartNotifications() {
 		final HarvestNotification notification = harvest.createNotification(
 				HarvestNotificationType.HARVEST_STARTED);
 		responseHandler.onHarvestStart(notification);
 		sendToObservers(notification);
 	}
-
-	private void sendEndNotifications() {
+	
+	private void sendHarvestEndNotifications() {
 		final HarvestNotification notification = harvest.createNotification(
 				HarvestNotificationType.HARVEST_ENDED);
 		responseHandler.onHarvestEnd(notification);
+		sendToObservers(notification);
+	}
+	
+	private void sendResponseEndNotifications() {
+		final HarvestNotification notification = 
+				harvest.createNotification(
+						HarvestNotificationType.RESPONSE_PROCESSED);
+		responseHandler.onResponseProcessed(notification);
 		sendToObservers(notification);
 	}
 	

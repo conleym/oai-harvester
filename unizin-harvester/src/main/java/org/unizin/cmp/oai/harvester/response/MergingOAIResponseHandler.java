@@ -31,7 +31,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
  *
  */
 public final class MergingOAIResponseHandler implements OAIResponseHandler {
-	
+
 	/**
 	 * Filter that skips certain elements in order to make a series of partial 
 	 * list responses appear as a single complete list.
@@ -58,7 +58,7 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 		private boolean responseDate;
 		private boolean request;
 		private boolean verb;
-		
+
 		@Override
 		public boolean accept(final XMLEvent event) {
 			if (event.isStartElement()) {
@@ -77,7 +77,7 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 				} else if (RESPONSE_DATE.equals(name)) {
 					skipping = responseDate;
 				} else {
-				  skipping = false;
+					skipping = false;
 				}
 			} else if (event.isEndElement()) {
 				// Start skipping some elements only after accepting the first
@@ -103,18 +103,18 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 	public static final List<EventFilter> mergingFilters() {
 		return Arrays.asList(new MergingEventFilter());
 	}
-	
-	
+
+
 	private final OAIEventHandler eventHandler;
 	private final XMLEventWriter eventWriter;
 	private final XMLEventFactory eventFactory;
-	
+
 	public MergingOAIResponseHandler(final OutputStream out)
 			throws XMLStreamException {
 		this(out, OAIXMLUtils.newOutputFactory(), 
 				OAIXMLUtils.newEventFactory());
 	}
-	
+
 	public MergingOAIResponseHandler(final OutputStream out,
 			final XMLOutputFactory outputFactory,
 			final XMLEventFactory eventFactory) throws XMLStreamException {
@@ -123,7 +123,7 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 				mergingFilters());
 		this.eventFactory = eventFactory;
 	}
-	
+
 	@Override
 	public OAIEventHandler getEventHandler(HarvestNotification notification) {
 		return eventHandler;
@@ -136,13 +136,22 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 	@Override
 	public void onHarvestEnd(final HarvestNotification notification) {
 		try {
-			// The filter doesn't know on its own when the harvest ends,
-			// so it will have filtered out the final closing events. We have to 
-			// add them ourselves to make valid XML.
-			eventWriter.add(eventFactory.createEndElement(
-					notification.getVerb().qname(), null));
-			eventWriter.add(eventFactory.createEndElement(OAI_PMH, null));
-			eventWriter.add(eventFactory.createEndDocument());
+			if (! notification.hasError()) {
+				/*
+				 * The filter doesn't know on its own when the harvest ends, so
+				 * it will have filtered out the final closing events. We have
+				 * to add them ourselves to make valid XML.
+				 * 
+				 * We only do this when the harvest has been successful, as we
+				 * cannot know what events have been written, and thus cannot 
+				 * reliably write events.
+				 * 
+				 */
+				eventWriter.add(eventFactory.createEndElement(
+						notification.getVerb().qname(), null));
+				eventWriter.add(eventFactory.createEndElement(OAI_PMH, null));
+				eventWriter.add(eventFactory.createEndDocument());
+			}
 		} catch (final XMLStreamException e) {
 			throw new HarvesterException(e);
 		} finally {
