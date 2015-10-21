@@ -1,5 +1,6 @@
 import React from 'react'
 import FileUpload from './file_upload.jsx'
+import styles from './contribution_form.scss'
 const DEFAULT_LICENSE = "[select license]"
 
 // https://facebook.github.io/react/docs/two-way-binding-helpers.html
@@ -81,7 +82,7 @@ export default class ContributionForm extends React.Component {
     render() {
 
         return (
-            <form ref="form" onSubmit={::this.onSubmit}>
+            <form ref="form" onSubmit={::this.onSubmit} className={styles.contribute}>
                 <p>
                     Contribution Information
                 </p>
