@@ -18,6 +18,9 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 /**
  * Output handler that writes each response to a separate file in a specified
  * directory.
+ * <p>
+ * Each file's name is the current number of responses received so far for the
+ * harvest with a '.xml' extension.
  *
  */
 public final class FilesOAIResponseHandler implements OAIResponseHandler {
@@ -47,7 +50,8 @@ public final class FilesOAIResponseHandler implements OAIResponseHandler {
 	
 
 	@Override
-	public OAIEventHandler getEventHandler(final HarvestNotification notification) {
+	public OAIEventHandler getEventHandler(
+			final HarvestNotification notification) {
 		return eventHandler;
 	}
 
@@ -57,14 +61,13 @@ public final class FilesOAIResponseHandler implements OAIResponseHandler {
 
 	@Override
 	public void onHarvestEnd(final HarvestNotification notification) {
-		
 	}
 
 	@Override
-	public void onResponseStart(final HarvestNotification notification) {
+	public void onResponseReceived(final HarvestNotification notification) {
 		try {
 			final long fileCount = notification.getStats()
-					.get("partialListResponseCount");
+					.get(HarvestNotification.Statistics.RESPONSE_COUNT);
 			final URI dest = directory.toURI().resolve(fileCount + ".xml");
 			final File destFile = new File(dest);
 			outputStream = new FileOutputStream(destFile);
@@ -76,7 +79,7 @@ public final class FilesOAIResponseHandler implements OAIResponseHandler {
 	}
 
 	@Override
-	public void onResponseEnd(HarvestNotification notification) {
+	public void onResponseProcessed(HarvestNotification notification) {
 		OAIXMLUtils.closeQuietly(eventWriter);
 		try (final OutputStream os = outputStream) {
 			eventWriter = null;

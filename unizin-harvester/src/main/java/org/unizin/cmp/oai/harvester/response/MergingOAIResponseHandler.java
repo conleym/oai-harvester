@@ -25,7 +25,9 @@ import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 
 /**
- * Merges a series of partial list responses into a single list.
+ * Merges a series of <a href=
+ * "http://www.openarchives.org/OAI/openarchivesprotocol.html#FlowControl">
+ * incomplete lists</a> into a single complete list.
  *
  */
 public final class MergingOAIResponseHandler implements OAIResponseHandler {
@@ -49,7 +51,7 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 	 * <li>end document</li>
 	 *
 	 */
-	public static final class MergingEventFilter implements EventFilter {
+	private static final class MergingEventFilter implements EventFilter {
 		private boolean skipping;
 		private boolean startDoc;
 		private boolean oaipmh;
@@ -98,7 +100,7 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 		}
 	}
 
-	public static final List<EventFilter> defaultFilters() {
+	public static final List<EventFilter> mergingFilters() {
 		return Arrays.asList(new MergingEventFilter());
 	}
 	
@@ -118,7 +120,7 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 			final XMLEventFactory eventFactory) throws XMLStreamException {
 		this.eventWriter = outputFactory.createXMLEventWriter(out);
 		this.eventHandler = new FilteringOAIEventHandler(eventWriter,
-				defaultFilters());
+				mergingFilters());
 		this.eventFactory = eventFactory;
 	}
 	
@@ -134,6 +136,9 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 	@Override
 	public void onHarvestEnd(final HarvestNotification notification) {
 		try {
+			// The filter doesn't know on its own when the harvest ends,
+			// so it will have filtered out the final closing events. We have to 
+			// add them ourselves to make valid XML.
 			eventWriter.add(eventFactory.createEndElement(
 					notification.getVerb().qname(), null));
 			eventWriter.add(eventFactory.createEndElement(OAI_PMH, null));
@@ -146,11 +151,11 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
 	}
 
 	@Override
-	public void onResponseStart(final HarvestNotification notification) {
+	public void onResponseReceived(final HarvestNotification notification) {
 	}
 
 	@Override
-	public void onResponseEnd(final HarvestNotification notification) {
+	public void onResponseProcessed(final HarvestNotification notification) {
 		try {
 			eventWriter.flush();
 		} catch (final XMLStreamException e) {

@@ -149,12 +149,12 @@ public final class Harvester extends Observable {
 			final HarvestIterable iterable = new HarvestIterable();
 			for (final InputStream is : iterable) {
 				try (final InputStream in = is) { // Make sure streams get closed.
-					harvest.partialResponseRecieved();
+					harvest.responseReceived();
 					final HarvestNotification notification = 
 							harvest.createNotification(
 									HarvestNotificationType.RESPONSE_RECEIVED);
 					sendToObservers(notification);
-					responseHandler.onResponseStart(notification);
+					responseHandler.onResponseReceived(notification);
 					responseParser.parse(in, harvest, 
 							responseHandler.getEventHandler(notification));
 				} catch (final HarvesterException e) {
@@ -172,7 +172,7 @@ public final class Harvester extends Observable {
 					final HarvestNotification notification = 
 							harvest.createNotification(
 									HarvestNotificationType.RESPONSE_PROCESSED);
-					responseHandler.onResponseEnd(notification);
+					responseHandler.onResponseProcessed(notification);
 					sendToObservers(notification);
 				}
 			}
@@ -190,6 +190,7 @@ public final class Harvester extends Observable {
 
 	private HttpResponse executeRequest(final HttpUriRequest request) {
 		harvest.setRequest(request);
+		harvest.requestSent();
 		try {
 			LOGGER.debug("Executing request {}", request);
 			final HttpResponse response = httpClient.execute(

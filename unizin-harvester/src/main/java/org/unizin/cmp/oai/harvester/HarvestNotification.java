@@ -8,6 +8,10 @@ import java.util.Map;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
 
+/**
+ * Immutable snapshot of harvest state.
+ *
+ */
 public final class HarvestNotification {
 	
 	public static enum HarvestNotificationType {
@@ -17,10 +21,18 @@ public final class HarvestNotification {
 		RESPONSE_PROCESSED
 	}
 	
+	public static final class Statistics {
+		public static final String REQUEST_COUNT = "requestCount";
+		public static final String RESPONSE_COUNT = "responseCount";
+		
+		/** No instances allowed. */
+		private Statistics() {}
+	}
+	
 	private final HarvestNotificationType type;
 	private final boolean isStarted;
 	private final boolean hasError;
-	private final boolean stoppedByUser;
+	private final boolean isStoppedByUser;
 	private final ResumptionToken resumptionToken;
 	private final Instant lastResponseDate;
 	private final HarvestParams params;
@@ -28,14 +40,14 @@ public final class HarvestNotification {
 	
 	public HarvestNotification(final HarvestNotificationType type, 
 			final boolean isStarted, final boolean hasError,
-			final boolean stoppedByUser,
+			final boolean isStoppedByUser,
 			final ResumptionToken resumptionToken, 
 			final Instant lastResponseDate, final HarvestParams params,
 			final Map<String, Long> stats) {
 		this.type = type;
 		this.isStarted = isStarted;
 		this.hasError = hasError;
-		this.stoppedByUser = stoppedByUser;
+		this.isStoppedByUser = isStoppedByUser;
 		this.resumptionToken = resumptionToken;
 		this.lastResponseDate = lastResponseDate;
 		this.params = params;
@@ -59,7 +71,15 @@ public final class HarvestNotification {
 	}
 	
 	public boolean isStoppedByUser() {
-		return stoppedByUser;
+		return isStoppedByUser;
+	}
+	
+	public boolean hasError() {
+		return hasError;
+	}
+	
+	public boolean isStarted() {
+		return isStarted;
 	}
 	
 	
@@ -73,11 +93,13 @@ public final class HarvestNotification {
 				.append(", hasError=")
 				.append(hasError)
 				.append(", stoppedByUser=")
-				.append(stoppedByUser)
+				.append(isStoppedByUser)
 				.append(", resumptionToken=")
 				.append(resumptionToken)
 				.append(", lastResponseDate=")
 				.append(lastResponseDate)
+				.append(", stats=")
+				.append(stats)
 				.append("]")
 				.toString();
 	}

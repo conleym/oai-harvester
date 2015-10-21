@@ -4,6 +4,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.unizin.cmp.oai.OAI2Constants;
@@ -19,20 +20,24 @@ final class Harvest {
 	private final HarvestParams params;
 	private HttpUriRequest request;
 	private boolean isStarted;
-	private volatile boolean stoppedByUser;
+	private volatile boolean isStoppedByUser;
 	private boolean hasError;
 	private ResumptionToken resumptionToken;
 	private Instant lastResponseDate;
-	private long partialListResponseCount;
+	private long requestCount;
+	private long responseCount;
+	
 	
 	Harvest(final HarvestParams params) {
 		this.params = params;
 	}
 	
 	HarvestNotification createNotification(final HarvestNotificationType type) {
-		final Map<String, Long> stats = new HashMap<>(1);
-		stats.put("partialListResponseCount", partialListResponseCount);
-		return new HarvestNotification(type, isStarted, hasError, stoppedByUser,
+		final Map<String, Long> stats = new HashMap<>(2);
+		stats.put(HarvestNotification.Statistics.REQUEST_COUNT, requestCount);
+		stats.put(HarvestNotification.Statistics.RESPONSE_COUNT,
+				responseCount);
+		return new HarvestNotification(type, isStarted, hasError, isStoppedByUser,
 				resumptionToken, lastResponseDate, params, stats);
 	}
 	
@@ -41,6 +46,7 @@ final class Harvest {
 	}
 	
 	void setResumptionToken(final ResumptionToken resumptionToken) {
+		Objects.requireNonNull(resumptionToken, "resumptionToken");
 		this.resumptionToken = resumptionToken;
 	}
 	
@@ -84,19 +90,23 @@ final class Harvest {
 	 * This method should be called only from {@link Harvester#stop()}.
 	 */
 	void userStop() {
-		this.stoppedByUser = true;
+		this.isStoppedByUser = true;
 	}
 	
 	void error() {
 		hasError = true;
 	}
 	
-	void partialResponseRecieved() {
-        partialListResponseCount++;
+	void requestSent() {
+		requestCount++;
+	}
+	
+	void responseReceived() {
+        responseCount++;
 	}
 	
 	boolean hasNext() {
-		return isStarted && !hasError && !stoppedByUser;
+		return isStarted && !hasError && !isStoppedByUser;
 	}
 }
 
