@@ -15,24 +15,25 @@ public class RetrieveCopyFromSourceRepository {
     public static final String ID = "UnizinCMP.RetrieveCopyFromSourceRepository";
 
     @Context
-    WorkManager workManager;
+    private WorkManager workManager;
 
     @Context
-    RepositoryManager repositoryManager;
+    private RepositoryManager repositoryManager;
 
     @Context
-    CoreSession session;
+    private CoreSession session;
 
     @OperationMethod
     public DocumentModel run(DocumentModel doc) {
-        if (!"pending".equals(doc.getPropertyValue(CopyFromSourceRepository.STATUS_PROP))) {
+        if (!"pending".equals(doc.getPropertyValue(
+                CopyFromSourceRepository.STATUS_PROP))) {
             doc.setPropertyValue(CopyFromSourceRepository.STATUS_PROP, "pending");
-            session.save();
+            session.saveDocument(doc);
             workManager.schedule(new RetrieveCopyWork(
                     repositoryManager.getDefaultRepositoryName(),
                     doc.getId()), true);
         }
-        return doc;
+        return session.getDocument(doc.getRef());
     }
 
 }
