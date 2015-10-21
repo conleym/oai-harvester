@@ -132,8 +132,7 @@ public final class Harvester extends Observable {
 	/**
 	 * Stop the current harvest, if any.
 	 * <p>
-	 * This method can be called from at most one thread for the lifetime of the
-	 * harvest.
+	 * This method is safe to call from multiple threads.
 	 */
 	public void stop() {
 		if (harvest != null) {
@@ -142,8 +141,8 @@ public final class Harvester extends Observable {
 	}
 
 	/**
-	 * Safely run some code requiring a some corresponding {@code finally} block
-	 * without losing exceptions.
+	 * Safely run some code requiring a {@code finally} block without losing
+	 * exceptions.
 	 * <p>
 	 * Suppose an exception, {@code E}, is thrown in a {@code try} block. We
 	 * need to run some code in the corresponding {@code finally} block that may
