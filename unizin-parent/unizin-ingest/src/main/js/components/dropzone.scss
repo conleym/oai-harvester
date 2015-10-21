@@ -2,6 +2,7 @@
 @import '../globals.scss';
 
 :local(.hover) {
+    display: none;
     opacity: 0;
     background: white;
     position: fixed;
@@ -27,6 +28,7 @@
 
 :global(.dz-drag-hover) {
   :local(.hover) {
+      display: inherit;
       opacity: 1;
   }
 }
