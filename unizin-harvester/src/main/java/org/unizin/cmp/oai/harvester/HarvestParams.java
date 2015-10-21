@@ -1,11 +1,13 @@
 package org.unizin.cmp.oai.harvester;
 
 import java.net.URI;
+import java.time.temporal.TemporalAccessor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import org.unizin.cmp.oai.OAI2Constants;
+import org.unizin.cmp.oai.OAIDateGranularity;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.OAIVerb;
 
@@ -46,8 +48,12 @@ public final class HarvestParams {
 		standardParameters.put(param.paramName(), value);
 	}
 
-	// TODO: withFrom
-
+	public HarvestParams withFrom(final TemporalAccessor from, 
+			final OAIDateGranularity granularity) {
+		put(OAIRequestParameter.FROM, granularity.format(from));
+		return this;
+	}
+	
 	public HarvestParams withIdentifier(final String identifier) {
 		put(OAIRequestParameter.IDENTIFIER, identifier);
 		return this;
@@ -68,7 +74,11 @@ public final class HarvestParams {
 		return this;
 	}
 
-	// TODO: withUntil
+	public HarvestParams withUntil(final TemporalAccessor until,
+			final OAIDateGranularity granularity) {
+		put(OAIRequestParameter.UNTIL, granularity.format(until));
+		return this;
+	}
 
 	/**
 	 * Add an arbitrary nonstandard parameter.
