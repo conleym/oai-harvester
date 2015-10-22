@@ -2,16 +2,13 @@ package org.unizin.cmp.oai.harvester;
 
 import java.io.IOException;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.mocks.Mocks;
 
-public final class TestHttpClientErrorHandling extends HarvesterTestBase {
-	private static final String MESSAGE = "Testing!";
-	
+public final class TestHttpClientErrorHandling extends HarvesterTestBase {	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 	
@@ -22,12 +19,12 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
 	@Test
 	public void testHttpClientRuntimeExceptions() throws Exception {
 		mockHttpClient.setRuntimeException(
-				new NullPointerException(MESSAGE));
+				new NullPointerException(Mocks.TEST_EXCEPTION_MESSAGE));
 		final Harvester harvester = defaultTestHarvester();
 		// Verb doesn't matter here.
 		final HarvestParams params = defaultTestParams();
 		exception.expect(NullPointerException.class);
-		exception.expectMessage(MESSAGE);
+		exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
 		harvester.start(params, Mocks.newResponseHandler());
 	}
 	
@@ -37,7 +34,8 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
 	 */
 	@Test
 	public void testHttpClientCheckedExceptions() throws Exception {
-		mockHttpClient.setCheckedException(new IOException(MESSAGE));
+		mockHttpClient.setCheckedException(new IOException(
+				Mocks.TEST_EXCEPTION_MESSAGE));
 		final Harvester harvester = defaultTestHarvester();
 		// Verb doesn't matter here.
 		final HarvestParams params = defaultTestParams();
@@ -46,10 +44,7 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
 			harvester.start(params, Mocks.newResponseHandler());
 		} catch (final HarvesterException e) {
 			final Throwable cause = e.getCause();
-			// Check non-null separately for better error reporting.
-			Assert.assertNotNull(cause);
-			Assert.assertTrue(cause instanceof IOException);
-			Assert.assertEquals(MESSAGE, cause.getMessage());
+			Mocks.assertTestException(cause, IOException.class);
 			throw e;
 		}
 	}

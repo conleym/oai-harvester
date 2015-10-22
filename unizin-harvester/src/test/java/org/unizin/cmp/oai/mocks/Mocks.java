@@ -16,13 +16,6 @@ import org.unizin.cmp.oai.mocks.ForwardingInputStream.BasicForwardingInputStream
 
 
 public final class Mocks {
-	public static final class MockingException extends RuntimeException {
-		private static final long serialVersionUID = 1L;
-		public MockingException(final Throwable cause) {
-			super(cause);
-		}
-	}
-
 	public static final String TEST_EXCEPTION_MESSAGE = 
 			"Mock exception for testing";
 	
