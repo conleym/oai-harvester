@@ -81,7 +81,6 @@ export default smartLoader(
         },
         isReady: ({uid}, state) => (state.documents[uid] != null),
         loader(dispatch, params, lastParams) {
-            console.log('loader', params, lastParams)
             if (params.uid != lastParams.uid) {
                 dispatch(ensureDocument(params.uid))
                 dispatch(documentImport(params.uid))
