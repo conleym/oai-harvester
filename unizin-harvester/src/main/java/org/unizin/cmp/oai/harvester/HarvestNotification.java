@@ -21,8 +21,15 @@ public final class HarvestNotification {
 		RESPONSE_PROCESSED
 	}
 	
+	/**
+	 * Names of statistics recorded by the harvester.
+	 * @see HarvestNotification#getStats()
+	 * @see HarvestNotification#getStat(String)
+	 */
 	public static final class Statistics {
+		/** The number of requests sent so far during this harvest. */
 		public static final String REQUEST_COUNT = "requestCount";
+		/** The number of responses received so far during this harvest. */
 		public static final String RESPONSE_COUNT = "responseCount";
 		
 		/** No instances allowed. */
@@ -54,8 +61,18 @@ public final class HarvestNotification {
 		this.stats = Collections.unmodifiableMap(stats);
 	}
 	
+	/**
+	 * Get the harvester stats that were current at the time this notification
+	 * was sent.
+	 * 
+	 * @return an immutable map containing all the harvest stats.
+	 */
 	public Map<String, Long> getStats() {
 		return stats;
+	}
+	
+	public Long getStat(final String stat) {
+		return stats.get(stat);
 	}
 	
 	public URI getBaseURI() {
@@ -81,7 +98,6 @@ public final class HarvestNotification {
 	public boolean isStarted() {
 		return isStarted;
 	}
-	
 	
 	@Override
 	public String toString() {

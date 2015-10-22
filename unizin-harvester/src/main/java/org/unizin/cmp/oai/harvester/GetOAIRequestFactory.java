@@ -16,7 +16,8 @@ import org.apache.http.client.methods.HttpUriRequest;
  *
  */
 public final class GetOAIRequestFactory implements OAIRequestFactory {
-	private static final GetOAIRequestFactory INSTANCE = new GetOAIRequestFactory();
+	private static final GetOAIRequestFactory INSTANCE =
+			new GetOAIRequestFactory();
 	
 	public static GetOAIRequestFactory getInstance() {
 		return INSTANCE;

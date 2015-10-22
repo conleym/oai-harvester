@@ -63,8 +63,8 @@ final class OAIResponseParser {
 	 *             {@link XMLInputFactory#createXMLEventReader(InputStream)}
 	 *             method.
 	 */
-	void parse(final InputStream in, final Harvest harvest, final OAIEventHandler eventHandler)
-			throws XMLStreamException {
+	void parse(final InputStream in, final Harvest harvest,
+			final OAIEventHandler eventHandler) throws XMLStreamException {
 		final XMLEventReader reader = inputFactory.createXMLEventReader(in);
 		final List<OAIError> errorList = new ArrayList<>();
 		/*
@@ -82,7 +82,8 @@ final class OAIResponseParser {
 		 */
 		RuntimeException tryException = null;
 		try {
-			final ResumptionToken resumptionToken = readEvents(reader, errorList, harvest, eventHandler);
+			final ResumptionToken resumptionToken = readEvents(reader,
+					errorList, harvest, eventHandler);
 			logger.debug("Got resumption token {}", resumptionToken);
 			if (resumptionToken == null) {
 				/*
