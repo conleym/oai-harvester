@@ -165,7 +165,7 @@ public final class Harvester extends Observable {
 	 *            the code to run inside the corresponding {@code finally}
 	 *            block.
 	 */
-	 private static void suppressExceptions(final Runnable tryCall,
+	private static void suppressExceptions(final Runnable tryCall,
 			final Runnable finallyCall) {
 		RuntimeException caught = null;
 		try {
@@ -192,7 +192,7 @@ public final class Harvester extends Observable {
 			}
 		}
 	}
-	
+
 	private void harvest() {
 		suppressExceptions(this::harvestLoop, 
 				this::sendHarvestEndNotifications);
@@ -207,7 +207,7 @@ public final class Harvester extends Observable {
 					this::sendResponseEndNotifications);
 		}
 	}
-	
+
 	/**
 	 * Handles a single response from a repository, parsing its content and
 	 * triggering appropriate events.
@@ -239,6 +239,11 @@ public final class Harvester extends Observable {
 			 */
 			harvest.error();
 			throw new HarvesterException(e);
+		} catch (final RuntimeException e) {
+			harvest.error();
+			// Don't bother wrapping. It'll probably just obscure a programming
+			// error.
+			throw e;
 		}
 	}
 
@@ -291,7 +296,7 @@ public final class Harvester extends Observable {
 			throw new HarvesterException(e);
 		}
 	}
-	
+
 	/**
 	 * Extract the entity from a response.
 	 * 
@@ -311,7 +316,7 @@ public final class Harvester extends Observable {
 		}
 		return entity;
 	}
-	
+
 	/**
 	 * Send a {@link HarvestNotificationType#HARVEST_STARTED} notification to
 	 * the harvest's response handler and to all registered observers.
@@ -322,7 +327,7 @@ public final class Harvester extends Observable {
 		responseHandler.onHarvestStart(notification);
 		sendToObservers(notification);
 	}
-	
+
 	/**
 	 * Send a {@link HarvestNotificationType#HARVEST_ENDED} notification to the
 	 * harvest's response handler and to all registered observers.
@@ -333,7 +338,7 @@ public final class Harvester extends Observable {
 		responseHandler.onHarvestEnd(notification);
 		sendToObservers(notification);
 	}
-	
+
 	/**
 	 * Send a {@link HarvestNotificationType#RESPONSE_PROCESSED} notification to
 	 * the harvest's response handler and to all registered observers.
@@ -345,7 +350,7 @@ public final class Harvester extends Observable {
 		responseHandler.onResponseProcessed(notification);
 		sendToObservers(notification);
 	}
-	
+
 	/**
 	 * Send a notification to all registered observers.
 	 * 
