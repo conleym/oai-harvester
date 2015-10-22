@@ -135,10 +135,7 @@ export default class ContributionForm extends React.Component {
                     </li>
                 </ol>
 
-                <input type="submit" disabled={!this.isFormValid()}>
-                    Contribute
-                </input>
-
+                <input type="submit" disabled={!this.isFormValid()} value="Contribute"/>
                 <button onClick={::this.onCancel}>
                     Cancel
                 </button>
