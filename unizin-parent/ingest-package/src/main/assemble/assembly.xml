@@ -10,10 +10,7 @@
   <target name="build" description="Build Nuxeo sample Marketplace package">
     <property name="outdir" value="${maven.project.build.directory}" />
     <!-- Include your artifacts in the graph adding your groupId to groupPrefixes -->
-    <artifact:nuxeo-expand includeTestScope="true" groupPrefixes="org.nuxeo,com.sample.company" />
-    <!-- For Nuxeo IDE being able to use that distribution as a SDK -->
-    <artifact:print output="${outdir}/artifacts-sample.properties" mode="sdk" />
-    <artifact:print output="${outdir}/test-artifacts-sample.properties" mode="sdk" scopes="test" />
+    <artifact:nuxeo-expand includeTestScope="true" groupPrefixes="org.nuxeo,org.unizin" />
     <!-- Prints the graph for debugging purpose -->
     <artifact:print output="${outdir}/dependency-tree.log" />
     <tstamp />
@@ -66,9 +63,6 @@
     </copy>
     <nx:rmdups dir="${outdir}/marketplace/install/lib" />
 
-    <copy file="${outdir}/artifacts-sample.properties" todir="${outdir}/marketplace/install" />
-    <copy file="${outdir}/test-artifacts-sample.properties" todir="${outdir}/marketplace/install" />
-
     <var name="install.bundles" value="" />
     <if>
       <available file="${outdir}/marketplace/install/bundles" />
@@ -90,12 +84,7 @@
       </then>
     </if>
 
-    <var name="install.properties"
-         value="${line.separator}
-  &lt;copy file=&quot;${package.root}/install/artifacts-sample.properties&quot;${line.separator}
-    todir=&quot;${env.server.home}/sdk&quot; overwrite=&quot;true&quot; /&gt;${line.separator}
-  &lt;copy file=&quot;${package.root}/install/test-artifacts-sample.properties&quot;${line.separator}
-    todir=&quot;${env.server.home}/sdk&quot; overwrite=&quot;true&quot; /&gt;" />
+    <var name="install.properties" value="" />
     <var name="install.templates" value="" />
     <if>
       <available file="${outdir}/marketplace/install/templates" />
