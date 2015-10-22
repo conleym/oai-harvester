@@ -11,8 +11,8 @@ if (TESTEM_PORT == null) {
 // SAUCE_CONNECT_DOWNLOAD_ON_INSTALL=true npm install saucie -g
 // https://github.com/airportyh/testem/tree/master/examples/saucelabs
 if (SAUCE_USERNAME == null || SAUCE_ACCESS_KEY == null) {
-    SAUCE_USERNAME = 'Asa_Unizin'
-    SAUCE_ACCESS_KEY = "08b66ac7-3e85-444f-a6bd-a9d33eefa103"
+    SAUCE_USERNAME = 'unizin'
+    SAUCE_ACCESS_KEY = "1cbaff76-33b4-4e0f-a78f-c8a6e683bd7a"
 }
 function saucie() {
     var args = Array.prototype.slice.call(arguments)
