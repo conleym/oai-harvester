@@ -1,5 +1,5 @@
 <@extends src="base.ftl">
-<@block name="title">Catalog Search Tool</@block>
+<@block name="title">Unizin Discover Tool</@block>
 <@block name="stylesheets">
 <link rel="stylesheet" href="${jsPath!skinPath}/catalog_search.css" type="text/css">
 </@block>
