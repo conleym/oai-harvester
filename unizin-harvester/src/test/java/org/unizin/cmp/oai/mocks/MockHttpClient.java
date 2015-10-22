@@ -1,7 +1,7 @@
 package org.unizin.cmp.oai.mocks;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.http.HttpEntity;
@@ -22,6 +22,12 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
 
+/**
+ * Mock {@link HttpClient} implementation.
+ * <p>
+ * Yes, we could use mockito for this, but I think this is easier.
+ *
+ */
 //We have to implement the interface, regardless of deprecations.
 @SuppressWarnings("deprecation")
 public final class MockHttpClient implements HttpClient {
@@ -36,12 +42,16 @@ public final class MockHttpClient implements HttpClient {
 
 	public void setResponseFrom(final int statusCode, final String reasonPhrase, 
 			final String responseBody) {
+		setResponseFrom(statusCode, reasonPhrase, Mocks.fromString(
+				responseBody));
+	}
+	
+	public void setResponseFrom(final int statusCode, final String reasonPhrase,
+			final InputStream responseContent) {
 		final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
 				statusCode, reasonPhrase);
-		final byte[] responseBodyBytes = responseBody.getBytes(
-				StandardCharsets.UTF_8);
 		final HttpEntity entity = EntityBuilder.create()
-				.setStream(new ByteArrayInputStream(responseBodyBytes))
+				.setStream(responseContent)
 				.setContentEncoding(StandardCharsets.UTF_8.toString())
 				.build();
 		this.response = new BasicHttpResponse(sl);

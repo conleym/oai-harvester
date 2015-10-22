@@ -5,15 +5,12 @@ import java.net.URISyntaxException;
 
 import org.junit.Before;
 import org.unizin.cmp.oai.OAIVerb;
-import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.MockHttpClient;
-import org.unizin.cmp.oai.mocks.NullOAIResponseHandler;
+
 
 public class HarvesterTestBase {
 	public static final OAIVerb DEFAULT_VERB = OAIVerb.GET_RECORD;
-	public static final OAIResponseHandler NULL_HANDLER =
-			new NullOAIResponseHandler();
-	
+
 	public static final URI TEST_URI;
 	static {
 		try {
@@ -30,6 +27,7 @@ public class HarvesterTestBase {
 	public static HarvestParams defaultTestParams(final OAIVerb verb) {
 		return new HarvestParams(TEST_URI, verb);
 	}
+
 	
 	protected MockHttpClient mockHttpClient;
 	
