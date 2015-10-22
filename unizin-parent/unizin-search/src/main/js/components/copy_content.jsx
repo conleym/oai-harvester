@@ -1,6 +1,6 @@
 import React from 'react'
 import FontAwesome from 'react-fontawesome'
-import styles from './insert.scss'
+import styles from './copy_content.scss'
 
 const { shape, string, func } = React.PropTypes
 
@@ -35,12 +35,12 @@ export default class Insert extends React.Component {
         if (loadError) {
             return (
                 <ul>
-                    <li><button onClick={onCancel}>Cancel insert</button></li>
+                    <li><button onClick={onCancel}>Cancel</button></li>
                     <li><button onClick={onTryAgain} className='primary'>Try again</button></li>
                 </ul>
             )
         } else {
-            return <button onClick={onCancel}>Cancel insert</button>
+            return <button onClick={onCancel}>Cancel</button>
         }
     }
 

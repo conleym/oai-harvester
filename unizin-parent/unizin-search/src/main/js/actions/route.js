@@ -55,6 +55,10 @@ export function routeInsert(item) {
     return route(encodeURL`/insert/${item.uid}`)
 }
 
+export function routePreview(item) {
+    return route(encodeURL`/preview/${item.uid}`)
+}
+
 export function routeReturnUrl(item) {
     const { properties, title } = item
     const url = properties['file:content']['data']
@@ -71,6 +75,7 @@ export function routeReturnUrl(item) {
         url: window.lti_data.ext_content_return_url + query
     }
 }
+
 
 export function routePreviewUrl(item) {
     const { protocol, hostname } = window.location

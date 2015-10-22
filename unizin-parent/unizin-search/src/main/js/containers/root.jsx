@@ -4,7 +4,8 @@ import { Provider } from 'react-redux'
 import App from './app.jsx'
 import Search from './smart_search.jsx'
 import Result from './result.jsx'
-import SmartInsert from './smart_insert.jsx'
+import Insert from './insert.jsx'
+import Preview from './preview.jsx'
 
 const { any, shape, func } = React.PropTypes
 
@@ -27,7 +28,8 @@ export default class Root extends React.Component {
                 <Route component={App}>
                     <Route path="/result/:uid" component={Result} />
                     <Route path="/search" component={Search} />
-                    <route path="/insert/:uid" component={SmartInsert} />
+                    <route path="/insert/:uid" component={Insert} />
+                    <route path="/preview/:uid" component={Preview} />
                     <Route path="/" component={Search} />
                 </Route>
             </Router>
