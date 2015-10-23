@@ -11,6 +11,11 @@ import org.nuxeo.ecm.core.api.DocumentModel;
  * strategy for retrieval; the correct place to select among different
  * retrieval strategies is in the implementation of
  * {@link RetrievalService#retrieveFileContent(DocumentModel)}.
+ *
+ * <p>In addition to the interface methods, implementations should define
+ * a zero-argument constructor in order to allow instances to be created
+ * with reflection APIs.
+ *
  * @see RetrievalService
  */
 public interface Retriever {
