@@ -3,6 +3,10 @@ package org.unizin.cmp.oai.mocks;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -32,21 +36,22 @@ import org.apache.http.protocol.HttpContext;
 @SuppressWarnings("deprecation")
 public final class MockHttpClient implements HttpClient {
 
-	private HttpResponse response;
+	private List<HttpResponse> responses = new ArrayList<>();
+	private Iterator<HttpResponse> iterator;
 	private IOException checkedException;
 	private RuntimeException runtimeException;
 
-	public void setResponse(final HttpResponse response) {
-		this.response = response;
+	public void addResponses(final HttpResponse...responses) {
+		this.responses.addAll(Arrays.asList(responses));
 	}
-
-	public void setResponseFrom(final int statusCode, final String reasonPhrase, 
+	
+	public void addResponseFrom(final int statusCode, final String reasonPhrase, 
 			final String responseBody) {
-		setResponseFrom(statusCode, reasonPhrase, Mocks.fromString(
+		addResponseFrom(statusCode, reasonPhrase, Mocks.fromString(
 				responseBody));
 	}
 	
-	public void setResponseFrom(final int statusCode, final String reasonPhrase,
+	public void addResponseFrom(final int statusCode, final String reasonPhrase,
 			final InputStream responseContent) {
 		final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
 				statusCode, reasonPhrase);
@@ -54,8 +59,9 @@ public final class MockHttpClient implements HttpClient {
 				.setStream(responseContent)
 				.setContentEncoding(StandardCharsets.UTF_8.toString())
 				.build();
-		this.response = new BasicHttpResponse(sl);
+		final HttpResponse response = new BasicHttpResponse(sl);
 		response.setEntity(entity);
+		addResponses(response);
 	}
 	
 	public void setCheckedException(final IOException checkedException) {
@@ -75,7 +81,10 @@ public final class MockHttpClient implements HttpClient {
 		if (runtimeException != null) {
 			throw runtimeException;
 		}
-		return response;
+		if (iterator == null) {
+			iterator = responses.iterator();
+		}
+		return iterator.next();
 	}
 
 	// None of the other methods below are ever called by the harvester so need

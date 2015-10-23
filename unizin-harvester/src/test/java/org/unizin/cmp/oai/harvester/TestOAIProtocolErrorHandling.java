@@ -34,7 +34,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	private void setupWithDefaultError() throws TemplateException, IOException {
 		final String arbitraryValidOAIResponse = ErrorsTemplate.process();
 		final InputStream stream = Mocks.fromString(arbitraryValidOAIResponse);
-		mockHttpClient.setResponseFrom(HttpStatus.SC_OK, "", stream);
+		mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", stream);
 	}
 	
 	private Throwable checkSingleSuppressedException(final Throwable t) {
@@ -46,7 +46,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	private void simpleTest(final List<OAIError> errors)
 			throws Exception {
 		final String errorResponse = ErrorsTemplate.process(errors);
-		mockHttpClient.setResponseFrom(HttpStatus.SC_OK, "", errorResponse);
+		mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", errorResponse);
 		final Harvester harvester = defaultTestHarvester();
 		// Verb doesn't matter here.
 		final HarvestParams params = defaultTestParams();
@@ -107,7 +107,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	public void testPriorityOverParseErrors() throws Exception {
 		final String errorResponse = ErrorsTemplate.process(
 				ErrorsTemplate.defaultErrorList());
-		mockHttpClient.setResponseFrom(HttpStatus.SC_OK, "", 
+		mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", 
 				errorResponse + " some extra content making the XML invalid.");
 		final Harvester harvester = defaultTestHarvester();
 		// Verb doesn't matter here.
@@ -142,7 +142,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	public void testPriorityOverStreamClosingErrors() throws Exception {
 		final String arbitraryValidOAIResponse = ErrorsTemplate.process();
 		final InputStream stream = Mocks.fromString(arbitraryValidOAIResponse);
-		mockHttpClient.setResponseFrom(HttpStatus.SC_OK, "", 
+		mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", 
 				Mocks.throwsWhenClosed(stream));
 		final Harvester harvester = defaultTestHarvester();
 		final HarvestParams params = defaultTestParams();
