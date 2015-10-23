@@ -1,13 +1,16 @@
 package org.unizin.cmp.oai.harvester;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
+import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Observer;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -22,6 +25,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
+import org.unizin.cmp.oai.mocks.NotificationMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 
 import freemarker.template.TemplateException;
@@ -36,13 +40,13 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 		final InputStream stream = Mocks.fromString(arbitraryValidOAIResponse);
 		mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", stream);
 	}
-	
+
 	private Throwable checkSingleSuppressedException(final Throwable t) {
 		final Throwable[] suppressed = t.getSuppressed();
 		Assert.assertEquals(1, suppressed.length);
 		return suppressed[0];
 	}
-	
+
 	private void simpleTest(final List<OAIError> errors)
 			throws Exception {
 		final String errorResponse = ErrorsTemplate.process(errors);
@@ -67,7 +71,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	public void testSingleError() throws Exception {
 		simpleTest(ErrorsTemplate.defaultErrorList());
 	}
-	
+
 	/**
 	 * Tests that an error response with multiple &lt;error&gt; elements is
 	 * processed correctly.
@@ -82,7 +86,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 						"Your format is bad and you should feel bad"));
 		simpleTest(errors);
 	}
-	
+
 	/**
 	 * Tests that an error response containing a nonstandard error code is
 	 * handled correctly.
@@ -124,15 +128,15 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 			throw e;
 		}
 	}
-	
-	
+
+
 	private void checkXercesMultipleExceptions(final Throwable probablyIO,
 			final Throwable probablyXML) {
 		Mocks.assertTestException(probablyIO, IOException.class);
 		Assert.assertTrue(probablyXML instanceof HarvesterXMLParsingException);
 		Assert.assertTrue(probablyXML.getCause() instanceof XMLStreamException);
 	}
-	
+
 	/**
 	 * Tests that, if a stream containing an error response from the server
 	 * throws an {@link IOException} when closed, that this exception is added
@@ -179,13 +183,13 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 			throw e;
 		}
 	}
-	
+
 	@Test
 	public void testPriorityOverResponseHandlerErrors() throws Exception {
 		setupWithDefaultError();
 		final OAIResponseHandler h = Mocks.newResponseHandler();
 		doThrow(new IllegalArgumentException(Mocks.TEST_EXCEPTION_MESSAGE))
-			.when(h).onHarvestEnd(any());
+		.when(h).onHarvestEnd(any());
 		exception.expect(OAIProtocolException.class);
 		try {
 			defaultTestHarvester().start(defaultTestParams(), h);
@@ -196,19 +200,53 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 			throw e;
 		}
 	}
-	
+
 	@Test
 	public void testOAIHandlerCallsAreMade() throws Exception {
 		setupWithDefaultError();
 		final OAIResponseHandler h = Mocks.newResponseHandler();
 		final Harvester harvester = defaultTestHarvester();
 		exception.expect(OAIProtocolException.class);
-		harvester.start(defaultTestParams(), h);
-		// Each of these should be called _exactly_ once.
-		verify(h).onHarvestStart(any());
-		verify(h).onResponseReceived(any());
-		verify(h).onResponseProcessed(any());
-		verify(h).onHarvestEnd(any());
-		verify(h).getEventHandler(any());
+		try {
+			harvester.start(defaultTestParams(), h);
+		} catch (final OAIProtocolException e) {
+			/*
+			 * Each of these should be called _exactly_ once, and in precisely
+			 * this order.
+			 */
+			inOrderVerify(h).onHarvestStart(
+					NotificationMatchers.harvestStarted());
+			inOrderVerify(h).onResponseReceived(
+					NotificationMatchers.responseReceived());
+			inOrderVerify(h).getEventHandler(
+					NotificationMatchers.responseReceived());
+			inOrderVerify(h).onResponseProcessed(
+					NotificationMatchers.responseProcessedWithError());
+			inOrderVerify(h).onHarvestEnd(
+					NotificationMatchers.harvestEndedWithError());
+			throw e;
+		}
+	}
+
+	@Test
+	public void testObserverReceivesNotifications() throws Exception {
+		setupWithDefaultError();
+		final Observer observer = mock(Observer.class);
+		final Harvester harvester = defaultTestHarvester();
+		harvester.addObserver(observer);
+		exception.expect(OAIProtocolException.class);
+		try {
+			harvester.start(defaultTestParams(), Mocks.newResponseHandler());
+		} catch (final OAIProtocolException e) {
+			inOrderVerify(observer).update(eq(harvester), 
+					NotificationMatchers.harvestStarted());
+			inOrderVerify(observer).update(eq(harvester),
+					NotificationMatchers.responseReceived());
+			inOrderVerify(observer).update(eq(harvester),
+					NotificationMatchers.responseProcessedWithError());
+			inOrderVerify(observer).update(eq(harvester),
+					NotificationMatchers.harvestEndedWithError());
+			throw e;
+		}
 	}
 }

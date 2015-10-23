@@ -1,6 +1,7 @@
 package org.unizin.cmp.oai.mocks;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +53,14 @@ public final class Mocks {
 		final OAIResponseHandler m = mock(OAIResponseHandler.class);
 		when(m.getEventHandler(any())).thenReturn(mock(OAIEventHandler.class));
 		return m;
+	}
+	
+	/**
+	 * Shortcut for the commonly-needed {@code inOrder(mock).verify(mock)}.
+	 * @param mock a mock object.
+	 */
+	public static <T> T inOrderVerify(final T mock) {
+		return inOrder(mock).verify(mock);
 	}
 }
 
