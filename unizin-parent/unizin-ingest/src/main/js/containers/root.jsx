@@ -3,12 +3,14 @@ import { Route } from 'react-router'
 import { ReduxRouter } from 'redux-router'
 import { Provider } from 'react-redux'
 import App from './app.jsx'
-import SmartHome from './smart_home.jsx'
+import SmartHome from './smart_home'
+import SmartSuccess from './smart_success'
 
 const { any, shape, func } = React.PropTypes
 
 export const routes = (
     <Route component={App}>
+        <Route path="/success/:uid" component={SmartSuccess} />
         <Route path="/" component={SmartHome} />
     </Route>
 )

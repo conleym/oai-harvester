@@ -1,13 +1,13 @@
 import {
     SET_BATCH_ID,
     SUBMIT,
-    DOCUMENT,
     UPLOAD,
     UPLOAD_PROGRESS,
     UPLOAD_ERROR,
     UPLOAD_THUMBNAIL
 } from './actions/uploads'
 import { RESET } from './actions/route.js'
+import { DOCUMENT } from './actions/documents'
 
 export { routerStateReducer as router } from 'redux-router'
 
@@ -19,10 +19,20 @@ export function step(state = "upload", action) {
         return 'form'
     case SUBMIT:
         return 'finish_upload'
-    case DOCUMENT:
-        return 'success'
     }
 
+    return state
+}
+
+export function documents(state = {}, action) {
+    switch (action.type) {
+    case DOCUMENT:
+        const { uid } = action.payload
+        return {
+            ...state,
+            [uid]: action.payload
+        }
+    }
     return state
 }
 

@@ -3,7 +3,6 @@ import Dropzone from '../components/dropzone'
 import Home from '../components/home'
 import ContributionForm from '../components/contribution_form'
 import FinishUpload from '../components/finish_upload'
-import Success from '../components/success'
 import smartLoader from './smart_loader'
 import { getBatchId, submit, generateDocument } from '../actions/uploads'
 import { reset } from '../actions/route'
@@ -53,11 +52,6 @@ class SmartHome extends React.Component {
                     done={this.props.generateDocument}
                     file={files[key]} />
             )
-        } else if (step === 'success') {
-            content = (
-                <Success />
-            )
-
         }
 
         return (

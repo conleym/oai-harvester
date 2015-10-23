@@ -9,14 +9,12 @@ export default class FinishUpload extends React.Component {
     }
 
     componentDidMount() {
-        console.log('progress', this.props.file.progress)
         if (this.props.file.progress == 100) {
             this.props.done()
         }
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('progress', this.props.file.progress)
         if (this.props.file.progress == 100) {
             this.props.done()
         }
