@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<component name="org.unizin.cmp.retrieval.retrievers">
+  <extension target="org.unizin.cmp.retrieval.RetrievalService" point="retriever">
+
+    <retriever class="org.unizin.cmp.retrieval.HathiTrustHtmlRetriever">
+      <sourceRepository>http://quod.lib.umich.edu/cgi/o/oai/oai</sourceRepository>
+    </retriever>
+
+  </extension>
+</component>

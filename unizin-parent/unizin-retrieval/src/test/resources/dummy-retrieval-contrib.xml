@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<component name="org.unizin.cmp.retrieval.test.retrievers">
+  <extension target="org.unizin.cmp.retrieval.RetrievalService" point="retriever">
+
+    <retriever class="org.unizin.cmp.retrieval.SuccessRetriever">
+      <sourceRepository>http://quod.lib.umich.edu/cgi/o/oai/oai</sourceRepository>
+    </retriever>
+
+    <retriever class="org.unizin.cmp.retrieval.FailRetriever">
+      <sourceRepository>http://example.com/oai</sourceRepository>
+    </retriever>
+
+  </extension>
+</component>

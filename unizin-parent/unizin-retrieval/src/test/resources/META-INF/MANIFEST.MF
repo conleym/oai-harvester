@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Bundle-SymbolicName: org.unizin.cmp.retrieval.tests;singleton:=true
+Bundle-Version: 1.0.0
+Provide-Package: org.unizin.cmp.retrieval.tests
