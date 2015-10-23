@@ -101,6 +101,22 @@ public final class Harvester extends Observable {
 	private Harvest harvest;
 	private OAIResponseHandler responseHandler;
 
+	/**
+	 * Create a new instance.
+	 * 
+	 * @param httpClient
+	 *            the HTTP client to use.
+	 * @param requestFactory
+	 *            the request factory to use.
+	 * @param inputFactory
+	 *            the XML input factory to use. This factory <em>must</em> be
+	 *            namespace-aware.
+	 * 
+	 * @throws NullPointerException
+	 *             if any of the arguments are {@code null}.
+	 * @throws IllegalArgumentException
+	 *             if the XML input factory is not namespace-aware.
+	 */
 	public Harvester(final HttpClient httpClient,
 			final OAIRequestFactory requestFactory,
 			final XMLInputFactory inputFactory) {

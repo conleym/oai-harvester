@@ -73,7 +73,7 @@ final class OAIResponseParser {
 		 * favor of protocol exceptions.
 		 * 
 		 * If there were protocol errors, any exception thrown in the try block
-		 * will be added to the protocol exception as a suppressed exceptions
+		 * will be added to the protocol exception as a suppressed exception.
 		 * Otherwise, the exception thrown from the try block, if any, will be
 		 * thrown.
 		 * 

@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 
+import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
 
@@ -36,6 +37,17 @@ public final class HarvestNotification {
 		private Statistics() {}
 	}
 	
+	/** Gives read-only access to the enclosed {@link HarvestParams}. */
+	public class NotificationParams {
+		public String get(final OAIRequestParameter param) {
+			return params.getParameters().get(param.paramName());
+		}
+		
+		public String get(final String paramName) {
+			return params.getParameters().get(paramName);
+		}
+	}
+	
 	private final HarvestNotificationType type;
 	private final boolean isStarted;
 	private final boolean hasError;
@@ -43,6 +55,8 @@ public final class HarvestNotification {
 	private final ResumptionToken resumptionToken;
 	private final Instant lastResponseDate;
 	private final HarvestParams params;
+	private final NotificationParams notificationParams
+		= new NotificationParams();
 	private final Map<String, Long> stats;
 	
 	public HarvestNotification(final HarvestNotificationType type, 
@@ -97,6 +111,10 @@ public final class HarvestNotification {
 	
 	public boolean isStarted() {
 		return isStarted;
+	}
+	
+	public NotificationParams getHarvestParameters() {
+		return notificationParams;
 	}
 	
 	@Override
