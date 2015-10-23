@@ -14,13 +14,13 @@ public class RetrieverDescriptor implements Serializable {
     protected String sourceRepository;
 
     @XNode("@class")
-    private Class retrieverClass;
+    private Class<? extends Retriever> retrieverClass;
 
     public String getSourceRepository() {
         return sourceRepository;
     }
 
-    private Class getRetrieverClass() {
+    private Class<? extends Retriever> getRetrieverClass() {
         return retrieverClass;
     }
 
