@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -123,6 +125,14 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 		}
 	}
 	
+	
+	private void checkXercesMultipleExceptions(final Throwable probablyIO,
+			final Throwable probablyXML) {
+		Mocks.assertTestException(probablyIO, IOException.class);
+		Assert.assertTrue(probablyXML instanceof HarvesterXMLParsingException);
+		Assert.assertTrue(probablyXML.getCause() instanceof XMLStreamException);
+	}
+	
 	/**
 	 * Tests that, if a stream containing an error response from the server
 	 * throws an {@link IOException} when closed, that this exception is added
@@ -142,8 +152,30 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 		} catch (final OAIProtocolException e) {
 			Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
 					e.getOAIErrors());
-			final Throwable suppressed = checkSingleSuppressedException(e);
-			Mocks.assertTestException(suppressed, IOException.class);
+			if (STAX.equals(STAX_LIB.JDK) || STAX.equals(STAX_LIB.XERCES)) {
+				/*
+				 * Somehow Xerces (and its JDK derivative) close the stream
+				 * early and get multiple suppressed exceptions, one
+				 * XMLStreamException while trying to read the next event, plus
+				 * the expected IOException. How stupid!
+				 */
+				final Throwable[] suppressed = e.getSuppressed();
+				Assert.assertEquals(2, suppressed.length);
+				Throwable io;
+				Throwable xml;
+				if (suppressed[0] instanceof IOException) {
+					io = suppressed[0];
+					xml = suppressed[1];
+				} else {
+					io = suppressed[1];
+					xml = suppressed[0];
+				}
+				checkXercesMultipleExceptions(io, xml);
+			} else {
+				// Woodstox, at least, does what seems like the right thing.
+				final Throwable suppressed = checkSingleSuppressedException(e);
+				Mocks.assertTestException(suppressed, IOException.class);
+			}
 			throw e;
 		}
 	}

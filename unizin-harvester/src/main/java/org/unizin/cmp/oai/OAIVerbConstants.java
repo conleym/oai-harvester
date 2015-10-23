@@ -25,7 +25,7 @@ final class OAIVerbConstants {
 	);
 
 	/**
-	 * Parameters valid in {@codde GetRecord} requests.
+	 * Parameters valid in {@code GetRecord} requests.
 	 */
 	static final List<OAIRequestParameter> GET_RECORD_PARAMS = 
 			Arrays.asList(IDENTIFIER, METADATA_PREFIX);

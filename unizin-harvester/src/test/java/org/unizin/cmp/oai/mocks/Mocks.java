@@ -10,12 +10,16 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.ForwardingInputStream.BasicForwardingInputStream;
 
 
 public final class Mocks {
+	private static final Logger LOGGER = LoggerFactory.getLogger(Mocks.class);
+	
 	public static final String TEST_EXCEPTION_MESSAGE = 
 			"Mock exception for testing";
 	
@@ -34,6 +38,11 @@ public final class Mocks {
 		return new BasicForwardingInputStream<InputStream>(delegate){
 			@Override
 			public void close() throws IOException {
+				try {
+					delegate.close();
+				} catch (final IOException e) {
+					LOGGER.warn("Ignoring IOException while closing.", e);
+				}
 				throw new IOException(TEST_EXCEPTION_MESSAGE);
 			}
 		};
