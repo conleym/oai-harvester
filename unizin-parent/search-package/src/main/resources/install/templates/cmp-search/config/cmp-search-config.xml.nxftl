@@ -143,109 +143,141 @@
       </settings>
       <mapping>
 {
-   "_size" : {
-      "enabled" : true
-   },
-   "_all" : {
-      "analyzer" : "fulltext"
-   },
-   "dynamic_templates": [ {
-      "no_thumbnail_template": {
-         "path_match": "thumb:thumbnail.*",
-         "mapping": {
-             "index": "no",
-             "include_in_all": false
+    "_all": {
+        "analyzer": "fulltext"
+    },
+    "_size": {
+        "enabled": true
+    },
+    "dynamic_templates": [
+        {
+            "no_thumbnail_template": {
+                "mapping": {
+                    "include_in_all": false,
+                    "index": "no"
+                },
+                "path_match": "thumb:thumbnail.*"
             }
-         }
-      }, {
-      "no_picture_template": {
-         "path_match": "picture:views.*",
-         "mapping": {
+        },
+        {
+            "no_picture_template": {
+                "mapping": {
+                    "include_in_all": false,
+                    "index": "no"
+                },
+                "path_match": "picture:views.*"
+            }
+        }
+    ],
+    "properties": {
+        "common:icon": {
+            "include_in_all": false,
             "index": "no",
-            "include_in_all": false
-          }
-       }
-   } ],
-   "properties" : {
-      "dc:title" : {
-         "type" : "multi_field",
-         "fields" : {
-           "dc:title" : {
-             "type" : "string"
-           },
-           "fulltext" : {
-             "boost": 2,
-             "type": "string",
-             "analyzer" : "fulltext"
-          }
-        }
-      },
-      "dc:description" : {
-         "type" : "multi_field",
-         "fields" : {
-           "dc:description" : {
-             "index" : "no",
-             "include_in_all" : true,
-             "type" : "string"
-           },
-           "fulltext" : {
-             "boost": 1.5,
-             "type": "string",
-             "analyzer" : "fulltext"
-          }
-        }
-      },
-      "note:note" : {
-         "type" : "multi_field",
-         "fields" : {
-           "note:note" : {
-             "index" : "no",
-             "include_in_all" : true,
-             "type" : "string"
-           },
-           "fulltext" : {
-             "type": "string",
-             "analyzer" : "fulltext"
-          }
-        }
-      },
-      "ecm:binarytext" : {
-         "type" : "string",
-         "index" : "no",
-         "include_in_all" : true
-      },
-      "ecm:path" : {
-         "type" : "multi_field",
-         "fields" : {
-            "children" : {
-               "search_analyzer" : "keyword",
-               "index_analyzer" : "path_analyzer",
-               "type" : "string"
+            "type": "string"
+        },
+        "dc:created": {
+            "format": "dateOptionalTime",
+            "type": "date"
+        },
+        "dc:description": {
+            "fields": {
+                "dc:description": {
+                    "include_in_all": true,
+                    "index": "no",
+                    "type": "string"
+                },
+                "fulltext": {
+                    "analyzer": "fulltext",
+                    "boost": 1.5,
+                    "type": "string"
+                }
             },
-            "ecm:path" : {
-               "index" : "not_analyzed",
-               "type" : "string"
-            }
-         }
-      },
-      "ecm:pos": {
-         "type": "integer"
-      },
-      "dc:created": {
-         "format": "dateOptionalTime",
-         "type": "date"
-      },
-      "dc:modified": {
-         "format": "dateOptionalTime",
-         "type": "date"
-      },
-      "common:icon": {
-         "type": "string",
-         "index" : "no",
-         "include_in_all" : false
-      }
-   }
+            "type": "multi_field"
+        },
+        "hrv:description": {
+            "fields": {
+                "hrv:description": {
+                    "include_in_all": true,
+                    "index": "no",
+                    "type": "string"
+                },
+                "fulltext": {
+                    "analyzer": "fulltext",
+                    "boost": 1.5,
+                    "type": "string"
+                }
+            },
+            "type": "multi_field"
+        },
+        "dc:modified": {
+            "format": "dateOptionalTime",
+            "type": "date"
+        },
+        "dc:title": {
+            "fields": {
+                "dc:title": {
+                    "type": "string"
+                },
+                "fulltext": {
+                    "analyzer": "fulltext",
+                    "boost": 2,
+                    "type": "string"
+                }
+            },
+            "type": "multi_field"
+        },
+        "hrv:subject": {
+            "fields": {
+                "hrv:subject": {
+                    "type": "string"
+                },
+                "fulltext": {
+                    "analyzer": "fulltext",
+                    "boost": 2,
+                    "type": "string"
+                }
+            },
+            "type": "multi_field"
+        },
+        "ecm:binarytext": {
+            "include_in_all": true,
+            "index": "no",
+            "type": "string"
+        },
+        "ecm:path": {
+            "fields": {
+                "children": {
+                    "index_analyzer": "path_analyzer",
+                    "search_analyzer": "keyword",
+                    "type": "string"
+                },
+                "ecm:path": {
+                    "index": "not_analyzed",
+                    "type": "string"
+                }
+            },
+            "type": "multi_field"
+        },
+        "ecm:pos": {
+            "type": "integer"
+        },
+        "note:note": {
+            "fields": {
+                "fulltext": {
+                    "analyzer": "fulltext",
+                    "type": "string"
+                },
+                "note:note": {
+                    "include_in_all": true,
+                    "index": "no",
+                    "type": "string"
+                }
+            },
+            "type": "multi_field"
+        }
+    }
 }
+
       </mapping>
       <!-- @formatter:on -->
 
