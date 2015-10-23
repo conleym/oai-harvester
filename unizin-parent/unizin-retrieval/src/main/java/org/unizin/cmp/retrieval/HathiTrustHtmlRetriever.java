@@ -30,7 +30,7 @@ import java.util.Optional;
  * Strategy for retrieving content from HathiTrust by scraping its HTML
  * resource description pages.
  */
-public class HathiTrustHtmlRetriever extends DefaultRetriever {
+public class HathiTrustHtmlRetriever extends BaseRetriever {
 
     /**
      * Retrieve the document content by using the {@code handle.net}
