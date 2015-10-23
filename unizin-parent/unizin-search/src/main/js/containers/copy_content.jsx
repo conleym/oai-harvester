@@ -1,24 +1,21 @@
 import React from 'react'
 import smartLoader from './smart_loader.jsx'
 import { ensureDocument, documentImport } from '../actions/documents.js'
-import { routeReturnUrl } from '../actions/route.js'
 import { isDocumentReady, selectDocumentLoadError } from '../selectors.js'
-import Insert from '../components/insert.jsx'
+import CopyContent from '../components/copy_content.jsx'
 
 const { func, func: dispatchFunc, shape, string, object, bool } = React.PropTypes
 
-class SmartInsert extends React.Component {
-    static displayName = 'SmartInsert'
+class SmartCopyContent extends React.Component {
+    static displayName = 'SmartCopyContent'
 
     static propTypes = {
         uid: string.isRequired,
+        done: React.PropTypes.func.isRequired,
         history: shape({
             goBack: func.isRequired
         }).isRequired,
         documentImport: dispatchFunc.isRequired,
-        params: shape({
-            uid: string.isRequired
-        }).isRequired,
         document: object.isRequired,
         ready: bool,
         loadError: string,
@@ -29,7 +26,6 @@ class SmartInsert extends React.Component {
         this.onCancel = this.onCancel.bind(this)
         this.onTryAgain = this.onTryAgain.bind(this)
     }
-
 
     componentDidMount() {
         this.maybeRedirect()
@@ -43,7 +39,7 @@ class SmartInsert extends React.Component {
         const { document, ready } = this.props
 
         if (ready) {
-            window.location = routeReturnUrl(document).url
+            this.props.done(document)
         }
     }
 
@@ -59,7 +55,7 @@ class SmartInsert extends React.Component {
         const { document, loadError } = this.props
 
         return (
-            <Insert
+            <CopyContent
                 document={document}
                 loadError={loadError}
                 onCancel={this.onCancel}
@@ -69,10 +65,9 @@ class SmartInsert extends React.Component {
 }
 
 function mapStateToProps(state, props) {
-    const { uid } = props.params
+    const { uid } = props
 
     return {
-        uid,
         document: state.documents[uid],
         ready: isDocumentReady(uid)(state),
         loadError: selectDocumentLoadError(uid)(state),
@@ -81,8 +76,8 @@ function mapStateToProps(state, props) {
 
 export default smartLoader(
     {
-        inputFilter(state, props) {
-            return { uid: props.params.uid }
+        inputFilter(state, {uid}) {
+            return { uid }
         },
         isReady: ({uid}, state) => (state.documents[uid] != null),
         loader(dispatch, params, lastParams) {
@@ -94,4 +89,4 @@ export default smartLoader(
     },
     mapStateToProps,
     { documentImport }
-)(SmartInsert)
+)(SmartCopyContent)
