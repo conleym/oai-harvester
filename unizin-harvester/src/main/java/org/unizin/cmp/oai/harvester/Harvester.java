@@ -226,9 +226,6 @@ public final class Harvester extends Observable {
 			responseHandler.onResponseReceived(notification);
 			responseParser.parse(in, harvest, 
 					responseHandler.getEventHandler(notification));
-		} catch (final HarvesterException e) {
-			harvest.error();
-			throw e;
 		} catch (final XMLStreamException | IOException e) {
 			/*
 			 * Note: XMLStreamExceptions thrown due to XML parsing
@@ -240,9 +237,8 @@ public final class Harvester extends Observable {
 			harvest.error();
 			throw new HarvesterException(e);
 		} catch (final RuntimeException e) {
+			/* Catchall that includes all HarvesterExceptions. */
 			harvest.error();
-			// Don't bother wrapping. It'll probably just obscure a programming
-			// error.
 			throw e;
 		}
 	}

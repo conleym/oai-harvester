@@ -80,6 +80,18 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 						"Your format is bad and you should feel bad"));
 		simpleTest(errors);
 	}
+	
+	/**
+	 * Tests that an error response containing a nonstandard error code is
+	 * handled correctly.
+	 */
+	@Test
+	public void testNonStandardError() throws Exception {
+		List<OAIError> errors = Arrays.asList(
+				new OAIError("nonstandardErrorCode"),
+				new OAIError(OAIErrorCode.NO_SET_HIERARCHY.code(), "Hi!"));
+		simpleTest(errors);
+	}
 
 	/**
 	 * Tests that XML parsing exceptions that occur while processing an error 
@@ -154,7 +166,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	}
 	
 	@Test
-	public void testOAIHandlerLifecycleCallsAreMade() throws Exception {
+	public void testOAIHandlerCallsAreMade() throws Exception {
 		setupWithDefaultError();
 		final OAIResponseHandler h = Mocks.newResponseHandler();
 		final Harvester harvester = defaultTestHarvester();
