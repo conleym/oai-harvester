@@ -1,11 +1,11 @@
 package org.unizin.cmp.oai.harvester;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.mocks.Mocks;
 
 public final class TestHttpClientErrorHandling extends HarvesterTestBase {	
@@ -30,7 +30,7 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
 	
 	/**
 	 * Tests that {@code IOExceptions} thrown by {@code HttpClient} are wrapped
-	 * in a {@code HarvesterException} and propagated to the caller.
+	 * in {@code UncheckedIOExceptions} and propagated to the caller.
 	 */
 	@Test
 	public void testHttpClientCheckedExceptions() throws Exception {
@@ -39,10 +39,10 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
 		final Harvester harvester = defaultTestHarvester();
 		// Verb doesn't matter here.
 		final HarvestParams params = defaultTestParams();
-		exception.expect(HarvesterException.class);
+		exception.expect(UncheckedIOException.class);
 		try {
 			harvester.start(params, Mocks.newResponseHandler());
-		} catch (final HarvesterException e) {
+		} catch (final UncheckedIOException e) {
 			final Throwable cause = e.getCause();
 			Mocks.assertTestException(cause, IOException.class);
 			throw e;

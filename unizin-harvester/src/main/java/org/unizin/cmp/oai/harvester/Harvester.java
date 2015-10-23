@@ -2,6 +2,7 @@ package org.unizin.cmp.oai.harvester;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -122,8 +123,29 @@ public final class Harvester extends Observable {
 		}
 	}
 
+	/**
+	 * Start a new harvest.
+	 * 
+	 * @param params
+	 *            the harvest parameters.
+	 * @param responseHandler
+	 *            the handler to use to deal with server responses.
+	 * 
+	 * @throws UncheckedIOException
+	 *             if there's an {@code IOException} while executing an HTTP
+	 *             request with {@link HttpClient#execute(HttpUriRequest)}.
+	 * @throws HarvesterException
+	 *             if there's an error harvesting.
+	 * @throws IllegalStateException
+	 *             if this method is called while another harvest is already in
+	 *             progress.
+	 */
 	public void start(final HarvestParams params,
 			final OAIResponseHandler responseHandler) {
+		if (this.harvest != null && this.harvest.hasNext()) {
+			throw new IllegalStateException(
+					"Cannot start a new harvest while one is in progress.");
+		}
 		this.harvest = new Harvest(params);
 		this.responseHandler = responseHandler;
 		harvest();
@@ -250,6 +272,16 @@ public final class Harvester extends Observable {
 		return request;
 	}
 
+	/**
+	 * Execute an {@code HttpUriRequest}.
+	 * 
+	 * @param request
+	 *            the request to execute.
+	 * @return the server's response.
+	 * @throws UncheckedIOException
+	 *             if {@link HttpClient#execute(HttpUriRequest)} throws an
+	 *             {@link IOException}.
+	 */
 	private HttpResponse executeRequest(final HttpUriRequest request) {
 		harvest.setRequest(request);
 		harvest.requestSent();
@@ -261,7 +293,7 @@ public final class Harvester extends Observable {
 					response, request);
 			return response;
 		} catch (final IOException e) {
-			throw new HarvesterException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 
