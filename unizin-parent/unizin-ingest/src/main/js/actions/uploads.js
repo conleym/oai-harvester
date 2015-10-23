@@ -22,6 +22,25 @@ export function uploadFile(key, file) {
     }
 }
 
+export const SUBMIT = 'SUBMIT'
+
+export function submit(data) {
+    return {
+        type: SUBMIT,
+        payload: data
+    }
+}
+
+export const DOCUMENT = 'DOCUMENT'
+
+export function generateDocument() {
+    return (dispatch, getState) => {
+        dispatch({
+            type: DOCUMENT
+        })
+    }
+}
+
 export function uploadProgress(key, progress, bytesSent) {
     return {
         type: UPLOAD_PROGRESS,

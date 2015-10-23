@@ -10,3 +10,9 @@ export function route(route, query) {
         query,
     }
 }
+
+export const RESET = 'RESET'
+
+export function reset() {
+    return { type: RESET }
+}
