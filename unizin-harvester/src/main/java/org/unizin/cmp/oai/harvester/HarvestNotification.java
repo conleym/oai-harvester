@@ -101,6 +101,10 @@ public final class HarvestNotification {
 		return type;
 	}
 	
+	public ResumptionToken getResumptionToken() {
+		return resumptionToken;
+	}
+	
 	public boolean isStoppedByUser() {
 		return isStoppedByUser;
 	}

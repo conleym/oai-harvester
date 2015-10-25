@@ -42,7 +42,6 @@ public final class OAIMatchers {
 		});
 	}
 	
-	
 	/** No instances allowed. */
 	private OAIMatchers() {}
 }

@@ -39,12 +39,34 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
  *
  */
 final class OAIResponseParser {
+	private static final ResumptionToken DEFAULT_FINAL_TOKEN = 
+			new ResumptionToken("");
+
 	private final XMLInputFactory inputFactory;
 	private final Logger logger;
 
 	OAIResponseParser(final XMLInputFactory inputFactory, final Logger logger) {
 		this.inputFactory = inputFactory;
 		this.logger = logger;
+	}
+
+	/**
+	 * If the token is {@code null} return {@link #DEFAULT_FINAL_TOKEN}.
+	 * Otherwise return the token.
+	 * <p>
+	 * We cannot set Harvest's {@code resumptionToken} to {@code null}
+	 * (purposefully throws NPE). This is because the initial request parameters
+	 * are generated when the token is {@code null}.
+	 * <p>
+	 * The token may be null in the following cases:
+	 * <ol>
+	 * <li>Non-list responses won't have resumption tokens.</li>
+	 * <li>The server doesn't send back an empty token in the last incomplete
+	 * list of a list request (it's supposed to, but some don't).</li>
+	 * </ol>
+	 */
+	private static ResumptionToken nonNullToken(final ResumptionToken token) {
+		return token == null ? DEFAULT_FINAL_TOKEN : token;
 	}
 
 	/**
@@ -82,33 +104,20 @@ final class OAIResponseParser {
 		 */
 		RuntimeException tryException = null;
 		try {
-			final ResumptionToken resumptionToken = readEvents(reader,
-					errorList, harvest, eventHandler);
+			final ResumptionToken resumptionToken = nonNullToken(
+					readEvents(reader, errorList, harvest, eventHandler));
 			logger.debug("Got resumption token {}", resumptionToken);
-			if (resumptionToken == null) {
-				/*
-				 * Cannot set Harvest's resumptionToken to null (purposefully
-				 * throws NPE).
-				 * 
-				 * The token may be null in the following cases:
-				 *  1. Non-list responses won't have resumption tokens.
-				 *  
-				 *  2. The server doesn't send back an empty token in the last
-				 *     incomplete list of a list request (it's supposed to, but
-				 *     some don't).
-				 */
+			final String token = resumptionToken.getToken();
+			if ("".equals(token)) {
+				// Harvest is done.
 				harvest.stop();
-			} else {
-				final String token = resumptionToken.getToken();
-				if ("".equals(token)) {
-					// Harvest is done.
-					harvest.stop();
-				} else if (errorList.isEmpty()) {
-					// If there were errors, the client may wish to retry (not
-					// implemented yet).
-					// Only set the token if there are none.
-					harvest.setResumptionToken(resumptionToken);
-				}
+			}
+			if (errorList.isEmpty()) {
+				/*
+				 * If there were errors, the client may wish to retry (not
+				 * implemented yet). Only set the token if there are none.
+				 */
+				harvest.setResumptionToken(resumptionToken);
 			}
 		} catch (final XMLStreamException e) {
 			tryException = new HarvesterXMLParsingException(e);
@@ -127,7 +136,7 @@ final class OAIResponseParser {
 			}
 		}
 	}
-	
+
 	private XMLEvent nextEvent(final XMLEventReader reader,
 			final OAIEventHandler eventHandler) throws XMLStreamException {
 		final XMLEvent event = reader.nextEvent();
@@ -135,8 +144,8 @@ final class OAIResponseParser {
 		eventHandler.onEvent(event);
 		return event;
 	}
-	
-	
+
+
 	/**
 	 * Read the text content of a node until non-text is seen.
 	 * <p>
@@ -163,7 +172,7 @@ final class OAIResponseParser {
 		return sb.toString();
 	}
 
-	
+
 	private ResumptionToken readEvents(final XMLEventReader reader,
 			final List<OAIError> errorList, final Harvest harvest,
 			final OAIEventHandler eventHandler)

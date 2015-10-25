@@ -5,8 +5,10 @@ import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificati
 import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.RESPONSE_PROCESSED;
 import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.RESPONSE_RECEIVED;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 
+import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestNotification.Statistics;
 
@@ -92,6 +94,13 @@ public final class NotificationMatchers {
 				HarvestNotification.class);
 	}
 
+	public static final HarvestNotification withToken(final ResumptionToken token) {
+		return OAIMatchers.fromPredicate((hn) -> { 
+			return Objects.equals(token, hn.getResumptionToken());
+		},
+				HarvestNotification.class);
+	}
+	
 	/** No instances allowed. */
 	private NotificationMatchers() {}
 }
