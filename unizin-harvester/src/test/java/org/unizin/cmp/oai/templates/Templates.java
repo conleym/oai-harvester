@@ -34,7 +34,7 @@ final class Templates {
 	}
 
 	private static String templateName(final String basename) {
-		return basename + ".template.xml";
+		return basename + ".ftl.xml";
 	}
 
 	static String processTemplate(final Template template,

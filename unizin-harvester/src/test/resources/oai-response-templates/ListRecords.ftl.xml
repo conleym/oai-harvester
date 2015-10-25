@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
+         http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+ <responseDate>${responseDate!'2002-05-01T19:20:30Z'}</responseDate> 
+ <request verb="ListRecords" metadataPrefix="${metadataPrefix!'oai_dc'}">
+          http://an.oa.org/OAI-script</request>
+ <ListRecords>
+ <#list records as record>
+  <record>
+    <#if record.status??>
+    <header status="${record.status}">
+    <#else>
+    <header>
+    </#if>
+      <identifier>${record.identifier!'oai:arXiv.org:hep-th/9901001'}</identifier>
+      <datestamp>${record.datestamp!'1999-12-25'}</datestamp>
+      <#if record.setSpecs??>
+      <#list record.setSpecs as setSpec>
+      <setSpec>${record.setSpec}</setSpec>
+      </#list>
+      </#if>
+    </header>
+    <metadata>
+    ${record.metadata}
+    </metadata>
+    <#if record.about??>
+    <about>
+     ${record.about}
+    </about>
+    </#if>
+  </record>
+  <#if resumptionToken??>
+  <resumptionToken 
+  <#if resumptionToken.cursor??>cursor="${resumptionToken.cursor}"</#if>
+  <#if resumptionToken.completeListSize??>completeListSize="${resumptionToken.completeListSize}"</#if>
+  <#if resumptionToken.expirationDate??>expirationDate="${resumptionToken.expirationDate}"</#if> 
+  >${resumptionToken.token}</resumptionToken>
+  </#if>
+  </#list>
+ </ListRecords>
+</OAI-PMH>

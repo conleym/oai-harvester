@@ -222,8 +222,8 @@ public final class Harvester extends Observable {
 				}
 			}
 			/*
-			 * Finally call had no exceptions. Might still have to throw body
-			 * exception.
+			 * Finally block had no exceptions. Might still have to throw try
+			 * block's exception.
 			 */
 			if (caught != null) {
 				throw caught;

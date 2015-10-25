@@ -8,10 +8,15 @@ import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificati
 import java.util.function.Predicate;
 
 import org.unizin.cmp.oai.harvester.HarvestNotification;
+import org.unizin.cmp.oai.harvester.HarvestNotification.Statistics;
 
 public final class NotificationMatchers {
 	public static final Predicate<HarvestNotification> RUNNING = (hn) -> {
 		return hn.isStarted() && !hn.isStoppedByUser() && !hn.hasError();
+	};
+
+	public static final Predicate<HarvestNotification> NOT_RUNNING = (hn) -> {
+		return !hn.isStarted() && !hn.isStoppedByUser() && !hn.hasError();
 	};
 
 	public static final Predicate<HarvestNotification> HAS_ERROR = (hn) -> {
@@ -53,23 +58,38 @@ public final class NotificationMatchers {
 				},
 				HarvestNotification.class);
 	}
-	
-	public static final HarvestNotification harvestEndedWithError() {
-		return OAIMatchers.fromPredicate(
-				(hn) -> {
-					return hn.getType() == HARVEST_ENDED &&
-							NotificationMatchers.HAS_ERROR.test(hn);
-				},
+
+	public static final HarvestNotification lastResponseProcessedSuccessfully() {
+		return OAIMatchers.fromPredicate((hn) -> {
+			return hn.getType() == RESPONSE_PROCESSED &&
+					!hn.isStarted() && !hn.isStoppedByUser() && !hn.hasError();
+		},
 				HarvestNotification.class);
 	}
-	
+
+	public static final HarvestNotification harvestEndedWithError() {
+		return OAIMatchers.fromPredicate((hn) -> {
+			return hn.getType() == HARVEST_ENDED &&
+					NotificationMatchers.HAS_ERROR.test(hn);
+		},
+				HarvestNotification.class);
+	}
+
 	public static final HarvestNotification harvestEndedSuccessfully() {
-		return OAIMatchers.fromPredicate(
-				(hn) -> {
-					return hn.getType() == HARVEST_ENDED &&
-							NotificationMatchers.RUNNING.test(hn);
-				},
+		return OAIMatchers.fromPredicate((hn) -> {
+			return hn.getType() == HARVEST_ENDED &&
+					NotificationMatchers.NOT_RUNNING.test(hn);
+		},
 				HarvestNotification.class);		
+	}
+
+	public static final HarvestNotification withStats(final long requestCount,
+			final long responseCount) {
+		return OAIMatchers.fromPredicate((hn) -> {
+			return hn.getStat(Statistics.REQUEST_COUNT) == requestCount &&
+					hn.getStat(Statistics.RESPONSE_COUNT) == responseCount;
+		},
+				HarvestNotification.class);
 	}
 
 	/** No instances allowed. */
