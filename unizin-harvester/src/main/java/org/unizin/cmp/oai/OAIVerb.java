@@ -93,10 +93,8 @@ public enum OAIVerb {
 				.map((rp) -> rp.paramName())
 				.collect(Collectors.toSet());
 		if (keys.containsAll(requiredParamKeys)) {
-			final Set<String> legalParamKeys = legalParameters.stream()
-					.map((rp) -> rp.paramName())
-					.collect(Collectors.toSet());
-			keys.removeAll(legalParamKeys);
+			legalParameters.stream()
+				.forEach((lp) -> keys.remove(lp.paramName()));
 			return keys.isEmpty();
 		}
 		return false;

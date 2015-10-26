@@ -24,6 +24,7 @@ import org.unizin.cmp.oai.OAIErrorCode;
 import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
+import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
@@ -35,10 +36,11 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private void setupWithDefaultError() throws TemplateException, IOException {
+	public static void setupWithDefaultError(final MockHttpClient mockClient)
+			throws TemplateException, IOException {
 		final String arbitraryValidOAIResponse = ErrorsTemplate.process();
 		final InputStream stream = Mocks.fromString(arbitraryValidOAIResponse);
-		mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", stream);
+		mockClient.addResponseFrom(HttpStatus.SC_OK, "", stream);
 	}
 
 	private Throwable checkSingleSuppressedException(final Throwable t) {
@@ -186,7 +188,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 
 	@Test
 	public void testPriorityOverResponseHandlerErrors() throws Exception {
-		setupWithDefaultError();
+		setupWithDefaultError(mockHttpClient);
 		final OAIResponseHandler h = Mocks.newResponseHandler();
 		doThrow(new IllegalArgumentException(Mocks.TEST_EXCEPTION_MESSAGE))
 		.when(h).onHarvestEnd(any());
@@ -203,7 +205,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 
 	@Test
 	public void testOAIHandlerCallsAreMade() throws Exception {
-		setupWithDefaultError();
+		setupWithDefaultError(mockHttpClient);
 		final OAIResponseHandler h = Mocks.newResponseHandler();
 		final Harvester harvester = defaultTestHarvester();
 		exception.expect(OAIProtocolException.class);
@@ -230,7 +232,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 
 	@Test
 	public void testObserverReceivesNotifications() throws Exception {
-		setupWithDefaultError();
+		setupWithDefaultError(mockHttpClient);
 		final Observer observer = mock(Observer.class);
 		final Harvester harvester = defaultTestHarvester();
 		harvester.addObserver(observer);

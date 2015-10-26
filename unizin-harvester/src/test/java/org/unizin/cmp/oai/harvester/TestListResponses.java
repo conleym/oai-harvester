@@ -30,6 +30,7 @@ import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification.Statistics;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
+import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
 import org.unizin.cmp.oai.mocks.OAIMatchers;
@@ -44,13 +45,17 @@ public final class TestListResponses extends HarvesterTestBase {
 	private static final Logger LOGGER = 
 			LoggerFactory.getLogger(TestListResponses.class);
 
+	public static final long DEFAULT_RESPONSE_COUNT = 2;
+
+	
 	@Rule
 	public ExpectedException exception = ExpectedException.none();
 
-	private final ResumptionToken firstToken = 
+	private static final ResumptionToken FIRST_TOKEN = 
 			new ResumptionToken("the first token", 2L, 1L, null);
-	private final ResumptionToken lastToken = 
-			new ResumptionToken("", 2L, 2L, null);
+	private static final ResumptionToken LAST_TOKEN = 
+			new ResumptionToken("", DEFAULT_RESPONSE_COUNT, 
+					DEFAULT_RESPONSE_COUNT, null);
 
 	private static Map<String, Object> toMap(final ResumptionToken token) {
 		final Map<String, Object> m = new HashMap<>();
@@ -76,13 +81,14 @@ public final class TestListResponses extends HarvesterTestBase {
 	 *            token in the last incomplete list? If {@code false}, do what
 	 *            many repositories actually do, and send no token at all.
 	 */
-	private void setupWithDefaultListRecordsResponse(
-			final boolean sendFinalResumptionToken) 
+	public static void setupWithDefaultListRecordsResponse(
+			final boolean sendFinalResumptionToken,
+			final MockHttpClient mockClient) 
 					throws TemplateException, IOException {
 		final Map<String, Object> record = new HashMap<>();
 
 		ListRecordsTemplate listRecordsTemplate = new ListRecordsTemplate()
-				.withResumptionToken(toMap(firstToken));
+				.withResumptionToken(toMap(FIRST_TOKEN));
 		RecordMetadataTemplate recordMetadataTemplate = 
 				new RecordMetadataTemplate()
 				.addTitle("A Title")
@@ -100,11 +106,11 @@ public final class TestListResponses extends HarvesterTestBase {
 		listRecordsTemplate.addRecord(record);
 		String resp = listRecordsTemplate.process();
 		LOGGER.debug("First response is {}", resp);
-		mockHttpClient.addResponseFrom(200, "", resp);
+		mockClient.addResponseFrom(200, "", resp);
 
 		listRecordsTemplate = new ListRecordsTemplate();
 		if (sendFinalResumptionToken) { 
-			listRecordsTemplate.withResumptionToken(toMap(lastToken));
+			listRecordsTemplate.withResumptionToken(toMap(LAST_TOKEN));
 		}
 		recordMetadataTemplate = new RecordMetadataTemplate()
 				.addTitle("Such Title Wow");
@@ -113,7 +119,7 @@ public final class TestListResponses extends HarvesterTestBase {
 		listRecordsTemplate.addRecord(record);
 		resp = listRecordsTemplate.process();
 		LOGGER.debug("Second response is {}", resp);
-		mockHttpClient.addResponseFrom(200, "", resp);
+		mockClient.addResponseFrom(200, "", resp);
 	}
 
 	private void listRecordsTest(final long totalResponses, 
@@ -190,8 +196,9 @@ public final class TestListResponses extends HarvesterTestBase {
 	 */
 	@Test
 	public void testListRecords() throws Exception {
-		setupWithDefaultListRecordsResponse(true);
-		listRecordsTest(2, Arrays.asList(firstToken, lastToken));
+		setupWithDefaultListRecordsResponse(true, mockHttpClient);
+		listRecordsTest(DEFAULT_RESPONSE_COUNT,
+				Arrays.asList(FIRST_TOKEN, LAST_TOKEN));
 	}
 
 	/**
@@ -200,8 +207,9 @@ public final class TestListResponses extends HarvesterTestBase {
 	 */
 	@Test
 	public void testListRecordsWithNoFinalResumptionToken() throws Exception {
-		setupWithDefaultListRecordsResponse(false);
-		listRecordsTest(2, Arrays.asList(firstToken, new ResumptionToken("")));
+		setupWithDefaultListRecordsResponse(false, mockHttpClient);
+		listRecordsTest(DEFAULT_RESPONSE_COUNT,
+				Arrays.asList(FIRST_TOKEN, new ResumptionToken("")));
 	}
 
 	/**
@@ -211,7 +219,7 @@ public final class TestListResponses extends HarvesterTestBase {
 	@Test
 	public void testListRecordsWithBadResumptionToken() throws Exception {
 		final ListRecordsTemplate lrt = new ListRecordsTemplate()
-				.withResumptionToken(toMap(firstToken));
+				.withResumptionToken(toMap(FIRST_TOKEN));
 		final Map<String, Object> record = new HashMap<>();
 		record.put("metadata", new RecordMetadataTemplate().process());
 		lrt.addRecord(record);
@@ -242,7 +250,7 @@ public final class TestListResponses extends HarvesterTestBase {
 	 */
 	@Test
 	public void testStop() throws Exception {
-		setupWithDefaultListRecordsResponse(true);
+		setupWithDefaultListRecordsResponse(true, mockHttpClient);
 		final Observer obs = (o, arg) -> {
 			final Harvester h = (Harvester)o;
 			final HarvestNotification hn = (HarvestNotification)arg;

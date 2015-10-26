@@ -2,13 +2,11 @@ package org.unizin.cmp.oai.mocks;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -17,10 +15,8 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
-import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicStatusLine;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
@@ -36,32 +32,35 @@ import org.apache.http.protocol.HttpContext;
 @SuppressWarnings("deprecation")
 public final class MockHttpClient implements HttpClient {
 
-	private List<HttpResponse> responses = new ArrayList<>();
-	private Iterator<HttpResponse> iterator;
+	private List<MockHttpResponse> responses = new ArrayList<>();
+	private Iterator<MockHttpResponse> iterator;
 	private IOException checkedException;
 	private RuntimeException runtimeException;
 
-	public void addResponses(final HttpResponse...responses) {
+	public void addResponses(final MockHttpResponse...responses) {
 		this.responses.addAll(Arrays.asList(responses));
 	}
 	
 	public void addResponseFrom(final int statusCode, final String reasonPhrase, 
-			final String responseBody) {
-		addResponseFrom(statusCode, reasonPhrase, Mocks.fromString(
-				responseBody));
+			final String responseBody) throws IOException {
+		final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
+				statusCode, reasonPhrase);
+		final MockHttpResponse response = new MockHttpResponse(sl);
+		response.setEntityContent(responseBody);
+		addResponses(response);
 	}
 	
 	public void addResponseFrom(final int statusCode, final String reasonPhrase,
-			final InputStream responseContent) {
+			final InputStream responseContent) throws IOException {
 		final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
 				statusCode, reasonPhrase);
-		final HttpEntity entity = EntityBuilder.create()
-				.setStream(responseContent)
-				.setContentEncoding(StandardCharsets.UTF_8.toString())
-				.build();
-		final HttpResponse response = new BasicHttpResponse(sl);
-		response.setEntity(entity);
+		final MockHttpResponse response = new MockHttpResponse(sl);
+		response.setEntityContent(responseContent);
 		addResponses(response);
+	}
+	
+	public List<MockHttpResponse> getResponses() {
+		return this.responses;
 	}
 	
 	public void setCheckedException(final IOException checkedException) {
