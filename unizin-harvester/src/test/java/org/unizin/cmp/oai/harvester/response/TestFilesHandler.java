@@ -5,6 +5,7 @@ import static org.unizin.cmp.oai.harvester.Utils.fromStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -40,6 +41,7 @@ public final class TestFilesHandler extends HarvesterTestBase {
 		final File[] files = tempDir.getRoot().listFiles(
 				(f) -> f.getName().endsWith(".xml"));
 		Assert.assertEquals(mockHttpClient.getResponses().size(), files.length);
+		Arrays.sort(files, (a, b) -> a.getName().compareTo(b.getName()));
 		final Iterator<MockHttpResponse> respIter = 
 				mockHttpClient.getResponses().iterator();
 		long counter = 1;
