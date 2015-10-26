@@ -1,0 +1,20 @@
+<oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/
+         http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+  <#list titles as title>
+  <dc:title>${title}</dc:title>
+  </#list>
+  <#list creators as creator>
+  <dc:creator>${creator}</dc:creator>
+  </#list>
+  <#list subjects as subject>
+  <dc:subject>${subject}</dc:subject>
+  </#list>
+  <#list descriptions as description>
+  <dc:description>${description}</dc:description>
+  </#list>
+  <#list dates as date>
+  <dc:date>${date}</dc:date>
+  </#list>
+</oai_dc:dc>
