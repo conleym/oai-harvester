@@ -13,6 +13,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -329,7 +330,7 @@ public final class Harvester extends Observable {
 			final StatusLine statusLine = response.getStatusLine();
 			LOGGER.debug("Got status line: {}", statusLine);
 			final int statusCode = statusLine.getStatusCode();
-			if (statusCode == 200) {
+			if (statusCode == HttpStatus.SC_OK) {
 				return entity(response).getContent();
 			}
 			throw new HarvesterException(String.format(

@@ -3,9 +3,12 @@ package org.unizin.cmp.oai.harvester;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import org.apache.http.HttpStatus;
+import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.mocks.Mocks;
 
 public final class TestHttpClientErrorHandling extends HarvesterTestBase {	
@@ -47,5 +50,18 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
 			Mocks.assertTestException(cause, IOException.class);
 			throw e;
 		}
+	}
+	
+	@Test
+	public void testNotOKStatus() throws Exception {
+		mockHttpClient.addResponseFrom(HttpStatus.SC_BAD_GATEWAY,
+				"Something's wrong", "");
+		final Harvester harvester = defaultTestHarvester();
+		final HarvestParams params = defaultTestParams();
+		exception.expect(HarvesterException.class);
+		exception.expectMessage(CoreMatchers.startsWith(
+				String.format("Got HTTP status %d for request",
+						HttpStatus.SC_BAD_GATEWAY)));
+		harvester.start(params, Mocks.newResponseHandler());
 	}
 }

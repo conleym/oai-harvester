@@ -255,22 +255,37 @@ public final class TestListResponses extends HarvesterTestBase {
 		final OAIResponseHandler rh = Mocks.newResponseHandler();
 		final Harvester harvester = defaultTestHarvester();
 		harvester.addObserver(obs);
+		final Observer mockObserver = Mockito.mock(Observer.class);
+		harvester.addObserver(mockObserver);
 		harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS), rh);
 		
 		inOrderVerify(rh).onHarvestStart(NotificationMatchers.harvestStarted());
+		inOrderVerify(mockObserver).update(eq(harvester),
+				NotificationMatchers.harvestStarted());
 		inOrderVerify(rh).onResponseReceived(
+				NotificationMatchers.responseReceived());
+		inOrderVerify(mockObserver).update(eq(harvester),
 				NotificationMatchers.responseReceived());
 		inOrderVerify(rh).onResponseProcessed(
 				NotificationMatchers.responseProcessedSuccessfully());
+		inOrderVerify(mockObserver).update(eq(harvester),
+				NotificationMatchers.responseProcessedSuccessfully());
+		
+		final Supplier<HarvestNotification> lastNotification = () -> {
+			return AdditionalMatchers.and(
+					NotificationMatchers.withStats(1, 1),
+					OAIMatchers.fromPredicate(
+							(hn) -> {
+								return hn.getType() == HARVEST_ENDED && 
+								hn.isStarted() && hn.isStoppedByUser() &&
+								!hn.hasError();
+							},
+							HarvestNotification.class));
+		};
+		
 		// Harvest ends. Second incomplete list not retrieved.
-		inOrderVerify(rh).onHarvestEnd(AdditionalMatchers.and(
-						NotificationMatchers.withStats(1, 1),
-						OAIMatchers.fromPredicate(
-								(hn) -> {
-									return hn.getType() == HARVEST_ENDED && 
-									hn.isStarted() && hn.isStoppedByUser() &&
-									!hn.hasError();
-								},
-								HarvestNotification.class)));
+		inOrderVerify(rh).onHarvestEnd(lastNotification.get());
+		inOrderVerify(mockObserver).update(eq(harvester),
+				lastNotification.get());
 	}
 }
