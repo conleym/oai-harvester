@@ -37,7 +37,7 @@ import static org.unizin.cmp.retrieval.CopyFromSourceRepository.STATUS_PROP;
 @RunWith(FeaturesRunner.class)
 @Features({TransactionalFeature.class, AutomationFeature.class, PlatformFeature.class})
 @Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval",
-         "org.unizin.cmp.retrieval.tests:dummy-retrieval-contrib.xml"})
+         "org.unizin.cmp.retrieval.tests:test-retrieval-contrib.xml"})
 public class CopyFromSourceRepositoryTest {
 
     @Inject

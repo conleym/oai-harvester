@@ -6,5 +6,9 @@
       <sourceRepository>http://quod.lib.umich.edu/cgi/o/oai/oai</sourceRepository>
     </retriever>
 
+    <retriever class="org.unizin.cmp.retrieval.OreRecordRetriever">
+      <sourceRepository>http://kb.osu.edu/oai/request</sourceRepository>
+    </retriever>
+
   </extension>
 </component>

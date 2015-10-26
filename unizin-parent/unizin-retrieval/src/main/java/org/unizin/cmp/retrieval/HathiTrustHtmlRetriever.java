@@ -49,7 +49,6 @@ public class HathiTrustHtmlRetriever extends BaseRetriever {
      *
      * @param client the HTTP client instance to use
      * @param document a document with the {@code Harvested} facet
-     * @return
      * @throws RetrievalException if there is no public fulltext link found, or
      *                            if an I/O or parsing error occurs.
      */
@@ -70,26 +69,6 @@ public class HathiTrustHtmlRetriever extends BaseRetriever {
             throw new RetrievalException(msg);
         }
     }
-
-    private Blob retrieveContent(CloseableHttpClient client,
-                                 String dataUrl) {
-        URI uri;
-        try {
-            uri = new URI(dataUrl);
-        } catch (URISyntaxException e) {
-            throw new RetrievalException(e);
-        }
-        HttpGet req = new HttpGet(uri);
-        try (CloseableHttpResponse resp = client.execute(req)) {
-            if (resp.getStatusLine().getStatusCode() != 200) {
-                throw new RetrievalException(resp.getStatusLine().getReasonPhrase());
-            }
-            return blobFromEntity(resp.getEntity());
-        } catch (IOException e) {
-            throw new RetrievalException(e);
-        }
-    }
-
 
     private Optional<String> extractDataUrl(HttpClient client, String htmlUrl) {
         URI uri;

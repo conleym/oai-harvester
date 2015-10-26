@@ -16,23 +16,24 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 
 import javax.inject.Inject;
 import java.io.IOException;
-import java.io.InputStream;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 
+
 @RunWith(FeaturesRunner.class)
 @Features(CoreFeature.class)
-@Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval"})
-public class RetrievalServiceTest {
-
-
+@Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval",
+         "org.unizin.cmp.retrieval.tests:test-retrieval-contrib.xml"})
+public class OreRecordRetrieverTest {
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(9231);
+    public WireMockRule wireMockRule = new WireMockRule(9232);
 
     @Inject
     RetrievalService retrievalService;
@@ -43,42 +44,36 @@ public class RetrievalServiceTest {
     private DocumentModel inputDoc;
     private byte[] pdfResponseBody;
 
-    @Test
-    public void testRegistration() {
-        assertNotNull(retrievalService);
-    }
-
     @Before
     public void setUp() throws IOException {
-        byte[] htmlResponseBody = ByteStreams.toByteArray(
-                getClass().getResourceAsStream("/testdocresponse.html"));
+        byte[] xmlResponseBody = ByteStreams.toByteArray(
+                getClass().getResourceAsStream("/ore-test-response.xml"));
         pdfResponseBody = ByteStreams.toByteArray(
                 getClass().getResourceAsStream("/testdocpage8.pdf"));
-        stubFor(get(urlEqualTo("/2027/loc.ark:/13960/t6252864g"))
-                        .willReturn(aResponse().withStatus(303).withHeader(
-                                "Location", "http://localhost:9231/htmlout")));
-        stubFor(get(urlEqualTo("/htmlout"))
-                        .willReturn(aResponse().withHeader(
-                                "Content-Type", "text/html; charset=utf-8")
-                                            .withBody(htmlResponseBody)));
-        stubFor(get(urlEqualTo("/cgi/imgsrv/download/pdf?id=loc.ark%3A%2F13960%2Ft6252864g;orient=0;size=100"))
-                        .willReturn(aResponse().withHeader(
-                                "Content-Type", "application/pdf")
+        stubFor(get(urlEqualTo("/dspace/bitstream/handle/1811/20/Halm_OLN.pdf?sequence=4"))
+                        .willReturn(aResponse().withHeader("Content-Type", "application/pdf")
                                             .withBody(pdfResponseBody)));
-        InputStream archiveStream = getClass().getResourceAsStream("/testdoc.zip");
-        inputDoc = RetrievalTestUtils.createTestDoc(archiveStream, session);
+        stubFor(get(urlPathEqualTo("/oai/request"))
+                        .withQueryParam("verb", equalTo("GetRecord"))
+                        .withQueryParam("identifier",
+                                        equalTo("oai%3Akb.osu.edu%3A1811%2F20"))
+                        .withQueryParam("metadataPrefix", equalTo("ore"))
+                        .willReturn(aResponse().withHeader("Content-Type",
+                                                           "application/xml")
+                                            .withBody(xmlResponseBody)));
+
+        inputDoc = session.createDocumentModel("/", "testdoc", "File");
+        inputDoc.addFacet("Harvested");
+        inputDoc.setPropertyValue("hrv:oaiIdentifier", "oai:kb.osu.edu:1811/20");
+        inputDoc.setPropertyValue("hrv:sourceRepository", "http://localhost:9232/oai/request");
+        inputDoc = session.createDocument(inputDoc);
     }
 
     @Test
-    public void testContribution() throws IOException {
+    public void testOreRetriever() throws IOException {
         Blob result = retrievalService.retrieveFileContent(inputDoc);
         assertNotNull(result);
         assertArrayEquals(pdfResponseBody, result.getByteArray());
     }
 
-    @Test(expected=RetrievalException.class)
-    public void testFailure()  {
-        inputDoc.setPropertyValue("hrv:identifier", new String[] {"http://localhost:9231/nonexistent"});
-        retrievalService.retrieveFileContent(inputDoc);
-    }
 }
