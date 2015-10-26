@@ -35,6 +35,20 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
  * Internal-use-only class used to parse OAI-PMH responses on behalf of the
  * harvester.
  * <p>
+ * Instances parse {@link ResumptionToken ResumptionTokens}, stopping the
+ * harvest if none or an empty token is found in the response. Exceptions caused
+ * by XML parsing errors are wrapped in {@link HarvesterXMLParsingException}.
+ * <p>
+ * OAI protocol errors are also parsed, and {@link OAIProtocolException
+ * OAIProtocolExceptions} thrown. If an OAI protocol error occurs, that
+ * exception will be thrown, regardless of other errors that may have occurred
+ * (other exceptions will be added to the protocol exception's list of
+ * suppressed exceptions).
+ * <p>
+ * Instances take no part in the notification or state management of the
+ * harvester beyond what is mentioned above. In particular, no notifications are
+ * sent from methods in this class.
+ * <p>
  * Instances can be reused for multiple harvests.
  *
  */
@@ -158,8 +172,12 @@ final class OAIResponseParser {
 	 * node.
 	 * 
 	 * @param reader
+	 *            the event reader from which to read events.
 	 * @param eventHandler
-	 * @return
+	 *            the handler to which any events read should be sent.
+	 * @return a string containing the character content of all text children of
+	 *         the reader's current {@link StartElement}, up to and <em>not</em>
+	 *         including the first non-text event.
 	 * @throws XMLStreamException
 	 */
 	private String readText(final XMLEventReader reader,

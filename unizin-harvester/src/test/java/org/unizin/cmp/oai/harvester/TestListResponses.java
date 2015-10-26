@@ -1,6 +1,8 @@
 package org.unizin.cmp.oai.harvester;
 
 import static org.mockito.Matchers.eq;
+import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.HARVEST_ENDED;
+import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.RESPONSE_PROCESSED;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.io.IOException;
@@ -25,10 +27,12 @@ import org.unizin.cmp.oai.OAIError;
 import org.unizin.cmp.oai.OAIErrorCode;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
+import org.unizin.cmp.oai.harvester.HarvestNotification.Statistics;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
+import org.unizin.cmp.oai.mocks.OAIMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 import org.unizin.cmp.oai.templates.ListRecordsTemplate;
 import org.unizin.cmp.oai.templates.RecordMetadataTemplate;
@@ -229,5 +233,44 @@ public final class TestListResponses extends HarvesterTestBase {
 			Assert.assertEquals(errors, e.getOAIErrors());
 			throw e;
 		}
+	}
+
+
+	/**
+	 * Tests that {@code Observers} can stop the harvest via
+	 * {@link Harvester#stop()}.
+	 */
+	@Test
+	public void testStop() throws Exception {
+		setupWithDefaultListRecordsResponse(true);
+		final Observer obs = (o, arg) -> {
+			final Harvester h = (Harvester)o;
+			final HarvestNotification hn = (HarvestNotification)arg;
+			if (hn.getType() == RESPONSE_PROCESSED && 
+					hn.getStat(Statistics.REQUEST_COUNT) == 1L) {
+				h.stop();
+			}
+		};
+		
+		final OAIResponseHandler rh = Mocks.newResponseHandler();
+		final Harvester harvester = defaultTestHarvester();
+		harvester.addObserver(obs);
+		harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS), rh);
+		
+		inOrderVerify(rh).onHarvestStart(NotificationMatchers.harvestStarted());
+		inOrderVerify(rh).onResponseReceived(
+				NotificationMatchers.responseReceived());
+		inOrderVerify(rh).onResponseProcessed(
+				NotificationMatchers.responseProcessedSuccessfully());
+		// Harvest ends. Second incomplete list not retrieved.
+		inOrderVerify(rh).onHarvestEnd(AdditionalMatchers.and(
+						NotificationMatchers.withStats(1, 1),
+						OAIMatchers.fromPredicate(
+								(hn) -> {
+									return hn.getType() == HARVEST_ENDED && 
+									hn.isStarted() && hn.isStoppedByUser() &&
+									!hn.hasError();
+								},
+								HarvestNotification.class)));
 	}
 }
