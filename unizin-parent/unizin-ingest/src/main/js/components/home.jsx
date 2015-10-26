@@ -37,8 +37,6 @@ export default class Home extends React.Component {
         const brandURL = require('file!../../resources/skin/resources/brand.svg')
         const logoURL = require('file!../../resources/skin/resources/logo.svg')
 
-        const onSlide = () => {return false}
-
         return (
             <div className={styles.wrapper} role="main">
                 <div className={styles.main}>
@@ -73,7 +71,26 @@ export default class Home extends React.Component {
                       {this.renderFiles()}
                   </div>
 
-                  <SlideUp onSlide={onSlide} up={false} />
+                  <SlideUp buttonText="What is the Early Adopter Program?">
+                    <div className={styles.description}>
+                      <p>
+                        Unizin's Content Contribution tool is used to add any kind of instructional material or content to
+                        a shared repository.
+                      </p>
+
+                      <p>
+                        To begin the contribution process, you can drag & drop a file into this window or use the
+                        "Upload a File" button to the right.
+                      </p>
+
+                      <p>
+                        Note: this tool is currently deployed as part of an Early Adopter Program at your institution.
+                        If you are not part of this Early Adopter Program, please contact <a href="mailto:eap@unzin.org">
+                          eap@unzin.org</a> and report that you are seeing this
+                        tool in error.
+                      </p>
+                    </div>
+                  </SlideUp>
 
                 </div>
             </div>
