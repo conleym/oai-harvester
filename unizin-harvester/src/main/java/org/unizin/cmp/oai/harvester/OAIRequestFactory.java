@@ -72,8 +72,7 @@ public interface OAIRequestFactory {
         parameters.entrySet().stream().forEach(e ->
                 uriBuilder.addParameter(e.getKey(), e.getValue()));
         try {
-            final HttpGet get = new HttpGet(uriBuilder.build());
-            return get;
+            return new HttpGet(uriBuilder.build());
         } catch (final URISyntaxException e) {
             throw new HarvesterException("Invalid URI syntax for request.", e);
         }

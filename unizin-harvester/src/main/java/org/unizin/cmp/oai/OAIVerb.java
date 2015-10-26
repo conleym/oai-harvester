@@ -5,6 +5,7 @@ import static org.unizin.cmp.oai.OAIRequestParameter.METADATA_PREFIX;
 import static org.unizin.cmp.oai.OAIRequestParameter.RESUMPTION_TOKEN;
 import static org.unizin.cmp.oai.OAIVerbConstants.GET_RECORD_PARAMS;
 import static org.unizin.cmp.oai.OAIVerbConstants.LIST_PARAMS;
+import static org.unizin.cmp.oai.OAIVerbConstants.EMPTY_LIST;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,20 +27,20 @@ public enum OAIVerb {
             GET_RECORD_PARAMS,
             GET_RECORD_PARAMS),
     IDENTIFY(OAI2Constants.IDENTIFY,
-            Collections.emptyList(),
-            Collections.emptyList()),
+            EMPTY_LIST,
+            EMPTY_LIST),
     LIST_IDENTIFIERS(OAI2Constants.LIST_IDENTIFIERS,
             LIST_PARAMS,
-            Arrays.asList(METADATA_PREFIX)),
+            Collections.singletonList(METADATA_PREFIX)),
     LIST_METADATA_FORMATS(OAI2Constants.LIST_METADATA_FORMATS,
-            Arrays.asList(IDENTIFIER),
-            Collections.emptyList()),
+            Collections.singletonList(IDENTIFIER),
+            EMPTY_LIST),
     LIST_RECORDS(OAI2Constants.LIST_RECORDS,
             LIST_PARAMS,
-            Arrays.asList(METADATA_PREFIX)),
+            Collections.singletonList(METADATA_PREFIX)),
     LIST_SETS(OAI2Constants.LIST_SETS,
-            Arrays.asList(RESUMPTION_TOKEN),
-            Collections.emptyList());
+            Collections.singletonList(RESUMPTION_TOKEN),
+            EMPTY_LIST);
 
     private static final Collection<QName> ALL_QNAMES =
             Collections.unmodifiableCollection(Arrays.asList(values())
