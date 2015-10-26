@@ -89,8 +89,14 @@ public enum OAIVerb {
 			}
 			return false;
 		}
-		if (keys.containsAll(requiredParameters)) {
-			keys.removeAll(legalParameters);
+		final Set<String> requiredParamKeys = requiredParameters.stream()
+				.map((rp) -> rp.paramName())
+				.collect(Collectors.toSet());
+		if (keys.containsAll(requiredParamKeys)) {
+			final Set<String> legalParamKeys = legalParameters.stream()
+					.map((rp) -> rp.paramName())
+					.collect(Collectors.toSet());
+			keys.removeAll(legalParamKeys);
 			return keys.isEmpty();
 		}
 		return false;

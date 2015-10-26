@@ -16,7 +16,7 @@ public class HarvesterTestBase {
 	protected static final Logger LOGGER = LoggerFactory.getLogger(
 			"harvester-tests");
 	
-	public static final OAIVerb DEFAULT_VERB = OAIVerb.GET_RECORD;
+	public static final OAIVerb DEFAULT_VERB = OAIVerb.LIST_RECORDS;
 
 	public static final URI TEST_URI;
 	static {

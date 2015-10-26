@@ -121,4 +121,9 @@ public final class HarvestParams {
 		allParams.put(OAI2Constants.VERB_PARAM_NAME, verb.localPart());
 		return allParams;
 	}
+	
+	@Override
+	public String toString() {
+		return getParameters().toString();
+	}
 }
