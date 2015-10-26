@@ -88,6 +88,7 @@ public final class TestNonListResponses extends HarvesterTestBase {
         // This really just tests that we're not messing up the XML.
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
+        dbf.setExpandEntityReferences(false);
         final Document doc = dbf.newDocumentBuilder().parse(
                 new ByteArrayInputStream(out.toByteArray()));
 

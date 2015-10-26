@@ -23,10 +23,29 @@ public final class OAIXMLUtils {
         return XMLEventFactory.newFactory();
     }
 
+    /**
+     * Create a new {@code XMLInputFactory} instance.
+     * <p>
+     * The new instance will be coalescing, namespace aware, and will not
+     * support DTDs (see below).
+     *
+     * <h2>Security Considerations</h2>
+     *
+     * The new instance will <em>not</em> support DTDs (meaning it also doesn't
+     * support external entities). See <a href=
+     * "https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing">
+     * here</a> for info about external entity and DTD-based attacks.
+     *
+     * @return a new input factory instance with the settings as described
+     *         above.
+     */
     public static XMLInputFactory newInputFactory() {
         final XMLInputFactory factory = XMLInputFactory.newFactory();
         factory.setProperty(XMLInputFactory.IS_COALESCING, true);
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,
+                false);
         return factory;
     }
 
