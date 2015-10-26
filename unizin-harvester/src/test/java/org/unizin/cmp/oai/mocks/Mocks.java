@@ -5,12 +5,13 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.util.function.Predicate;
 
 import org.junit.Assert;
+import org.mockito.ArgumentMatcher;
+import org.mockito.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
@@ -28,11 +29,6 @@ public final class Mocks {
 			final Class<? extends Throwable> ofClass) {
 		Assert.assertTrue(ofClass.isInstance(t));
 		Assert.assertEquals(TEST_EXCEPTION_MESSAGE, t.getMessage());
-	}
-
-	public static InputStream fromString(final String string) {
-		return new ByteArrayInputStream(string.getBytes(
-				StandardCharsets.UTF_8));
 	}
 
 	public static InputStream throwsWhenClosed(final InputStream delegate) {
@@ -61,6 +57,25 @@ public final class Mocks {
 	 */
 	public static <T> T inOrderVerify(final T mock) {
 		return inOrder(mock).verify(mock);
+	}
+
+	/**
+	 * Create an argument matcher from a {@link Predicate}.
+	 * <p>
+	 * The type of the argument will be checked.
+	 * 
+	 * @param predicate the predicate to use for matching.
+	 * @param clazz the type of the argument.
+	 */
+	public static <T> T matcherFromPredicate(
+			final Predicate<T> predicate, Class<T> clazz) {
+		return Matchers.argThat(new ArgumentMatcher<T>() {
+			@Override
+			public boolean matches(final Object argument) {
+				return clazz.isInstance(argument) &&
+						predicate.test(clazz.cast(argument));
+			}
+		});
 	}
 }
 

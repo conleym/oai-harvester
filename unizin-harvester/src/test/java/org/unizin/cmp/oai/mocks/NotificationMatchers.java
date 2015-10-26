@@ -26,7 +26,7 @@ public final class NotificationMatchers {
 	};
 
 	public static final HarvestNotification harvestStarted() {
-		return OAIMatchers.fromPredicate(
+		return Mocks.matcherFromPredicate(
 				(hn) -> {
 					return hn.getType() == HARVEST_STARTED &&
 							NotificationMatchers.RUNNING.test(hn);
@@ -35,7 +35,7 @@ public final class NotificationMatchers {
 	}
 
 	public static final HarvestNotification responseReceived() {
-		return OAIMatchers.fromPredicate(
+		return Mocks.matcherFromPredicate(
 				(hn) -> {
 					return hn.getType() == RESPONSE_RECEIVED &&
 							NotificationMatchers.RUNNING.test(hn);
@@ -44,7 +44,7 @@ public final class NotificationMatchers {
 	}
 
 	public static final HarvestNotification responseProcessedWithError() {
-		return OAIMatchers.fromPredicate(
+		return Mocks.matcherFromPredicate(
 				(hn) -> {
 					return hn.getType() == RESPONSE_PROCESSED &&
 							NotificationMatchers.HAS_ERROR.test(hn);
@@ -53,7 +53,7 @@ public final class NotificationMatchers {
 	}
 
 	public static final HarvestNotification responseProcessedSuccessfully() {
-		return OAIMatchers.fromPredicate(
+		return Mocks.matcherFromPredicate(
 				(hn) -> {
 					return hn.getType() == RESPONSE_PROCESSED &&
 							NotificationMatchers.RUNNING.test(hn);
@@ -62,7 +62,7 @@ public final class NotificationMatchers {
 	}
 
 	public static final HarvestNotification lastResponseProcessedSuccessfully() {
-		return OAIMatchers.fromPredicate((hn) -> {
+		return Mocks.matcherFromPredicate((hn) -> {
 			return hn.getType() == RESPONSE_PROCESSED &&
 					!hn.isStarted() && !hn.isStoppedByUser() && !hn.hasError();
 		},
@@ -70,7 +70,7 @@ public final class NotificationMatchers {
 	}
 
 	public static final HarvestNotification harvestEndedWithError() {
-		return OAIMatchers.fromPredicate((hn) -> {
+		return Mocks.matcherFromPredicate((hn) -> {
 			return hn.getType() == HARVEST_ENDED &&
 					NotificationMatchers.HAS_ERROR.test(hn);
 		},
@@ -78,7 +78,7 @@ public final class NotificationMatchers {
 	}
 
 	public static final HarvestNotification harvestEndedSuccessfully() {
-		return OAIMatchers.fromPredicate((hn) -> {
+		return Mocks.matcherFromPredicate((hn) -> {
 			return hn.getType() == HARVEST_ENDED &&
 					NotificationMatchers.NOT_RUNNING.test(hn);
 		},
@@ -87,7 +87,7 @@ public final class NotificationMatchers {
 
 	public static final HarvestNotification withStats(final long requestCount,
 			final long responseCount) {
-		return OAIMatchers.fromPredicate((hn) -> {
+		return Mocks.matcherFromPredicate((hn) -> {
 			return hn.getStat(Statistics.REQUEST_COUNT) == requestCount &&
 					hn.getStat(Statistics.RESPONSE_COUNT) == responseCount;
 		},
@@ -95,7 +95,7 @@ public final class NotificationMatchers {
 	}
 
 	public static final HarvestNotification withToken(final ResumptionToken token) {
-		return OAIMatchers.fromPredicate((hn) -> { 
+		return Mocks.matcherFromPredicate((hn) -> { 
 			return Objects.equals(token, hn.getResumptionToken());
 		},
 				HarvestNotification.class);

@@ -39,7 +39,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	public static void setupWithDefaultError(final MockHttpClient mockClient)
 			throws TemplateException, IOException {
 		final String arbitraryValidOAIResponse = ErrorsTemplate.process();
-		final InputStream stream = Mocks.fromString(arbitraryValidOAIResponse);
+		final InputStream stream = Utils.fromString(arbitraryValidOAIResponse);
 		mockClient.addResponseFrom(HttpStatus.SC_OK, "", stream);
 	}
 
@@ -147,7 +147,7 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	@Test
 	public void testPriorityOverStreamClosingErrors() throws Exception {
 		final String arbitraryValidOAIResponse = ErrorsTemplate.process();
-		final InputStream stream = Mocks.fromString(arbitraryValidOAIResponse);
+		final InputStream stream = Utils.fromString(arbitraryValidOAIResponse);
 		mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", 
 				Mocks.throwsWhenClosed(stream));
 		final Harvester harvester = defaultTestHarvester();

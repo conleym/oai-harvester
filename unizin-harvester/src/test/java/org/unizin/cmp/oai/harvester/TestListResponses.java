@@ -33,7 +33,6 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
-import org.unizin.cmp.oai.mocks.OAIMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 import org.unizin.cmp.oai.templates.ListRecordsTemplate;
 import org.unizin.cmp.oai.templates.RecordMetadataTemplate;
@@ -73,6 +72,17 @@ public final class TestListResponses extends HarvesterTestBase {
 		return m;
 	}
 
+	private static void addRecord(final ListRecordsTemplate listRecordsTemplate, 
+			final String identifier,
+			final RecordMetadataTemplate recordMetadataTemplate)
+					throws TemplateException, IOException {
+		final Map<String, Object> record = new HashMap<>(2);
+		record.put("identifier", identifier);
+		record.put("metadata", recordMetadataTemplate.process());
+		listRecordsTemplate.addRecord(record);
+		
+	}
+	
 	/**
 	 * Set up with two incomplete lists. First has two records, second has one.
 	 * 
@@ -85,8 +95,6 @@ public final class TestListResponses extends HarvesterTestBase {
 			final boolean sendFinalResumptionToken,
 			final MockHttpClient mockClient) 
 					throws TemplateException, IOException {
-		final Map<String, Object> record = new HashMap<>();
-
 		ListRecordsTemplate listRecordsTemplate = new ListRecordsTemplate()
 				.withResumptionToken(toMap(FIRST_TOKEN));
 		RecordMetadataTemplate recordMetadataTemplate = 
@@ -94,16 +102,14 @@ public final class TestListResponses extends HarvesterTestBase {
 				.addTitle("A Title")
 				.addCreator("Some Creator")
 				.addCreator("Another Creator");
-		record.put("metadata", recordMetadataTemplate.process());
-		listRecordsTemplate.addRecord(record);
+		addRecord(listRecordsTemplate, "1", recordMetadataTemplate);
+
 		recordMetadataTemplate = new RecordMetadataTemplate()
 				.addTitle("Another Title")
 				.addTitle("Yet More Title")
 				.addDate("2015-10-31")
 				.addDate("1900-01-01");
-		record.clear();
-		record.put("metadata", recordMetadataTemplate.process());
-		listRecordsTemplate.addRecord(record);
+		addRecord(listRecordsTemplate, "2", recordMetadataTemplate);
 		String resp = listRecordsTemplate.process();
 		LOGGER.debug("First response is {}", resp);
 		mockClient.addResponseFrom(200, "", resp);
@@ -114,9 +120,7 @@ public final class TestListResponses extends HarvesterTestBase {
 		}
 		recordMetadataTemplate = new RecordMetadataTemplate()
 				.addTitle("Such Title Wow");
-		record.clear();
-		record.put("metadata", recordMetadataTemplate.process());
-		listRecordsTemplate.addRecord(record);
+		addRecord(listRecordsTemplate, "3", recordMetadataTemplate);
 		resp = listRecordsTemplate.process();
 		LOGGER.debug("Second response is {}", resp);
 		mockClient.addResponseFrom(200, "", resp);
@@ -282,7 +286,7 @@ public final class TestListResponses extends HarvesterTestBase {
 		final Supplier<HarvestNotification> lastNotification = () -> {
 			return AdditionalMatchers.and(
 					NotificationMatchers.withStats(1, 1),
-					OAIMatchers.fromPredicate(
+					Mocks.matcherFromPredicate(
 							(hn) -> {
 								return hn.getType() == HARVEST_ENDED && 
 								hn.isStarted() && hn.isStoppedByUser() &&

@@ -17,11 +17,13 @@ public final class ListRecordsTemplate {
 	private static final Template TEMPLATE = getOAITemplate("ListRecords");
 
 	private final Map<String, Object> dataModel = new HashMap<>();
+	{
+		dataModel.put("records", new ArrayList<Object>());
+	}
 
 	public ListRecordsTemplate addRecord(final Map<String, Object> record) {
 		@SuppressWarnings("unchecked")
-		final List<Object> list = (dataModel.containsKey("records")) ?
-				(List<Object>)dataModel.get("records") : new ArrayList<>();
+		final List<Object> list = (List<Object>)dataModel.get("records");
 		list.add(record);
 		dataModel.put("records", list);
 		return this;
