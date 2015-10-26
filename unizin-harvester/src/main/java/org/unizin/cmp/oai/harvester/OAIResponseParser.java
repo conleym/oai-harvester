@@ -36,8 +36,9 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
  * harvester.
  * <p>
  * Instances parse {@link ResumptionToken ResumptionTokens}, stopping the
- * harvest if none or an empty token is found in the response. Exceptions caused
- * by XML parsing errors are wrapped in {@link HarvesterXMLParsingException}.
+ * harvest if no token or an empty token is found in the response. Exceptions
+ * caused by XML parsing errors are wrapped in
+ * {@link HarvesterXMLParsingException}.
  * <p>
  * OAI protocol errors are also parsed, and {@link OAIProtocolException
  * OAIProtocolExceptions} thrown. If an OAI protocol error occurs, that

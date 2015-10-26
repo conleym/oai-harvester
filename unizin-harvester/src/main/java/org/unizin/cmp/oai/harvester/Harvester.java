@@ -111,7 +111,9 @@ public final class Harvester extends Observable {
      *            the request factory to use.
      * @param inputFactory
      *            the XML input factory to use. This factory <em>must</em> be
-     *            namespace-aware.
+     *            namespace-aware. In addition, it is <em>highly</em>
+     *            recommended that DTDs be disabled for security reasons. See
+     *            {@link OAIXMLUtils#newInputFactory()} for details.
      *
      * @throws NullPointerException
      *             if any of the arguments are {@code null}.
