@@ -33,42 +33,58 @@ export default class Home extends React.Component {
     }
 
     render() {
+        const brandURL = require('file!../../resources/skin/resources/brand.svg')
+        const logoURL = require('file!../../resources/skin/resources/logo.svg')
 
         return (
             <div className={styles.wrapper} role="main">
                 <div className={styles.main}>
-                  <h1>Content contribution tool</h1>
+                  <div className={styles.brand}>
+                    <h1>
+                      <img src={brandURL} alt="Unizin Content Contribution Tool Logo" title="Logo" />
+                      Content contribution tool
+                    </h1>
+                    <div className={styles.powered}>
+                      powered by <img src={logoURL} alt="Unizin Logo" title="Logo" />
+                    </div>
+                  </div>
 
-                  <p>
-                    Unizin's Content Contribution tool is used to add any kind of instructional material or content to
-                    a shared repository at [].
-                  </p>
+                  <div className={styles.upload}>
+                      <h2>
+                        <FontAwesome name="cloud-upload" aria-hidden /> Drag & Drop
+                      </h2>
 
-                  <p>
-                    To begin the contribution process, you can drag & drop a file into this window or use the
-                    "Upload a File" button to the right.
-                  </p>
+                      <p>
+                        Drag and drop a file from your local computer anywhere on this page to upload or
+                        <button onClick={this.props.onSelectFile} className="simple"> select a file</button> from your
+                        file system.
+                      </p>
 
-                  <p>
-                    Note: this tool is currently deployed as part of an Early Adopter Program at your institution.
-                    If you are not part of this Early Adopter Program, please contact eap@unzin.org and report that
-                    you are seeing this tool in error.
-                  </p>
+                      {this.renderFiles()}
+                  </div>
+
+                  <button className="primary">
+                    <FontAwesome name="angle-up" aria-hidden /> What is the Early Adopter Program?
+                  </button>
+                  <div className={styles.description}>
+                    <p>
+                      Unizin's Content Contribution tool is used to add any kind of instructional material or content to
+                      a shared repository.
+                    </p>
+
+                    <p>
+                      To begin the contribution process, you can drag & drop a file into this window or use the
+                      "Upload a File" button to the right.
+                    </p>
+
+                    <p>
+                      Note: this tool is currently deployed as part of an Early Adopter Program at your institution.
+                      If you are not part of this Early Adopter Program, please contact eap@unzin.org and report that
+                      you are seeing this tool in error.
+                    </p>
+                  </div>
 
                 </div>
-                <aside>
-                  <button onClick={this.props.onSelectFile}>
-                      <FontAwesome name="arrow-circle-up" aria-hidden /> Upload a file
-                  </button>
-
-                  <p>Drag and drop a file from your local computer anywhere on this page to upload.</p>
-
-                  <p>
-                    Alternatively you can click the Choose a file” button above to select a file from your computer.
-                  </p>
-
-                  {this.renderFiles()}
-                </aside>
             </div>
         )
     }

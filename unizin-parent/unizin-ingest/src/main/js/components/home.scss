@@ -2,13 +2,17 @@
 @import '../globals.scss';
 
 :local .main {
-  width: $main_column_width;
+  width: 100%;
   height: $main_content_height;
   float: left;
   padding: $global_padding ($global_padding * 3);
+
+  h1 {
+    font-weight: normal;
+  }
 }
 
-
+$logo_width: 45px;
 :local .wrapper {
   position: fixed;
   top: 0;
@@ -16,10 +20,34 @@
   z-index: 1;
   opacity: 1;
   transition: opacity .25s;
+  text-align: center;
 
-  aside {
-    :global {
-      @extend .aside;
+  .brand {
+
+    h1 {
+      height: 2.5rem;
+      position: relative;
+      display: inline-block;
+      margin: auto;
+      width: auto;
+      padding-left: calc(#{$logo_width} + .5rem);
+      line-height: calc(#{$logo_width} * 1.33);
+
+      img {
+        width: $logo_width;
+        position: absolute;
+        left: 0;
+      }
+    }
+
+    .powered {
+      height: 1rem;
+      font-size: .8rem;
+      margin-top: .75rem;
+
+      img {
+        height: 100%;
+      }
     }
   }
 }
