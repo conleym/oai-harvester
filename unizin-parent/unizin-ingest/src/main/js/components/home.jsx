@@ -50,6 +50,13 @@ export default class Home extends React.Component {
                   </div>
 
                   <div className={styles.upload}>
+                      <div className={styles.icons}>
+                        <FontAwesome name="file-photo-o" aria-hidden />
+                        <FontAwesome name="file-movie-o" aria-hidden />
+                        <FontAwesome name="file-audio-o" aria-hidden />
+                        <FontAwesome name="file-text-o" aria-hidden />
+                      </div>
+
                       <h2>
                         <FontAwesome name="cloud-upload" aria-hidden /> Drag & Drop
                       </h2>
