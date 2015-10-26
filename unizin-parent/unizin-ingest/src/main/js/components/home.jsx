@@ -2,6 +2,7 @@ import React from 'react'
 import styles from './home.scss'
 import FileUpload from './file_upload.jsx'
 import FontAwesome from 'react-fontawesome'
+import SlideUp from './slide_up.jsx'
 
 const { func } = React.PropTypes
 
@@ -35,6 +36,8 @@ export default class Home extends React.Component {
     render() {
         const brandURL = require('file!../../resources/skin/resources/brand.svg')
         const logoURL = require('file!../../resources/skin/resources/logo.svg')
+
+        const onSlide = () => {return false}
 
         return (
             <div className={styles.wrapper} role="main">
@@ -70,26 +73,7 @@ export default class Home extends React.Component {
                       {this.renderFiles()}
                   </div>
 
-                  <button className="primary">
-                    <FontAwesome name="angle-up" aria-hidden /> What is the Early Adopter Program?
-                  </button>
-                  <div className={styles.description}>
-                    <p>
-                      Unizin's Content Contribution tool is used to add any kind of instructional material or content to
-                      a shared repository.
-                    </p>
-
-                    <p>
-                      To begin the contribution process, you can drag & drop a file into this window or use the
-                      "Upload a File" button to the right.
-                    </p>
-
-                    <p>
-                      Note: this tool is currently deployed as part of an Early Adopter Program at your institution.
-                      If you are not part of this Early Adopter Program, please contact eap@unzin.org and report that
-                      you are seeing this tool in error.
-                    </p>
-                  </div>
+                  <SlideUp onSlide={onSlide} up={false} />
 
                 </div>
             </div>

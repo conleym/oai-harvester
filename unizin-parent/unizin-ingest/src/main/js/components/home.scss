@@ -4,8 +4,7 @@
 :local .main {
   width: 100%;
   height: $main_content_height;
-  float: left;
-  padding: $global_padding ($global_padding * 3);
+  padding: $global_padding 0;
 
   h1 {
     font-weight: normal;
@@ -20,6 +19,7 @@ $logo_width: 45px;
   z-index: 1;
   opacity: 1;
   height: 100%;
+  width: 100%;
   transition: opacity .25s;
   text-align: center;
 
@@ -59,7 +59,7 @@ $logo_width: 45px;
 
     .icons {
       span {
-        font-size: 2rem;
+        font-size: 1.5rem;
         display: inline-block;
         margin: 0 .25rem;
         color: darken(white, 50%);
