@@ -6,20 +6,20 @@ package org.unizin.cmp.oai;
  *
  */
 public enum OAIRequestParameter {
-	FROM("from"),
-	IDENTIFIER("identifier"),
-	METADATA_PREFIX("metadataPrefix"),
-	RESUMPTION_TOKEN("resumptionToken"),
-	SET("set"),
-	UNTIL("until");
+    FROM("from"),
+    IDENTIFIER("identifier"),
+    METADATA_PREFIX("metadataPrefix"),
+    RESUMPTION_TOKEN("resumptionToken"),
+    SET("set"),
+    UNTIL("until");
 
-	
-	private final String param;
-	private OAIRequestParameter(final String param) {
-		this.param = param;
-	}
-	
-	public String paramName() {
-		return this.param;
-	}
+
+    private final String param;
+    private OAIRequestParameter(final String param) {
+        this.param = param;
+    }
+
+    public String paramName() {
+        return this.param;
+    }
 }

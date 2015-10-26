@@ -7,21 +7,21 @@ package org.unizin.cmp.oai.harvester.exception;
  *
  */
 public class HarvesterException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public HarvesterException() {
-		super();
-	}
+    public HarvesterException() {
+        super();
+    }
 
-	public HarvesterException(final String message, final Throwable cause) {
-		super(message, cause);
-	}
+    public HarvesterException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
 
-	public HarvesterException(final String message) {
-		super(message);
-	}
+    public HarvesterException(final String message) {
+        super(message);
+    }
 
-	public HarvesterException(final Throwable cause) {
-		super(cause);
-	}	
+    public HarvesterException(final Throwable cause) {
+        super(cause);
+    }
 }

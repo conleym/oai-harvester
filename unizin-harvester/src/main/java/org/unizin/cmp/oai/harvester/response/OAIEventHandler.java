@@ -17,5 +17,5 @@ import javax.xml.stream.events.XMLEvent;
  *
  */
 public interface OAIEventHandler {
-	void onEvent(XMLEvent e) throws XMLStreamException;
+    void onEvent(XMLEvent e) throws XMLStreamException;
 }

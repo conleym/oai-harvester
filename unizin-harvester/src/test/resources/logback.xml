@@ -6,7 +6,7 @@
   </appender>
 
   <logger name="org.unizin.cmp.oai.harvester.Harvester" level="INFO"/>
-<!-- 
+<!--
   <logger name="org.unizin.cmp.oai.harvester.response.FilteringOAIEventHandler"
      level="TRACE"/>
  -->

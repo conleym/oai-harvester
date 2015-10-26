@@ -7,22 +7,22 @@ package org.unizin.cmp.oai.harvester.exception;
  *
  */
 public class HarvesterXMLParsingException extends HarvesterException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public HarvesterXMLParsingException() {
-		super();
-	}
+    public HarvesterXMLParsingException() {
+        super();
+    }
 
-	public HarvesterXMLParsingException(final String message,
-			final Throwable cause) {
-		super(message, cause);
-	}
+    public HarvesterXMLParsingException(final String message,
+            final Throwable cause) {
+        super(message, cause);
+    }
 
-	public HarvesterXMLParsingException(final String message) {
-		super(message);
-	}
+    public HarvesterXMLParsingException(final String message) {
+        super(message);
+    }
 
-	public HarvesterXMLParsingException(final Throwable cause) {
-		super(cause);
-	}
+    public HarvesterXMLParsingException(final Throwable cause) {
+        super(cause);
+    }
 }

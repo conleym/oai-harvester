@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" 
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/
          http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
- <responseDate>${responseDate!'2002-05-01T19:20:30Z'}</responseDate> 
+ <responseDate>${responseDate!'2002-05-01T19:20:30Z'}</responseDate>
  <request verb="ListRecords" metadataPrefix="${metadataPrefix!'oai_dc'}">
           http://an.oa.org/OAI-script</request>
  <ListRecords>
@@ -32,10 +32,10 @@
     </#if>
   </record>
   <#if resumptionToken??>
-  <resumptionToken 
+  <resumptionToken
   <#if resumptionToken.cursor??>cursor="${resumptionToken.cursor}"</#if>
   <#if resumptionToken.completeListSize??>completeListSize="${resumptionToken.completeListSize}"</#if>
-  <#if resumptionToken.expirationDate??>expirationDate="${resumptionToken.expirationDate}"</#if> 
+  <#if resumptionToken.expirationDate??>expirationDate="${resumptionToken.expirationDate}"</#if>
   >${resumptionToken.token}</resumptionToken>
   </#if>
   </#list>

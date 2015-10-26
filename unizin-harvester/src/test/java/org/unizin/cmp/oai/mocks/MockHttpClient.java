@@ -32,116 +32,116 @@ import org.apache.http.protocol.HttpContext;
 @SuppressWarnings("deprecation")
 public final class MockHttpClient implements HttpClient {
 
-	private List<MockHttpResponse> responses = new ArrayList<>();
-	private Iterator<MockHttpResponse> iterator;
-	private IOException checkedException;
-	private RuntimeException runtimeException;
+    private List<MockHttpResponse> responses = new ArrayList<>();
+    private Iterator<MockHttpResponse> iterator;
+    private IOException checkedException;
+    private RuntimeException runtimeException;
 
-	public void addResponses(final MockHttpResponse...responses) {
-		this.responses.addAll(Arrays.asList(responses));
-	}
-	
-	public void addResponseFrom(final int statusCode, final String reasonPhrase, 
-			final String responseBody) throws IOException {
-		final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
-				statusCode, reasonPhrase);
-		final MockHttpResponse response = new MockHttpResponse(sl);
-		response.setEntityContent(responseBody);
-		addResponses(response);
-	}
-	
-	public void addResponseFrom(final int statusCode, final String reasonPhrase,
-			final InputStream responseContent) throws IOException {
-		final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
-				statusCode, reasonPhrase);
-		final MockHttpResponse response = new MockHttpResponse(sl);
-		response.setEntityContent(responseContent);
-		addResponses(response);
-	}
-	
-	public List<MockHttpResponse> getResponses() {
-		return this.responses;
-	}
-	
-	public void setCheckedException(final IOException checkedException) {
-		this.checkedException = checkedException;
-	}
+    public void addResponses(final MockHttpResponse...responses) {
+        this.responses.addAll(Arrays.asList(responses));
+    }
 
-	public void setRuntimeException(final RuntimeException runtimeException) {
-		this.runtimeException = runtimeException;
-	}
+    public void addResponseFrom(final int statusCode, final String reasonPhrase,
+            final String responseBody) throws IOException {
+        final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
+                statusCode, reasonPhrase);
+        final MockHttpResponse response = new MockHttpResponse(sl);
+        response.setEntityContent(responseBody);
+        addResponses(response);
+    }
 
-	@Override
-	public HttpResponse execute(final HttpUriRequest request)
-			throws IOException, ClientProtocolException {
-		if (checkedException != null) {
-			throw checkedException;
-		}
-		if (runtimeException != null) {
-			throw runtimeException;
-		}
-		if (iterator == null) {
-			iterator = responses.iterator();
-		}
-		return iterator.next();
-	}
+    public void addResponseFrom(final int statusCode, final String reasonPhrase,
+            final InputStream responseContent) throws IOException {
+        final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
+                statusCode, reasonPhrase);
+        final MockHttpResponse response = new MockHttpResponse(sl);
+        response.setEntityContent(responseContent);
+        addResponses(response);
+    }
 
-	// None of the other methods below are ever called by the harvester so need
-	// no mocking.
+    public List<MockHttpResponse> getResponses() {
+        return this.responses;
+    }
 
-	@Override
-	public HttpParams getParams() {
-		throw new UnsupportedOperationException();
-	}
+    public void setCheckedException(final IOException checkedException) {
+        this.checkedException = checkedException;
+    }
 
-	@Override
-	public ClientConnectionManager getConnectionManager() {
-		throw new UnsupportedOperationException();
-	}
+    public void setRuntimeException(final RuntimeException runtimeException) {
+        this.runtimeException = runtimeException;
+    }
 
-	@Override
-	public HttpResponse execute(HttpUriRequest request, HttpContext context)
-			throws IOException, ClientProtocolException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public HttpResponse execute(final HttpUriRequest request)
+            throws IOException, ClientProtocolException {
+        if (checkedException != null) {
+            throw checkedException;
+        }
+        if (runtimeException != null) {
+            throw runtimeException;
+        }
+        if (iterator == null) {
+            iterator = responses.iterator();
+        }
+        return iterator.next();
+    }
 
-	@Override
-	public HttpResponse execute(HttpHost target, HttpRequest request)
-			throws IOException, ClientProtocolException {
-		throw new UnsupportedOperationException();
-	}
+    // None of the other methods below are ever called by the harvester so need
+    // no mocking.
 
-	@Override
-	public HttpResponse execute(HttpHost target, HttpRequest request,
-			HttpContext context) throws IOException, ClientProtocolException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public HttpParams getParams() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public <T> T execute(HttpUriRequest request, 
-			ResponseHandler<? extends T> responseHandler)
-					throws IOException, ClientProtocolException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public ClientConnectionManager getConnectionManager() {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public <T> T execute(HttpUriRequest request, 
-			ResponseHandler<? extends T> responseHandler, HttpContext context)
-					throws IOException, ClientProtocolException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public HttpResponse execute(HttpUriRequest request, HttpContext context)
+            throws IOException, ClientProtocolException {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public <T> T execute(HttpHost target, HttpRequest request, 
-			ResponseHandler<? extends T> responseHandler)
-					throws IOException, ClientProtocolException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public HttpResponse execute(HttpHost target, HttpRequest request)
+            throws IOException, ClientProtocolException {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public <T> T execute(HttpHost target, HttpRequest request, 
-			ResponseHandler<? extends T> responseHandler,
-			HttpContext context) throws IOException, ClientProtocolException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public HttpResponse execute(HttpHost target, HttpRequest request,
+            HttpContext context) throws IOException, ClientProtocolException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T execute(HttpUriRequest request,
+            ResponseHandler<? extends T> responseHandler)
+                    throws IOException, ClientProtocolException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T execute(HttpUriRequest request,
+            ResponseHandler<? extends T> responseHandler, HttpContext context)
+                    throws IOException, ClientProtocolException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T execute(HttpHost target, HttpRequest request,
+            ResponseHandler<? extends T> responseHandler)
+                    throws IOException, ClientProtocolException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> T execute(HttpHost target, HttpRequest request,
+            ResponseHandler<? extends T> responseHandler,
+            HttpContext context) throws IOException, ClientProtocolException {
+        throw new UnsupportedOperationException();
+    }
 }

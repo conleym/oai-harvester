@@ -14,36 +14,36 @@ import freemarker.template.TemplateException;
  */
 final class Templates {
 
-	private static final Configuration CONFIGURATION = new Configuration(
-			Configuration.getVersion());
-	static {
-		CONFIGURATION.setTemplateLoader(new ClassTemplateLoader(Templates.class,
-				"/oai-response-templates/"));
-	}
+    private static final Configuration CONFIGURATION = new Configuration(
+            Configuration.getVersion());
+    static {
+        CONFIGURATION.setTemplateLoader(new ClassTemplateLoader(Templates.class,
+                "/oai-response-templates/"));
+    }
 
-	static Template getOAITemplate(final String name) {
-		try {
-			return CONFIGURATION.getTemplate(templateName(name));
-		} catch (final IOException e) {
-			/*
-			 * If this were production code, we'd want a separate exception
-			 * type, but this'll do for test code.
-			 */
-			throw new RuntimeException(e);
-		}
-	}
+    static Template getOAITemplate(final String name) {
+        try {
+            return CONFIGURATION.getTemplate(templateName(name));
+        } catch (final IOException e) {
+            /*
+            * If this were production code, we'd want a separate exception
+            * type, but this'll do for test code.
+            */
+            throw new RuntimeException(e);
+        }
+    }
 
-	private static String templateName(final String basename) {
-		return basename + ".ftl.xml";
-	}
+    private static String templateName(final String basename) {
+        return basename + ".ftl.xml";
+    }
 
-	static String processTemplate(final Template template,
-			final Object dataModel) throws TemplateException, IOException {
-		final StringWriter w = new StringWriter();
-		template.process(dataModel, w);
-		return w.toString();
-	}
-	
-	/** No instances allowed. */
-	private Templates() {}
+    static String processTemplate(final Template template,
+            final Object dataModel) throws TemplateException, IOException {
+        final StringWriter w = new StringWriter();
+        template.process(dataModel, w);
+        return w.toString();
+    }
+
+    /** No instances allowed. */
+    private Templates() {}
 }
