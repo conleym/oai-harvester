@@ -108,9 +108,12 @@ public final class TestNonListResponses extends HarvesterTestBase {
         final String coverage = evaluateAsString(
                 getRecordXPath("oai:metadata/odc:dc/dc:coverage/text()"),
                     xpath, doc);
-        /* Be very explicit to avoid any sort of nonsense with "\n" on
-         * different platforms. */
-        final String chr13 = new String(Character.toChars(13));
+
+        /*
+         * In Xerces and the JDK, &#13; (carriage return) becomes "\n".
+         */
+        String chr13 = (STAX == STAX_LIB.WOODSTOX) ?
+                new String(Character.toChars(13)) : "\n";
         Assert.assertEquals("This should have a " + chr13 + " newline.",
                 coverage);
     }
