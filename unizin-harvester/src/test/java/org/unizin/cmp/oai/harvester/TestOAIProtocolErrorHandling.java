@@ -39,8 +39,8 @@ public final class TestOAIProtocolErrorHandling extends HarvesterTestBase {
 	public static void setupWithDefaultError(final MockHttpClient mockClient)
 			throws TemplateException, IOException {
 		final String arbitraryValidOAIResponse = ErrorsTemplate.process();
-		final InputStream stream = Utils.fromString(arbitraryValidOAIResponse);
-		mockClient.addResponseFrom(HttpStatus.SC_OK, "", stream);
+		mockClient.addResponseFrom(HttpStatus.SC_OK, "",
+				arbitraryValidOAIResponse);
 	}
 
 	private Throwable checkSingleSuppressedException(final Throwable t) {
