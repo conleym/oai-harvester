@@ -1,4 +1,4 @@
-package org.unizin.catalog.harvester;
+package org.unizin.cmp.oai.harvester.simple;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
@@ -8,8 +8,6 @@ import javax.xml.bind.JAXBException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.unizin.catalog.harvester.config.ConfigReader;
-import org.unizin.catalog.harvester.config.Repository;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;

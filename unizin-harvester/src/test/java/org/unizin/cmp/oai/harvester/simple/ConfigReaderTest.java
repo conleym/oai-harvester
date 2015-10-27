@@ -1,6 +1,8 @@
-package org.unizin.catalog.harvester.config;
+package org.unizin.cmp.oai.harvester.simple;
 
 import org.junit.Test;
+import org.unizin.cmp.oai.harvester.simple.ConfigReader;
+import org.unizin.cmp.oai.harvester.simple.Repository;
 
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;
