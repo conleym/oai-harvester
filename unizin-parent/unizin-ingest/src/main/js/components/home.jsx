@@ -67,8 +67,6 @@ export default class Home extends React.Component {
                         <button onClick={this.props.onSelectFile} className="simple"> select a file</button> from your
                         file system.
                       </p>
-
-                      {this.renderFiles()}
                   </div>
 
                   <SlideUp buttonText="What is the Early Adopter Program?">
