@@ -48,9 +48,10 @@ public class CopyFromSourceRepository  {
             BlobHolder bh = doc.getAdapter(BlobHolder.class);
             bh.setBlob(retrievalService.retrieveFileContent(doc));
             doc.setPropertyValue(STATUS_PROP, "success");
-            LOG.info("Successfully retrieved {}", doc.getId());
             session.saveDocument(doc);
+            LOG.info("Successfully retrieved {}", doc.getId());
         } catch (NuxeoException e) {
+            LOG.warn("Error retrieving {}", doc.getId(), e);
             doc.setPropertyValue(STATUS_PROP,
                                  String.format("failed: %s", e.getMessage()));
             session.saveDocument(doc);
