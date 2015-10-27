@@ -1,4 +1,4 @@
-package org.unizin.catalog.harvester.config;
+package org.unizin.cmp.oai.harvester.simple;
 
 import javax.xml.bind.annotation.*;
 import java.net.URI;
