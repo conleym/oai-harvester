@@ -1,6 +1,5 @@
 import React from 'react'
 import styles from './home.scss'
-import FileUpload from './file_upload.jsx'
 import FontAwesome from 'react-fontawesome'
 import SlideUp from './slide_up.jsx'
 
