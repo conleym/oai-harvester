@@ -14,25 +14,6 @@ export default class Home extends React.Component {
         files: React.PropTypes.object.isRequired,
     }
 
-    renderFiles() {
-        const { files } = this.props
-
-        return Object.keys(files).map((key) => {
-            const data = files[key]
-
-            return (
-                <FileUpload
-                    key={key}
-                    name={data.name}
-                    size={data.size}
-                    thumbnail={data.thumbnail}
-                    progress={data.progress}
-                    error={data.error} />
-            )
-        })
-
-    }
-
     render() {
         const brandURL = require('file!../../resources/skin/resources/brand.svg')
         const logoURL = require('file!../../resources/skin/resources/logo.svg')
