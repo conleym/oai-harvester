@@ -1,14 +1,19 @@
 package org.unizin.catalog.harvester.oai;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.http.util.TextUtils.isEmpty;
+import static org.unizin.cmp.oai.OAI2Constants.RESUMPTION_TOKEN;
+import static org.unizin.cmp.oai.OAI2Constants.RT_COMPLETE_LIST_SIZE_ATTR;
+import static org.unizin.cmp.oai.OAI2Constants.RT_CURSOR_ATTR;
+import static org.unizin.cmp.oai.OAI2Constants.RT_EXPIRATION_DATE_ATTR;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.Instant;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
@@ -18,18 +23,17 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
-import static org.apache.http.util.TextUtils.isEmpty;
-import static org.unizin.catalog.OAIConstants.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.unizin.cmp.oai.ResumptionToken;
 
 public class OAIClient {
 
@@ -90,11 +94,11 @@ public class OAIClient {
                     resumptionToken = parseResponse(content, outputStream);
                 }
                 System.out.println(resumptionToken.toString());
-                while (!isEmpty(resumptionToken.token)) {
+                while (!isEmpty(resumptionToken.getToken())) {
                     builder.clearParameters();
                     builder.addParameter("verb", "ListRecords");
                     builder.addParameter("resumptionToken",
-                                         resumptionToken.token);
+                                         resumptionToken.getToken());
                     requestURI = builder.build();
                     get = new HttpGet(requestURI);
                     response = httpClient.execute(get);
@@ -121,7 +125,7 @@ public class OAIClient {
         XMLEventReader reader = xmlInputFactory.createXMLEventReader(content);
         XMLEventWriter writer = xmlOutputFactory.createXMLEventWriter(
                 outputStream);
-        LocalDateTime expirationDate = null;
+        Instant expirationDate = null;
         int cursor = -1;
         int completeListSize = -1;
         String token = null;
@@ -130,18 +134,17 @@ public class OAIClient {
             if (event.isStartElement()) {
                 StartElement se = event.asStartElement();
                 if (RESUMPTION_TOKEN.equals(se.getName())) {
-                    if (se.getAttributeByName(CURSOR) != null) {
+                    if (se.getAttributeByName(RT_CURSOR_ATTR) != null) {
                         cursor = Integer.parseInt(
-                                se.getAttributeByName(CURSOR).getValue());
+                                se.getAttributeByName(RT_CURSOR_ATTR).getValue());
                     }
-                    if (se.getAttributeByName(COMPLETE_LIST_SIZE) != null) {
+                    if (se.getAttributeByName(RT_COMPLETE_LIST_SIZE_ATTR) != null) {
                         completeListSize = Integer.parseInt(
-                                se.getAttributeByName(COMPLETE_LIST_SIZE).getValue());
+                                se.getAttributeByName(RT_COMPLETE_LIST_SIZE_ATTR).getValue());
                     }
-                    if (se.getAttributeByName(EXPIRATION_DATE) != null) {
-                        String val = se.getAttributeByName(EXPIRATION_DATE).getValue();
-                        LocalDateTime dt = LocalDateTime.parse(val,
-                                                               DateTimeFormatter.ISO_DATE_TIME);
+                    if (se.getAttributeByName(RT_EXPIRATION_DATE_ATTR) != null) {
+                        String val = se.getAttributeByName(RT_EXPIRATION_DATE_ATTR).getValue();
+                        Instant dt = Instant.parse(val);
                         expirationDate = dt;
                     }
                     XMLEvent nextEvent = reader.peek();
@@ -156,6 +159,7 @@ public class OAIClient {
             writer.add(event);
             writer.flush();
         }
-        return new ResumptionToken(expirationDate, completeListSize, cursor, token);
+        return new ResumptionToken(token, (long)completeListSize, (long)cursor,
+                expirationDate);
     }
 }
