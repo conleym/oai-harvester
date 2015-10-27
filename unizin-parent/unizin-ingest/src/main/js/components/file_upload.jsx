@@ -1,5 +1,6 @@
 import React from 'react'
 import fileSize from 'filesize'
+import FontAwesome from 'react-fontawesome'
 import styles from '../../css/file_upload.scss'
 
 const { number, string} = React.PropTypes
@@ -16,11 +17,26 @@ export default class FileUpload extends React.Component {
         error: string,
     }
 
+    progressStatus(progress, progressPercent) {
+        if (progress === 100) {
+            return (
+                <div>
+                    <FontAwesome name="check-circle" aria-hidden /> Complete
+                </div>
+            )
+        } else {
+            return (
+                <div>
+                    <FontAwesome name="times-circle" aria-hidden role="button" /> Uploading ({progressPercent} complete)
+                </div>
+              )
+        }
+    }
+
     render() {
         const { name, size, thumbnail, progress, error } = this.props
-        const filesize = fileSize(size)
-        const progressWidth = `${progress}%`
-        const progressLabel = (progress === 100) ? "Complete" : "Uploading"
+        const filesize = fileSize(size, {base: 0})
+        const progressPercent = `${progress}%`
 
         return (
             <div className={styles.preview}>
@@ -35,10 +51,10 @@ export default class FileUpload extends React.Component {
                 </div>
                 <div className={styles.progressWrapper}>
                     <div className={styles.progressLabel}>
-                      {progress} {progressLabel}
+                        {this.progressStatus(progress, progressPercent)}
                     </div>
                     <div className={styles.barWrapper}>
-                      <div className={styles.bar} style={{width: progressWidth}}></div>
+                      <div className={styles.bar} style={{width: progressPercent}}></div>
                     </div>
                 </div>
                 <div className={styles.error}>
