@@ -19,7 +19,7 @@ import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 final class Harvest {
     private final HarvestParams params;
     private HttpUriRequest request;
-    private boolean isStarted;
+    private volatile boolean isStarted;
     private volatile boolean isStoppedByUser;
     private boolean hasError;
     private ResumptionToken resumptionToken;
@@ -91,6 +91,7 @@ final class Harvest {
     */
     void userStop() {
         this.isStoppedByUser = true;
+        stop();
     }
 
     void error() {

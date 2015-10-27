@@ -20,8 +20,8 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
  * Implementations build {@link HttpUriRequest HttpUriRequests} to pass to
  * {@link HttpClient#execute(HttpUriRequest)} during harvesting.
  * <p>
- * Custom instances could provide, e.g., special request headers or make
- * requests via different HTTP methods. For example, the <a href=
+ * Custom instances could provide, e.g., headers that vary per-request or could
+ * make requests via different HTTP methods. For example, the <a href=
  * "http://www.openarchives.org/OAI/openarchivesprotocol.html#HTTPRequestFormat">
  * OAI-PMH specification</a> allows requests to be sent either as GETs or POSTs.
  * <p>

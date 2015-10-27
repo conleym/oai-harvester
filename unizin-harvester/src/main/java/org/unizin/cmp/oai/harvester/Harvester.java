@@ -46,16 +46,49 @@ public final class Harvester extends Observable {
                 GetOAIRequestFactory.getInstance();
         private XMLInputFactory inputFactory;
 
+        /**
+         * Set the {@code HttpClient} to use.
+         * <p>
+         * If this method is not called, the resulting harvester will use a
+         * default provided by {@link HttpClients#createDefault()}.
+         *
+         * @param httpClient
+         *            the http client instance the resulting harvester will use
+         *            to execute all its requests.
+         */
         public Builder withHttpClient(final HttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
         }
 
+        /**
+         * Set the {@code XMLInputFactory} to use.
+         * <p>
+         * If this method is not called, the resulting harvester will use a
+         * default provided by {@link OAIXMLUtils#newInputFactory()}.
+         *
+         * @param inputFactory
+         *            the XML input factory to use. This factory <em>must</em>
+         *            be namespace-aware. In addition, it is <em>highly</em>
+         *            recommended that DTDs be disabled for security reasons.
+         *            See {@link OAIXMLUtils#newInputFactory()} for details.
+         */
         public Builder withXMLInputFactory(final XMLInputFactory inputFactory) {
             this.inputFactory = inputFactory;
             return this;
         }
 
+        /**
+         * Set the {@code OAIRequestFactory} to use.
+         * <p>
+         * If this method isn't called, the resulting harvester will use
+         * {@link GetOAIRequestFactory}.
+         *
+         * @param requestFactory
+         *            the request factory that will be used to make
+         *            {@code HttpUriRequest} objects for each request the
+         *            resulting harvester makes.
+         */
         public Builder withOAIRequestFactory(
                 final OAIRequestFactory requestFactory) {
             this.requestFactory = requestFactory;
@@ -94,6 +127,7 @@ public final class Harvester extends Observable {
             };
         }
     }
+
 
     private final HttpClient httpClient;
     private final OAIRequestFactory requestFactory;
