@@ -15,16 +15,18 @@ public class RetrievalRepositoryInit extends DefaultRepositoryInit {
         try {
             DocumentModel testDoc =
                     RetrievalTestUtils.createTestDoc(archiveStream, session);
-            DocumentModel testDoc2 = session.createDocumentModel("/", "testdoc2", "File");
+            DocumentModel testDoc2 = session.createDocumentModel("/", "testFailure", "File");
             testDoc2.copyContent(testDoc);
             testDoc2.setPropertyValue("hrv:sourceRepository",
                                       "http://example.com/oai");
             session.createDocument(testDoc2);
-            DocumentModel testDoc3 = session.createDocumentModel("/", "testdoc3", "File");
+            DocumentModel testDoc3 = session.createDocumentModel(
+                    "/", "testNoSimultaneousDownloads", "File");
             testDoc3.copyContent(testDoc);
             testDoc3.setPropertyValue("hrv:retrievalStatus", "pending");
             session.createDocument(testDoc3);
-            DocumentModel testDoc4 = session.createDocumentModel("/", "testdoc4", "File");
+            DocumentModel testDoc4 = session.createDocumentModel(
+                    "/", "testRetrieveCopyFromSourceRepository", "File");
             testDoc4.copyContent(testDoc);
             session.createDocument(testDoc4);
         } catch (IOException e) {

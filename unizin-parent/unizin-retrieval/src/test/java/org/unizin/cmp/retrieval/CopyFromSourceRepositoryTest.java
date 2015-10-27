@@ -40,9 +40,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.nuxeo.ecm.core.api.security.SecurityConstants.READ;
 import static org.unizin.cmp.retrieval.CopyFromSourceRepository.ID;
 import static org.unizin.cmp.retrieval.CopyFromSourceRepository.STATUS_PROP;
-import static org.nuxeo.ecm.core.api.security.SecurityConstants.READ;
 
 
 
@@ -71,18 +71,24 @@ public class CopyFromSourceRepositoryTest {
 
     @Before
     public void setUp() {
-        try (CoreSession session = coreFeature.openCoreSession(
+        try (CoreSession sysSession = coreFeature.openCoreSession(
                 SecurityConstants.SYSTEM_USERNAME)) {
-            DocumentModel root = session.getRootDocument();
+            DocumentModel root = sysSession.getRootDocument();
             ACP acp = root.getACP();
             ACL acl = acp.getOrCreateACL();
             acl.add(new ACE("unprivileged", READ, true));
             acp.addACL(acl);
             root.setACP(acp, true);
-            session.save();
+            sysSession.save();
         }
         session = coreFeature.openCoreSession("unprivileged");
     }
+
+    @After
+    public void tearDown() {
+        session.close();
+    }
+
 
     @Test
     public void testCopyFromSourceRepository() throws OperationException,
@@ -106,7 +112,7 @@ public class CopyFromSourceRepositoryTest {
             IOException,
             InterruptedException,
             LoginException {
-        inputDoc = session.getDocument(new PathRef("/testdoc4"));
+        inputDoc = session.getDocument(new PathRef("/testRetrieveCopyFromSourceRepository"));
         TransactionHelper.commitOrRollbackTransaction();
         TransactionHelper.startTransaction();
         OperationContext context = new OperationContext(session);
@@ -135,7 +141,7 @@ public class CopyFromSourceRepositoryTest {
             InterruptedException,
             IOException,
             LoginException {
-        inputDoc = session.getDocument(new PathRef("/testdoc3"));
+        inputDoc = session.getDocument(new PathRef("/testNoSimultaneousDownloads"));
         OperationContext context = new OperationContext(session);
         context.setInput(inputDoc);
         OperationChain chain = new OperationChain("testNoSimultaneousDownloads");
@@ -150,7 +156,7 @@ public class CopyFromSourceRepositoryTest {
 
     @Test
     public void testFailure() throws OperationException, LoginException {
-        inputDoc = session.getDocument(new PathRef("/testdoc2"));
+        inputDoc = session.getDocument(new PathRef("/testFailure"));
         OperationContext context = new OperationContext(session);
         context.setInput(inputDoc);
         OperationChain chain = new OperationChain("testFailure");
