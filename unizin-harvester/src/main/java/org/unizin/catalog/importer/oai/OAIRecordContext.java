@@ -1,4 +1,4 @@
-package org.unizin.catalog;
+package org.unizin.catalog.importer.oai;
 
 import java.util.Iterator;
 
