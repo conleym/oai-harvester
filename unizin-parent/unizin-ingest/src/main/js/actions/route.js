@@ -1,5 +1,5 @@
 import { pushState } from 'redux-router'
-// import { encodeURL } from './utils.js'
+import { encodeURL } from './utils.js'
 
 export function route(route, query) {
     return {
@@ -9,4 +9,14 @@ export function route(route, query) {
         route,
         query,
     }
+}
+
+export const RESET = 'RESET'
+
+export function reset() {
+    return { type: RESET }
+}
+
+export function routeSuccess(uid) {
+    return route(encodeURL`/success/${uid}`)
 }

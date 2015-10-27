@@ -1,4 +1,5 @@
 import { httpPOST, json } from './utils'
+import { routeSuccess } from './route'
 
 export const SET_BATCH_ID = 'SET_BATCH_ID'
 export const UPLOAD = 'UPLOAD'
@@ -19,6 +20,49 @@ export function uploadFile(key, file) {
             bytesSent: 0,
             thumbnail: null,
         }
+    }
+}
+
+export const SUBMIT = 'SUBMIT'
+
+export function submit(data) {
+    return {
+        type: SUBMIT,
+        payload: data
+    }
+}
+
+function slugify(title) {
+    return title.replace(/[^\w]/g, '-').replace(/--+/, '-')
+}
+
+let generatingDocument = false
+export function generateDocument() {
+    const url = '/nuxeo/api/v1/path/default-domain/workspaces/uploads'
+
+    return (dispatch, getState) => {
+        if (generatingDocument) { return }
+        generatingDocument = true
+        const { batchId, formData } = getState()
+
+        const body = {
+            "entity-type": "document",
+            "name": slugify(formData.title),
+            "type": "File",
+            "properties" : {
+                "dc:title": formData.title,
+                "dc:description": formData.description,
+                "file:content": {
+                    "upload-batch": batchId,
+                    "upload-fileId":"0"
+                }
+            }
+        }
+
+        httpPOST(url, body).then(json).then((result) => {
+            const { uid } = result
+            dispatch(routeSuccess(uid))
+        })
     }
 }
 
