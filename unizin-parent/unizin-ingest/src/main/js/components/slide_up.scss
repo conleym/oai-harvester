@@ -9,7 +9,7 @@
   .content {
     position: relative;
     background: $light_gray_purple;
-    padding: $global_padding $global_padding*4;
+    padding: $global_padding $global_padding*10;
     font-size: 80%;
 
     button {
@@ -20,5 +20,15 @@
 
   &.up {
     transform: translateY(-100%);
+
+    .fa {
+      transform: rotate(180deg);
+    }
+  }
+
+  .fa {
+    font-size: 120%;
+    margin-right: .25rem;
+    transition: all .25s;
   }
 }

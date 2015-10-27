@@ -35,7 +35,7 @@ export default class SlideUp extends React.Component {
           <div className={sliderClasses}>
             <div className={styles.content}>
               <button className="primary" onClick={::this.onSlide}>
-                <FontAwesome name="angle-up" aria-hidden /> {this.props.buttonText}
+                <FontAwesome name="angle-up" className={styles.fa} aria-hidden /> {this.props.buttonText}
               </button>
               {this.props.children}
             </div>
