@@ -2,7 +2,6 @@ package org.unizin.catalog.importer.oai;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.unizin.catalog.OAIConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -28,7 +27,7 @@ public class Record {
         this.document = xmlDoc;
         this.baseUri = baseUri;
         xPath = XPathFactory.newInstance().newXPath();
-        xPath.setNamespaceContext(new OAIConstants.OAIRecordContext());
+        xPath.setNamespaceContext(new OAIRecordContext());
 
     }
 
