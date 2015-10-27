@@ -1,4 +1,13 @@
 :local .contribute {
   position: relative;
   z-index: 2;
+
+  h1 {
+    margin-bottom: .5rem;
+  }
+
+  div:not(.field) {
+    font-size: .8rem;
+    padding-bottom: .5rem;
+  }
 }
