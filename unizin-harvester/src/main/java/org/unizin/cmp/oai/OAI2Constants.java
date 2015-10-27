@@ -44,6 +44,17 @@ public final class OAI2Constants {
     public static final String DC_NS_URI = "http://purl.org/dc/elements/1.1/";
 
     /**
+     * XML schema instance namespace URI.
+     * <p>
+     * This namespace is supposed to appear in almost every OAI-PMH response.
+     * For example {@code xsi:schemaLocation} <em>must</em> be used to specify
+     * the location of the schema for metadata validation.
+     */
+    public static final String XSI_NS_URI =
+            "http://www.w3.org/2001/XMLSchema-instance";
+
+
+    /**
      * Default <a href=
      * "http://www.openarchives.org/OAI/openarchivesprotocol.html#metadataPrefix">
      * metadataPrefix</a> for harvests if none is explicitly given.

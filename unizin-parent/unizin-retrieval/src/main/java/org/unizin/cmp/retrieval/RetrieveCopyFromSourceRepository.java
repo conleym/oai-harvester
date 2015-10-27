@@ -27,8 +27,7 @@ public class RetrieveCopyFromSourceRepository {
     public DocumentModel run(DocumentModel doc) {
         if (!"pending".equals(doc.getPropertyValue(
                 CopyFromSourceRepository.STATUS_PROP))) {
-            doc.setPropertyValue(CopyFromSourceRepository.STATUS_PROP, "pending");
-            session.saveDocument(doc);
+            new RetrievalStatusPropertySetter(session, doc.getRef(), "pending").runUnrestricted();
             workManager.schedule(new RetrieveCopyWork(
                     repositoryManager.getDefaultRepositoryName(),
                     doc.getId()), true);

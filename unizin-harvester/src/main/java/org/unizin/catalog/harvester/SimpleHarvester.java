@@ -1,49 +1,55 @@
 package org.unizin.catalog.harvester;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.stream.XMLStreamException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.catalog.harvester.config.ConfigReader;
 import org.unizin.catalog.harvester.config.Repository;
-import org.unizin.catalog.harvester.oai.OAIClient;
+import org.unizin.cmp.oai.OAIVerb;
+import org.unizin.cmp.oai.harvester.HarvestParams;
+import org.unizin.cmp.oai.harvester.Harvester;
+import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
+import org.unizin.cmp.oai.harvester.response.FilesOAIResponseHandler;
+import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 public class SimpleHarvester {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleHarvester.class);
     public static void main(String[] args) throws
-            JAXBException,
-            IOException,
-            XMLStreamException {
+    JAXBException {
         ConfigReader reader = new ConfigReader();
-        OAIClient client = new OAIClient();
         ExecutorService threadPool = Executors.newCachedThreadPool();
         for (Repository repository : reader.parse(new File("repositories.xml"))) {
             threadPool.execute(() -> {
                 LOGGER.info("Starting harvest of " + repository.name);
                 try {
-                    File outputDir = new File(repository.name);
-                    outputDir.mkdir();
+                    File repoOutputDir = new File(repository.name);
+                    repoOutputDir.mkdir();
                     for (String set: repository.sets) {
-                        client.listRecords(repository.url, set, outputDir);
+                        File setOutputDir = new File(repoOutputDir.toURI()
+                                .resolve(set.replaceAll(":", "/")));
+                        setOutputDir.mkdirs();
+                        Harvester harvester = new Harvester.Builder()
+                                .build();
+                        HarvestParams params = new HarvestParams(repository.url,
+                                OAIVerb.LIST_RECORDS)
+                                .withSet(set);
+                        OAIResponseHandler responseHandler =
+                                new FilesOAIResponseHandler(setOutputDir);
+                        harvester.start(params, responseHandler);
                     }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (XMLStreamException e) {
-                    e.printStackTrace();
+                } catch (OAIProtocolException e) {
+                    LOGGER.error("OAI errors harvesting from {}: {}",
+                            repository.name, e.getOAIErrors());
+                } catch (Exception e) {
+                    LOGGER.error("Error harvesting from " + repository.name, e);
                 }
                 LOGGER.info("Finished harvest of " + repository.name);
             });
-
         }
     }
-
 }

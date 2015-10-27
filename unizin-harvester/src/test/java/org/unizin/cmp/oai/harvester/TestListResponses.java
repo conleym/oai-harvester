@@ -289,7 +289,7 @@ public final class TestListResponses extends HarvesterTestBase {
                     Mocks.matcherFromPredicate(
                             (hn) -> {
                                 return hn.getType() == HARVEST_ENDED &&
-                                hn.isStarted() && hn.isStoppedByUser() &&
+                                !hn.isStarted() && hn.isStoppedByUser() &&
                                 !hn.hasError();
                             },
                             HarvestNotification.class));

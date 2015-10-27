@@ -38,13 +38,17 @@ public final class HarvestNotification {
     }
 
     /** Gives read-only access to the enclosed {@link HarvestParams}. */
-    public class NotificationParams {
+    public static final class NotificationParams {
+        private final Map<String, String> paramMap;
+        private NotificationParams(final Map<String, String> m) {
+            this.paramMap = m;
+        }
         public String get(final OAIRequestParameter param) {
-            return params.getParameters().get(param.paramName());
+            return paramMap.get(param.paramName());
         }
 
         public String get(final String paramName) {
-            return params.getParameters().get(paramName);
+            return paramMap.get(paramName);
         }
     }
 
@@ -55,8 +59,7 @@ public final class HarvestNotification {
     private final ResumptionToken resumptionToken;
     private final Instant lastResponseDate;
     private final HarvestParams params;
-    private final NotificationParams notificationParams
-        = new NotificationParams();
+    private final NotificationParams notificationParams;
     private final Map<String, Long> stats;
 
     public HarvestNotification(final HarvestNotificationType type,
@@ -72,6 +75,8 @@ public final class HarvestNotification {
         this.resumptionToken = resumptionToken;
         this.lastResponseDate = lastResponseDate;
         this.params = params;
+        this.notificationParams = new NotificationParams(
+                Collections.unmodifiableMap(params.getParameters()));
         this.stats = Collections.unmodifiableMap(stats);
     }
 

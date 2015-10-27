@@ -1,12 +1,12 @@
 package org.unizin.catalog.importer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.unizin.catalog.OAIConstants;
-import org.unizin.catalog.importer.oai.Record;
-import org.unizin.catalog.importer.oai.RecordLoader;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.zip.ZipFile;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,13 +18,14 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.zip.ZipFile;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.unizin.catalog.importer.oai.Record;
+import org.unizin.catalog.importer.oai.RecordLoader;
+import org.unizin.cmp.oai.OAI2Constants;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 public class SimpleImporter {
 
@@ -107,9 +108,9 @@ public class SimpleImporter {
                 XMLEventWriter writer = outputFactory.createXMLEventWriter(buffer);
                 writer.add(event);
                 writer.add(
-                        eventFactory.createNamespace(OAIConstants.OAI_NS_URI));
+                        eventFactory.createNamespace(OAI2Constants.OAI_2_NS_URI));
                 writer.add(
-                        eventFactory.createNamespace("xsi", OAIConstants.XSI_NS_URI));
+                        eventFactory.createNamespace("xsi", OAI2Constants.XSI_NS_URI));
                 do {
                     event = reader.nextEvent();
                     writer.add(event);
@@ -131,21 +132,21 @@ public class SimpleImporter {
         if (!event.isStartElement()) {
             return false;
         }
-        return OAIConstants.REQUEST.equals(event.asStartElement().getName());
+        return OAI2Constants.REQUEST.equals(event.asStartElement().getName());
     }
 
     private boolean isStartOfRecord(XMLEvent event) {
         if (!event.isStartElement()) {
             return false;
         }
-        return OAIConstants.RECORD.equals(event.asStartElement().getName());
+        return OAI2Constants.RECORD.equals(event.asStartElement().getName());
     }
 
     private boolean isEndOfRecord(XMLEvent event) {
         if (!event.isEndElement()) {
             return false;
         }
-        return OAIConstants.RECORD.equals(event.asEndElement().getName());
+        return OAI2Constants.RECORD.equals(event.asEndElement().getName());
     }
 
 }
