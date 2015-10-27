@@ -1,10 +1,12 @@
 @import '../js/variables.scss';
 
+$thumbnail_width: 100px;
+
 :local .preview {
   background: $light_gray_purple;
   border: 1px solid darken($light_gray_purple, 10%);
-  padding: 1rem;
-  margin: 1rem 0;
+  padding: $global_padding;
+  margin: $global_margin 0;
 
   &:after {
     content: "";
@@ -16,7 +18,7 @@
     float: left;
     border: 1px solid darken($light_gray_purple, 10%);
     margin-right: 1rem;
-    width: 100px;
+    width: $thumbnail_width;
     height: 100px;
     overflow: hidden;
 
@@ -35,6 +37,29 @@
         font-weight: normal;
         padding: 0 .5rem;
       }
+    }
+  }
+
+  :local .progressWrapper {
+    position: relative;
+    margin-left: calc(#{$thumbnail_width} + #{$global_padding});
+    margin-top: .5rem;
+
+    .progressLabel {
+      padding-bottom: .25rem;
+      font-size: .8rem;
+    }
+
+    .barWrapper {
+      width: 100%;
+      height: 20px;
+      background: darken($light_gray_purple, 5%);
+    }
+
+    .bar {
+      height: 100%;
+      background: $success_color;
+      transition: .25s;
     }
   }
 }
