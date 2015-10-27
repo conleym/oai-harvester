@@ -60,38 +60,40 @@ export default class ContributionForm extends React.Component {
     }
 
     renderFiles() {
-        //const { files } = this.props
-//
-        //return Object.keys(files).map((key) => {
-        //    const data = files[key]
-//
-        //    return (
-        //        <FileUpload
-        //            key={key}
-        //            name={data.name}
-        //            size={data.size}
-        //            thumbnail={data.thumbnail}
-        //            progress={data.progress}
-        //            error={data.error} />
-      //    )
-        //})
-        return "dont forget to uncomment code"
+        const { files } = this.props
+
+        return Object.keys(files).map((key) => {
+            const data = files[key]
+
+            return (
+               <FileUpload
+                   key={key}
+                   name={data.name}
+                   size={data.size}
+                   thumbnail={data.thumbnail}
+                   progress={data.progress}
+                   error={data.error} />
+         )
+        })
     }
 
     render() {
 
         const inlineClasses = classNames("field", "inline")
+        const requiredClasses = classNames("required", styles.supportingText)
 
         return (
           <div className="container">
             <form ref="form" onSubmit={::this.onSubmit} className={styles.contribute}>
                 <h1>Contribution form</h1>
-                <div>
+                <div className={styles.supportingText}>
                   Please provide some additional information about the file you are contributing.
                 </div>
-                <div className="required">
+                <div className={requiredClasses}>
                   All fields are required
                 </div>
+
+                {this.renderFiles()}
 
 
                 <div className="field">
@@ -110,7 +112,7 @@ export default class ContributionForm extends React.Component {
                       I agree to the following the terms and conditions of Content Contribution
                   </label>
 
-                  <ol>
+                  <ol className={styles.supportingText}>
                       <li>
                           You have the right to submit the content you submit
                           under these terms.

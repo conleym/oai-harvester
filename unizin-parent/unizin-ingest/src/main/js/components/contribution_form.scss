@@ -1,3 +1,5 @@
+@import '../variables.scss';
+
 :local .contribute {
   position: relative;
   z-index: 2;
@@ -6,7 +8,7 @@
     margin-bottom: .5rem;
   }
 
-  div:not(.field) {
+  .supportingText {
     font-size: .8rem;
     padding-bottom: .5rem;
   }
