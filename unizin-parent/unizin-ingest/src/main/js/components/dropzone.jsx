@@ -123,19 +123,12 @@ class Dropzone extends React.Component {
                     key={this.state.inputKey}
                     onChange={::this.onChangeInput}
                     ref="hiddenInput"
-                    style={{
-                        visibility: 'hidden',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        height: 0,
-                        width: 0,
-                    }}
+                    className={styles.input}
                     type="file" />
                 <div className={styles.hover} >
                     <h1>
-                      <FontAwesome name="arrow-circle-down" aria-hidden /> Drop to contribute
-                      <span>You will be presented with a form</span>
+                      <FontAwesome name="download" aria-hidden /> Drop file to contribute
+                      <span>You will be presented with a form to add details about your file</span>
                     </h1>
                 </div>
             </form>

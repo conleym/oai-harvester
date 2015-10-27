@@ -1,6 +1,15 @@
 @import '../variables.scss';
 @import '../globals.scss';
 
+:local .input {
+  visibility: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
+}
+
 :local(.hover) {
     position: fixed;
     z-index: 1;
@@ -9,18 +18,22 @@
     width: 100%;
     height: 100%;
     transition: opacity .25s;
+    border: 3px dashed $gray_purple;
 
     h1 {
       :global {
         @extend .center;
       }
-      border: 2px dashed black;
-      padding: $global_padding * 2;
+      width: 100%;
       text-align: center;
+      margin: 0;
+      font-size: 3rem;
 
       span:last-of-type {
+        font-family: Roboto;
+        padding-top: .25rem;
         display: block;
-        font-size: 60%;
+        font-size: .8rem;
         font-weight: normal;
       }
     }
