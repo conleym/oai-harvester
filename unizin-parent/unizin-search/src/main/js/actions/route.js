@@ -85,6 +85,10 @@ export function routePreviewUrl(item) {
         file: prefix + encodeURL`/nuxeo/api/v1/id/${item.uid}/@blob/blobholder:0`
     }
 
+    if (item.properties['file:content']['mime-type'] != 'application/pdf') {
+        params.file += "/@convert?format=pdf"
+    }
+
     return {
         url: prefix + encodeURL`/nuxeo/viewer/web/viewer.html?${params}`
     }
