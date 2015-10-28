@@ -66,6 +66,9 @@ public class HathiTrustHtmlRetrieverTest {
         inputDoc = RetrievalTestUtils.createTestDoc(archiveStream, session);
         inputDoc.setPropertyValue("hrv:sourceRepository",
                                   "http://localhost:" + port + "/oai/request");
+        inputDoc.setPropertyValue("hrv:identifier", new String[] {
+                "http://localhost:" + port + "/2027/loc.ark:/13960/t6252864g"
+        });
         session.saveDocument(inputDoc);
     }
 
