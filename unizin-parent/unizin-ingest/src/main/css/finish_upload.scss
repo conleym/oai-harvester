@@ -1,0 +1,24 @@
+@import '../js/variables.scss';
+@import '../js/globals.scss';
+
+:local .upload {
+  text-align: center;
+
+  h1 {
+    font-weight: 100;
+    margin-bottom: 0;
+
+    .percent {
+      font-size: 6rem;
+      padding-right: .5rem;
+    }
+  }
+
+  p {
+    color: $supporting_text_color;
+  }
+
+  :global {
+    @extend .center;
+  }
+}
