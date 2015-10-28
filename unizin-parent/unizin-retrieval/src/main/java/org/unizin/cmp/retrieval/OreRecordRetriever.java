@@ -69,7 +69,7 @@ public class OreRecordRetriever extends BaseRetriever {
                     "//atom:link[@href and @length and @type][1]/@href",
                     oreMetadata, XPathConstants.STRING);
             if (!"".equals(url)) {
-                result = Optional.of(url);
+                result = Optional.ofNullable(url);
             }
         } catch (XPathExpressionException | XPathFactoryConfigurationException e) {
             throw new RetrievalException(e);
