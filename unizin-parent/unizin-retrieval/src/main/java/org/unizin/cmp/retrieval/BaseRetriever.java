@@ -1,6 +1,7 @@
 package org.unizin.cmp.retrieval;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ContentType;
@@ -8,6 +9,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.impl.blob.FileBlob;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,6 +24,8 @@ public abstract class BaseRetriever implements Retriever {
 
     protected static final String IDENTIFIER_PROP = "hrv:identifier";
     protected static final String DEFAULT_RETRIEVED_FILENAME = "retrievedFile";
+
+    private static final Logger LOG = LoggerFactory.getLogger(BaseRetriever.class);
 
     @Override
     public abstract Blob retrieveFileContent(CloseableHttpClient httpClient,
@@ -60,8 +65,11 @@ public abstract class BaseRetriever implements Retriever {
         }
         HttpGet req = new HttpGet(uri);
         try (CloseableHttpResponse resp = client.execute(req)) {
-            if (resp.getStatusLine().getStatusCode() != 200) {
-                throw new RetrievalException(resp.getStatusLine().getReasonPhrase());
+            StatusLine status = resp.getStatusLine();
+            if (status.getStatusCode() != 200) {
+                String msg = String.format("unexpected HTTP response: %s", status);
+                LOG.error(msg);
+                throw new RetrievalException(msg);
             }
             return blobFromEntity(resp.getEntity());
         } catch (IOException e) {

@@ -1,21 +1,22 @@
 package org.unizin.cmp.retrieval;
 
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,6 +27,8 @@ import java.util.Optional;
  * "ore" metadata format.
  */
 public class OreRecordRetriever extends BaseRetriever {
+    private static final Logger LOG = LoggerFactory.getLogger(OreRecordRetriever.class);
+
     /**
      * Retrieve the document content by using the {@code oaiIdentifier}
      * value on {@code document}.
@@ -56,16 +59,19 @@ public class OreRecordRetriever extends BaseRetriever {
 
     private Optional<String> extractBitstreamUrl(Document oreMetadata) {
         Optional<String> result = Optional.empty();
-        XPath xp = XPathFactory.newInstance().newXPath();
-        xp.setNamespaceContext(new OAIConstants.OAIRecordContext());
+
         try {
+            XPathFactory xpf = XPathFactory.newInstance();
+            xpf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, false);
+            XPath xp = xpf.newXPath();
+            xp.setNamespaceContext(new OAIConstants.OAIRecordContext());
             String url = (String) xp.evaluate(
                     "//atom:link[@href and @length and @type][1]/@href",
                     oreMetadata, XPathConstants.STRING);
-            if (url != null && url.length() > 0) {
+            if (!"".equals(url)) {
                 result = Optional.of(url);
             }
-        } catch (XPathExpressionException e) {
+        } catch (XPathExpressionException | XPathFactoryConfigurationException e) {
             throw new RetrievalException(e);
         }
         return result;
@@ -81,13 +87,16 @@ public class OreRecordRetriever extends BaseRetriever {
         HttpGet get = new HttpGet(recordUri);
 
         try (CloseableHttpResponse resp = httpClient.execute(get)){
-            if (resp.getStatusLine().getStatusCode() != 200) {
+            StatusLine statusLine = resp.getStatusLine();
+            if (statusLine.getStatusCode() != 200) {
+                LOG.error("HTTP request failed: {}", statusLine);
                 throw new RetrievalException(String.format(
                         "unable to retrieve item metadata, %s",
                         resp.getStatusLine().getReasonPhrase()));
             }
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             DocumentBuilder parser = dbf.newDocumentBuilder();
             return parser.parse(resp.getEntity().getContent());
         } catch (IOException e) {
