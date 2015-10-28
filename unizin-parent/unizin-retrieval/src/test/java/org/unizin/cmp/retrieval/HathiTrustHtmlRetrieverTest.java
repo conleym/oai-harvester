@@ -73,7 +73,7 @@ public class HathiTrustHtmlRetrieverTest {
     }
 
     @Test
-    public void testContribution() throws IOException {
+    public void testHtmlRetriever() throws IOException {
         HathiTrustHtmlRetriever retriever = new HathiTrustHtmlRetriever();
         CloseableHttpClient client = HttpClients.createDefault();
         Blob result = retriever.retrieveFileContent(client, inputDoc);
