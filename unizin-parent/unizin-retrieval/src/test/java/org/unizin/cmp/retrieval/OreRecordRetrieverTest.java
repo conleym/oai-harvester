@@ -2,6 +2,8 @@ package org.unizin.cmp.retrieval;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,29 +27,29 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.unizin.cmp.retrieval.RetrievalTestUtils.replacePort;
 
 
 @RunWith(FeaturesRunner.class)
 @Features(CoreFeature.class)
-@Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval",
-         "org.unizin.cmp.retrieval.tests:test-retrieval-contrib.xml"})
+@Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval"})
 public class OreRecordRetrieverTest {
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(9232);
-
-    @Inject
-    RetrievalService retrievalService;
+    public WireMockRule wireMockRule = new WireMockRule(
+            Integer.parseInt(System.getProperty("unizin.test.wiremock.port")));
 
     @Inject
     CoreSession session;
 
     private DocumentModel inputDoc;
     private byte[] pdfResponseBody;
+    private String port;
 
     @Before
     public void setUp() throws IOException {
-        byte[] xmlResponseBody = ByteStreams.toByteArray(
-                getClass().getResourceAsStream("/ore-test-response.xml"));
+        port = System.getProperty("unizin.test.wiremock.port");
+        byte[] xmlResponseBody = replacePort(
+                getClass().getResourceAsStream("/ore-test-response.xml"), port);
         pdfResponseBody = ByteStreams.toByteArray(
                 getClass().getResourceAsStream("/testdocpage8.pdf"));
         stubFor(get(urlEqualTo("/dspace/bitstream/handle/1811/20/Halm_OLN.pdf?sequence=4"))
@@ -65,13 +67,16 @@ public class OreRecordRetrieverTest {
         inputDoc = session.createDocumentModel("/", "testdoc", "File");
         inputDoc.addFacet("Harvested");
         inputDoc.setPropertyValue("hrv:oaiIdentifier", "oai:kb.osu.edu:1811/20");
-        inputDoc.setPropertyValue("hrv:sourceRepository", "http://localhost:9232/oai/request");
+        inputDoc.setPropertyValue("hrv:sourceRepository",
+                                  "http://localhost:" + port + "/oai/request");
         inputDoc = session.createDocument(inputDoc);
     }
 
     @Test
     public void testOreRetriever() throws IOException {
-        Blob result = retrievalService.retrieveFileContent(inputDoc);
+        OreRecordRetriever retriever = new OreRecordRetriever();
+        CloseableHttpClient client = HttpClients.createDefault();
+        Blob result = retriever.retrieveFileContent(client, inputDoc);
         assertNotNull(result);
         assertArrayEquals(pdfResponseBody, result.getByteArray());
     }
