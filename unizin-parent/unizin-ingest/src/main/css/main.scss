@@ -1,6 +1,9 @@
 @import './normalize.css';
 @import './a11y.scss';
 @import './buttons.scss';
+@import './forms.scss';
+@import './layout.scss';
+@import './general.scss';
 @import '../js/variables.scss';
 @import url(https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css);
 @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:400,700,300);
@@ -43,4 +46,10 @@ ul, li {
 
 h1,h2,h3,h4,h5,h6 {
   font-family: $decorative_font;
+}
+
+ol {
+  li {
+    list-style: decimal;
+  }
 }
