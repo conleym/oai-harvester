@@ -44,11 +44,10 @@ import static org.unizin.cmp.retrieval.CopyFromSourceRepository.ID;
 import static org.unizin.cmp.retrieval.CopyFromSourceRepository.STATUS_PROP;
 
 
-
 @RunWith(FeaturesRunner.class)
 @Features({TransactionalFeature.class, AutomationFeature.class, PlatformFeature.class})
 @Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval",
-         "org.unizin.cmp.retrieval.tests:dummy-retrieval-contrib.xml"})
+         "org.unizin.cmp.retrieval.tests:test-retrieval-contrib.xml"})
 @RepositoryConfig(init = RetrievalRepositoryInit.class, cleanup = Granularity.METHOD)
 public class CopyFromSourceRepositoryTest {
 
@@ -84,7 +83,6 @@ public class CopyFromSourceRepositoryTest {
     public void tearDown() {
         session.close();
     }
-
 
     @Test
     public void testCopyFromSourceRepository() throws OperationException,
