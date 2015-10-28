@@ -13,6 +13,7 @@
 
   <properties>
     <nuxeo.distribution.version>7.4</nuxeo.distribution.version>
+    <unizin.test.wiremock.port>9231</unizin.test.wiremock.port>
   </properties>
 
   <groupId>org.unizin.cmp</groupId>
@@ -33,6 +34,20 @@
     <module>ingest-package</module>
     <module>unizin-oai-importer</module>
   </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <configuration>
+      <systemPropertyVariables>
+        <unizin.test.wiremock.port>${unizin.test.wiremock.port}</unizin.test.wiremock.port>
+      </systemPropertyVariables>
+      </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <repositories>
     <repository>
