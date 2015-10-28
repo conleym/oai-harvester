@@ -18,19 +18,18 @@ export default class FileUpload extends React.Component {
     }
 
     progressStatus(progress, progressPercent) {
-        if (progress === 100) {
+        if (progress === 100)
             return (
                 <div>
                     <FontAwesome name="check-circle" aria-hidden /> Complete
                 </div>
             )
-        } else {
-            return (
-                <div>
-                    <FontAwesome name="times-circle" aria-hidden role="button" /> Uploading ({progressPercent} complete)
-                </div>
-              )
-        }
+
+        return (
+            <div>
+                <FontAwesome name="times-circle" aria-hidden role="button" /> Uploading ({progressPercent} complete)
+            </div>
+        )
     }
 
     render() {
@@ -43,10 +42,10 @@ export default class FileUpload extends React.Component {
                 <h2 className="aural">File details</h2>
                 <div className={styles.details}>
                     <div className={styles.thumbnail} aria-hidden="true">
-                      <img src={thumbnail} alt={thumbnail} title="File thumbnail" />
+                        <img src={thumbnail} alt={thumbnail} title="File thumbnail" />
                     </div>
                     <div>
-                      {name}<span className={styles.size}>({filesize})</span>
+                        {name}<span className={styles.size}>({filesize})</span>
                     </div>
                 </div>
                 <div className={styles.progressWrapper}>
@@ -54,7 +53,7 @@ export default class FileUpload extends React.Component {
                         {this.progressStatus(progress, progressPercent)}
                     </div>
                     <div className={styles.barWrapper}>
-                      <div className={styles.bar} style={{width: progressPercent}}></div>
+                        <div className={styles.bar} style={{width: progressPercent}}></div>
                     </div>
                 </div>
                 <div className={styles.error}>
