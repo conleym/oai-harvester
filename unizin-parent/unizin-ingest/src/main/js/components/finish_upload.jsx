@@ -1,4 +1,5 @@
 import React from 'react'
+import styles from '../../css/finish_upload.scss'
 
 export default class FinishUpload extends React.Component {
     static displayName = 'FinishUpload'
@@ -25,9 +26,10 @@ export default class FinishUpload extends React.Component {
         const progress = file.progress.toFixed(2)
 
         return (
-            <div>
-                Upload {progress}% complete
-
+            <div className={styles.upload}>
+                <h1>
+                    <span className={styles.percent}>{progress}%</span> complete
+                </h1>
                 <p>
                     Your file is still uploading. This may take a few minutes
                     depending on the speed of your connection.
