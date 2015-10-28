@@ -55,6 +55,10 @@ export function routeInsert(item) {
     return route(encodeURL`/insert/${item.uid}`)
 }
 
+export function routePreview(item) {
+    return route(encodeURL`/preview/${item.uid}`)
+}
+
 export function routeReturnUrl(item) {
     const { properties, title } = item
     const url = properties['file:content']['data']
@@ -72,12 +76,17 @@ export function routeReturnUrl(item) {
     }
 }
 
+
 export function routePreviewUrl(item) {
     const { protocol, hostname } = window.location
     const prefix = `${protocol}//${hostname}`
 
     const params = {
         file: prefix + encodeURL`/nuxeo/api/v1/id/${item.uid}/@blob/blobholder:0`
+    }
+
+    if (item.properties['file:content']['mime-type'] != 'application/pdf') {
+        params.file += "/@convert?format=pdf"
     }
 
     return {

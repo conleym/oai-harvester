@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 public class RetrieveCopyWork extends AbstractWork {
 
-    public static final Logger LOG = LoggerFactory.getLogger(RetrieveCopyWork.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RetrieveCopyWork.class);
     private static final long serialVersionUID = 283389351343964688L;
 
     public RetrieveCopyWork(String repositoryName, String id) {

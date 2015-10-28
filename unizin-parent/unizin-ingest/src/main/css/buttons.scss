@@ -27,4 +27,25 @@ input[type="submit"],
       background: darken($purple, 20%);
     }
   }
+
+  &.simple {
+    border: none;
+    padding: 0;
+
+    &:hover {
+        background: none;
+        text-decoration: underline;
+    }
+  }
+
+  &[disabled] {
+    background: $light_gray_purple;
+    border-color: darken($light_gray_purple, 5%);
+    color: $gray_purple;
+    cursor: not-allowed;
+
+    &:hover {
+      background: darken($light_gray_purple, 5%);
+    }
+  }
 }

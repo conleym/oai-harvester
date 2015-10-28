@@ -2,7 +2,7 @@ import React from 'react'
 import Cover from '../components/cover.jsx'
 import smartLoader from './smart_loader.jsx'
 import { ensureDocument } from '../actions/documents.js'
-import { routeInsert, routePreviewUrl } from '../actions/route.js'
+import { routeInsert, routePreview } from '../actions/route.js'
 import Footer from '../components/footer.jsx'
 import styles from './result.scss'
 import { Link } from 'react-router'
@@ -49,7 +49,6 @@ class Result extends React.Component {
     render() {
         const { document } = this.props
 
-        const previewUrl = routePreviewUrl(document).url
         const primaryBtnClasses = classNames("btn", "primary", styles.btn)
         const secondaryBtnClasses = classNames("btn", styles.btn)
 
@@ -88,7 +87,7 @@ class Result extends React.Component {
                         </Link>
                       </li>
                       <li>
-                        <a href={previewUrl} target="_blank" className={secondaryBtnClasses} role="button">
+                        <a href={routePreview(document).url} target="_blank" className={secondaryBtnClasses} role="button">
                           <FontAwesome name='eye' aria-hidden='true' /> Preview
                         </a>
                       </li>

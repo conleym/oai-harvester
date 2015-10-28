@@ -6,6 +6,13 @@ $font_color: black;
 $border_color: darken(white, 20%);
 $purple: #8056c7;
 $gray_purple: #81788e;
+$light_gray_purple: lighten($gray_purple, 40%);
+$medium_gray: lighten(black, 50%);
+$supporting_text_color: $medium_gray;
+// status
+$alert_color: darken(saturate(adjust_hue($purple, 90), 31), 10);
+$required_color: $alert_color;
+$success_color: darken(saturate(adjust_hue($purple, 196), 31), 10);
 
 // transitions
 $transition_fast: .25s;

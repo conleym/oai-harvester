@@ -1,4 +1,15 @@
+@import '../variables.scss';
+
 :local .contribute {
   position: relative;
   z-index: 2;
+
+  h1 {
+    margin-bottom: .5rem;
+  }
+
+  .supportingText {
+    font-size: .8rem;
+    padding-bottom: .5rem;
+  }
 }

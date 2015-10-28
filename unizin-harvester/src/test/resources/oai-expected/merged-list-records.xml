@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OAI-PMH xmlns="http://www.openarchives.org/OAI/2.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/          http://www.openarchives.org/OAI/2.0/OAI-PMH.xsd">
+  <responseDate>2002-05-01T19:20:30Z</responseDate>
+  <request metadataPrefix="oai_dc" verb="ListRecords">
+    http://an.oa.org/OAI-script
+  </request>
+  <ListRecords>
+    <record>
+      <header>
+        <identifier>1</identifier>
+        <datestamp>1999-12-25</datestamp>
+      </header>
+      <metadata>
+        <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+          xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/           http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:title>A Title</dc:title>
+          <dc:creator>Some Creator</dc:creator>
+          <dc:creator>Another Creator</dc:creator>
+        </oai_dc:dc>
+      </metadata>
+    </record>
+    <record>
+      <header>
+        <identifier>2</identifier>
+        <datestamp>1999-12-25</datestamp>
+      </header>
+      <metadata>
+        <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+          xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/           http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:title>Another Title</dc:title>
+          <dc:title>Yet More Title</dc:title>
+          <dc:date>2015-10-31</dc:date>
+          <dc:date>1900-01-01</dc:date>
+        </oai_dc:dc>
+      </metadata>
+    </record>
+    <record>
+      <header>
+        <identifier>3</identifier>
+        <datestamp>1999-12-25</datestamp>
+      </header>
+      <metadata>
+        <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+          xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/           http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+          <dc:title>Such Title Wow</dc:title>
+        </oai_dc:dc>
+      </metadata>
+    </record>
+  </ListRecords>
+</OAI-PMH>

@@ -6,6 +6,10 @@ import classNames from 'classnames'
 
 export default class Footer extends React.Component {
 
+    static propTypes = {
+        className: React.PropTypes.string
+    }
+
     render() {
         const footerClasses = classNames(styles.footer, this.props.className)
         return (
