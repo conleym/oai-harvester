@@ -10,9 +10,5 @@
       <sourceRepository>http://example.com/oai</sourceRepository>
     </retriever>
 
-    <retriever class="org.unizin.cmp.retrieval.OreRecordRetriever">
-      <sourceRepository>http://localhost:9232/oai/request</sourceRepository>
-    </retriever>
-
   </extension>
 </component>

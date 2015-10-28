@@ -19,8 +19,8 @@
           <atom:id>http://kb.osu.edu/oai/metadata/handle/1811/20/ore.xml</atom:id>
           <atom:link rel="alternate" href="http://hdl.handle.net/1811/20" />
           <atom:link rel="http://www.openarchives.org/ore/terms/describes"
-                     href="http://localhost:9232/oai/metadata/handle/1811/20/ore.xml" />
-          <atom:link rel="self" href="http://localhost:9232/oai/metadata/handle/1811/20/ore.xml#atom"
+                     href="http://localhost:INVALID/oai/metadata/handle/1811/20/ore.xml" />
+          <atom:link rel="self" href="http://localhost:INVALID/oai/metadata/handle/1811/20/ore.xml#atom"
                      type="application/atom+xml" />
           <atom:published>2015-10-26T11:03:49.447-04:00</atom:published>
           <atom:updated>2015-10-26T11:03:49.447-04:00</atom:updated>
@@ -30,18 +30,18 @@
           <atom:category scheme="http://www.openarchives.org/ore/atom/modified" term="2010-09-23T21:18:35.267-04:00" />
           <atom:category scheme="http://www.dspace.org/objectModel/" term="DSpaceItem" label="DSpace Item" />
           <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
-                     href="http://localhost:9232/dspace/bitstream/handle/1811/20/Halm_OLN.pdf?sequence=4"
+                     href="http://localhost:INVALID/dspace/bitstream/handle/1811/20/Halm_OLN.pdf?sequence=4"
                      title="Halm_OLN.pdf" type="application/pdf" length="51972" />
           <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
-                     href="http://localhost:9232/dspace/bitstream/handle/1811/20/Halm_OLN.doc?sequence=1"
+                     href="http://localhost:INVALID/dspace/bitstream/handle/1811/20/Halm_OLN.doc?sequence=1"
                      title="Halm_OLN.doc" type="application/msword" length="61952" />
           <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
-                     href="http://localhost:9232/dspace/bitstream/handle/1811/20/license.txt?sequence=2"
+                     href="http://localhost:INVALID/dspace/bitstream/handle/1811/20/license.txt?sequence=2"
                      title="license.txt" type="text/plain" length="1877" />
           <atom:link rel="http://www.openarchives.org/ore/terms/aggregates"
-                     href="http://localhost:9232/dspace/bitstream/handle/1811/20/Halm_OLN.pdf.txt?sequence=5"
+                     href="http://localhost:INVALID/dspace/bitstream/handle/1811/20/Halm_OLN.pdf.txt?sequence=5"
                      title="Halm_OLN.pdf.txt" type="text/plain" length="26162" />
-          <atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://localhost:9232/dspace/bitstream/handle/1811/20/Halm_OLN.doc.txt?sequence=3"
+          <atom:link rel="http://www.openarchives.org/ore/terms/aggregates" href="http://localhost:INVALID/dspace/bitstream/handle/1811/20/Halm_OLN.doc.txt?sequence=3"
                      title="Halm_OLN.doc.txt" type="text/plain" length="26617" />
           <oreatom:triples>
             <rdf:Description xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"

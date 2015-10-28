@@ -2,6 +2,8 @@ package org.unizin.cmp.retrieval;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,35 +30,30 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(FeaturesRunner.class)
 @Features(CoreFeature.class)
 @Deploy({"org.unizin.cmp.schemas", "org.unizin.cmp.retrieval"})
-public class RetrievalServiceTest {
+public class HathiTrustHtmlRetrieverTest {
 
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(9231);
-
-    @Inject
-    RetrievalService retrievalService;
+    public WireMockRule wireMockRule = new WireMockRule(
+            Integer.parseInt(System.getProperty("unizin.test.wiremock.port")));
 
     @Inject
     CoreSession session;
 
     private DocumentModel inputDoc;
     private byte[] pdfResponseBody;
-
-    @Test
-    public void testRegistration() {
-        assertNotNull(retrievalService);
-    }
+    private String port;
 
     @Before
     public void setUp() throws IOException {
+        port = System.getProperty("unizin.test.wiremock.port");
         byte[] htmlResponseBody = ByteStreams.toByteArray(
                 getClass().getResourceAsStream("/testdocresponse.html"));
         pdfResponseBody = ByteStreams.toByteArray(
                 getClass().getResourceAsStream("/testdocpage8.pdf"));
         stubFor(get(urlEqualTo("/2027/loc.ark:/13960/t6252864g"))
                         .willReturn(aResponse().withStatus(303).withHeader(
-                                "Location", "http://localhost:9231/htmlout")));
+                                "Location", "http://localhost:" + port + "/htmlout")));
         stubFor(get(urlEqualTo("/htmlout"))
                         .willReturn(aResponse().withHeader(
                                 "Content-Type", "text/html; charset=utf-8")
@@ -67,18 +64,26 @@ public class RetrievalServiceTest {
                                             .withBody(pdfResponseBody)));
         InputStream archiveStream = getClass().getResourceAsStream("/testdoc.zip");
         inputDoc = RetrievalTestUtils.createTestDoc(archiveStream, session);
+        inputDoc.setPropertyValue("hrv:sourceRepository",
+                                  "http://localhost:" + port + "/oai/request");
+        session.saveDocument(inputDoc);
     }
 
     @Test
     public void testContribution() throws IOException {
-        Blob result = retrievalService.retrieveFileContent(inputDoc);
+        HathiTrustHtmlRetriever retriever = new HathiTrustHtmlRetriever();
+        CloseableHttpClient client = HttpClients.createDefault();
+        Blob result = retriever.retrieveFileContent(client, inputDoc);
         assertNotNull(result);
         assertArrayEquals(pdfResponseBody, result.getByteArray());
     }
 
     @Test(expected=RetrievalException.class)
     public void testFailure()  {
-        inputDoc.setPropertyValue("hrv:identifier", new String[] {"http://localhost:9231/nonexistent"});
-        retrievalService.retrieveFileContent(inputDoc);
+        HathiTrustHtmlRetriever retriever = new HathiTrustHtmlRetriever();
+        CloseableHttpClient client = HttpClients.createDefault();
+        inputDoc.setPropertyValue("hrv:identifier", new String[] {
+                "http://localhost:" + port + "/nonexistent"});
+        retriever.retrieveFileContent(client, inputDoc);
     }
 }
