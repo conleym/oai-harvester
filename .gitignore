@@ -225,6 +225,3 @@ target/
 hs_err_pid*
 log/
 .vagrant/
-
-
-foobar
