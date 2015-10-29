@@ -66,5 +66,6 @@
   <modules>
     <module>unizin-oai-harvester</module>
     <module>simple-importer</module>
+    <module>unizin-oai-harvester-agent</module>
   </modules>
 </project>
