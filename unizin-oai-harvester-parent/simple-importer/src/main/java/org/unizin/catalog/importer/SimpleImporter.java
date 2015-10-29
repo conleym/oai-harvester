@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.zip.ZipFile;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -110,7 +111,8 @@ public class SimpleImporter {
                 writer.add(
                         eventFactory.createNamespace(OAI2Constants.OAI_2_NS_URI));
                 writer.add(
-                        eventFactory.createNamespace("xsi", OAI2Constants.XSI_NS_URI));
+                        eventFactory.createNamespace("xsi",
+                                XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI));
                 do {
                     event = reader.nextEvent();
                     writer.add(event);

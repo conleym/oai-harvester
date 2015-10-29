@@ -6,7 +6,10 @@ import javax.xml.namespace.QName;
 /**
  * OAI-PMH constants.
  * <p>
- * Most of these are XML-related.
+ * Most of these are XML-related. To avoid redundancy and confusion, constants
+ * already available in {@link javax.xml.XMLConstants} are not duplicated here.
+ * In particular {@link javax.xml.XMLConstants#W3C_XML_SCHEMA_INSTANCE_NS_URI}
+ * may be of interest to clients of this library.
  */
 public final class OAI2Constants {
 
@@ -42,17 +45,6 @@ public final class OAI2Constants {
      * @see #DEFAULT_METADATA_PREFIX
      */
     public static final String DC_NS_URI = "http://purl.org/dc/elements/1.1/";
-
-    /**
-     * XML schema instance namespace URI.
-     * <p>
-     * This namespace is supposed to appear in almost every OAI-PMH response.
-     * For example {@code xsi:schemaLocation} <em>must</em> be used to specify
-     * the location of the schema for metadata validation.
-     */
-    public static final String XSI_NS_URI =
-            "http://www.w3.org/2001/XMLSchema-instance";
-
 
     /**
      * Default <a href=
