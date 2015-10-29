@@ -7,5 +7,4 @@ export M2_HOME="/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/nuxe
 
 set -e
 
-"${M2_HOME}/bin/mvn" -f unizin-parent/ "$@"
 "${M2_HOME}/bin/mvn" -f unizin-harvester/ "$@"
