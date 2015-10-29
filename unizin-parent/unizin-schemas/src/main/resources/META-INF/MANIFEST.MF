@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Bundle-SymbolicName: org.unizin.cmp.schemas
-Nuxeo-Component: OSGI-INF/types-contrib.xml,
- OSGI-INF/source-repositories-contrib.xml
-Require-Bundle: org.nuxeo.runtime,
- org.nuxeo.ecm.core.api,
- org.nuxeo.ecm.core,
- org.nuxeo.ecm.webapp.core

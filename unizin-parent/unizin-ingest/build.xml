@@ -1,8 +1,0 @@
-<project name="unizin-search">
-  <target name="copy-skin"
-          description="Copy Nuxeo skin resources to server directory">
-    <copy todir="${nuxeo.skindir}">
-      <fileset dir="src/main/resources/skin"/>
-    </copy>
-  </target>
-</project>

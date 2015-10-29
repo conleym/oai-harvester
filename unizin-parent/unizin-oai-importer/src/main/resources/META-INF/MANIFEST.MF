@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Bundle-SymbolicName: org.unizin.cmp.importer
-Require-Bundle: org.nuxeo.ecm.webengine.core
-Nuxeo-Component: OSGI-INF/importer-contrib.xml

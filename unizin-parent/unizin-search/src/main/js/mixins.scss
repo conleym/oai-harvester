@@ -1,6 +1,0 @@
-// calculations for cover width and height
-// default width is "4rem"
-@mixin cover($cover_width: 4rem) {
-  width: $cover_width;
-  height: calc(#{$cover_width} * #{$cover_aspect_ratio});
-}
