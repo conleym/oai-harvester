@@ -21,7 +21,6 @@
       <set>hdl_1811_44572</set>
       <set>hdl_1811_24214</set>
       <set>hdl_1811_38954</set>
-      <set>hdl_1811_61960</set>
     </sets>
   </repository>
 
@@ -35,7 +34,6 @@
       <set>col_2027.42_58605</set>
       <set>col_2027.42_55277</set>
       <set>col_2027.42_58605</set>
-      <set>col_2027.42_100346</set>
       <set>col_2027.42_106424</set>
     </sets>
   </repository>
@@ -58,7 +56,6 @@
       <set>com_10217_100503</set>
       <set>com_10217_100508</set>
       <set>com_10217_100560</set>
-      <set>com_10217_100573</set>
     </sets>
   </repository>
 
@@ -83,7 +80,6 @@
       <set>com_2022_7910</set>
       <set>com_2022_13982</set>
       <set>com_2022_14124</set>
-      <set>com_2022_14310</set>
     </sets>
   </repository>
 
@@ -125,7 +121,6 @@
     <sets>
       <set>hdl_1793_37054</set>
       <set>hdl_1793_35043</set>
-      <set>hdl_1793_6749</set>
       <set>hdl_1793_35042</set>
     </sets>
   </repository>
@@ -158,7 +153,6 @@
       <set>publication:burosteachertraining</set>
       <set>publication:imseteach</set>
       <set>publication:teaching_learning</set>
-      <set>publication:teachlearndept</set>
       <set>publication:teachlearnfacpub</set>
       <set>publication:teachlearnstudent</set>
       <set>publication:teachlearntalks</set>
