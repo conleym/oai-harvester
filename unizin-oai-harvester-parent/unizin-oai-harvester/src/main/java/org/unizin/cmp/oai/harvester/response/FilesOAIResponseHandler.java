@@ -23,7 +23,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
  * harvest with a '.xml' extension.
  *
  */
-public final class FilesOAIResponseHandler implements OAIResponseHandler {
+public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
 
     private final File directory;
     private final XMLOutputFactory outputFactory;
@@ -53,14 +53,6 @@ public final class FilesOAIResponseHandler implements OAIResponseHandler {
     public OAIEventHandler getEventHandler(
             final HarvestNotification notification) {
         return eventHandler;
-    }
-
-    @Override
-    public void onHarvestStart(final HarvestNotification notification) {
-    }
-
-    @Override
-    public void onHarvestEnd(final HarvestNotification notification) {
     }
 
     @Override

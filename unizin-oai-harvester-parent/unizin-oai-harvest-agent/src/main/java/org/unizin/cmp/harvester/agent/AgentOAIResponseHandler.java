@@ -7,13 +7,13 @@ import java.util.concurrent.BlockingQueue;
 import javax.xml.stream.XMLOutputFactory;
 
 import org.unizin.cmp.oai.harvester.HarvestNotification;
+import org.unizin.cmp.oai.harvester.response.AbstractOAIResponseHandler;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
-import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 /**
  *
  */
-public final class AgentOAIResponseHandler implements OAIResponseHandler {
+public final class AgentOAIResponseHandler extends AbstractOAIResponseHandler {
 
     private final AgentOAIEventHandler handler;
 
@@ -28,21 +28,5 @@ public final class AgentOAIResponseHandler implements OAIResponseHandler {
     @Override
     public OAIEventHandler getEventHandler(final HarvestNotification notification) {
         return handler;
-    }
-
-    @Override
-    public void onHarvestStart(final HarvestNotification notification) {
-    }
-
-    @Override
-    public void onHarvestEnd(final HarvestNotification notification) {
-    }
-
-    @Override
-    public void onResponseReceived(final HarvestNotification notification) {
-    }
-
-    @Override
-    public void onResponseProcessed(final HarvestNotification notification) {
     }
 }

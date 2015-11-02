@@ -32,7 +32,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
  * incomplete lists</a> into a single complete list.
  *
  */
-public final class MergingOAIResponseHandler implements OAIResponseHandler {
+public final class MergingOAIResponseHandler extends AbstractOAIResponseHandler {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(MergingOAIResponseHandler.class);
@@ -135,13 +135,8 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
     }
 
     @Override
-    public OAIEventHandler getEventHandler(HarvestNotification notification) {
+    public OAIEventHandler getEventHandler(final HarvestNotification notification) {
         return eventHandler;
-    }
-
-    @Override
-    public void onHarvestStart(final HarvestNotification notification) {
-        LOGGER.debug("Harvest has started.");
     }
 
     @Override
@@ -169,10 +164,6 @@ public final class MergingOAIResponseHandler implements OAIResponseHandler {
         } finally {
             OAIXMLUtils.closeQuietly(eventWriter);
         }
-    }
-
-    @Override
-    public void onResponseReceived(final HarvestNotification notification) {
     }
 
     @Override
