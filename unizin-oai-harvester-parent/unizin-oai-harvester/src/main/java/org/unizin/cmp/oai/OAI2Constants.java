@@ -86,6 +86,7 @@ public final class OAI2Constants {
     public static final QName RESPONSE_DATE = oai2QName("responseDate");
     public static final QName REQUEST = oai2QName("request");
     public static final QName RESUMPTION_TOKEN = oai2QName("resumptionToken");
+    public static final QName SET_SPEC = oai2QName("setSpec");
 
     // QNames of attributes (these have no namespace).
     /** Status code on &lt;error&gt;. */
