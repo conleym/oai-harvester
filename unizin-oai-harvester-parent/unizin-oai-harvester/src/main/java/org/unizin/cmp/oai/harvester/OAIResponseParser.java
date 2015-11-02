@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.unizin.cmp.oai.OAIError;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.ResumptionToken;
+import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
@@ -156,7 +157,15 @@ final class OAIResponseParser {
             final OAIEventHandler eventHandler) throws XMLStreamException {
         final XMLEvent event = reader.nextEvent();
         logger.trace("Read event {}", event);
-        eventHandler.onEvent(event);
+        try {
+            eventHandler.onEvent(event);
+        } catch (final XMLStreamException e) {
+            /*
+             * Errors thrown during event handling are, by definition, not parse
+             * errors, and so need to be treated specially here.
+             */
+            throw new HarvesterException(e);
+        }
         return event;
     }
 

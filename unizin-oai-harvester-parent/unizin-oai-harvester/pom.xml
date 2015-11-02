@@ -12,7 +12,7 @@
   <artifactId>unizin-oai-harvester</artifactId>
   <packaging>jar</packaging>
 
-  <name>Unizin Catalog Harvester: Skateboard Edition</name>
+  <name>Unizin OAI Harvester Library</name>
   <description>OAI-PMH code to harvest metadata from OAI-PMH-compliant repositories.</description>
 
   <dependencies>

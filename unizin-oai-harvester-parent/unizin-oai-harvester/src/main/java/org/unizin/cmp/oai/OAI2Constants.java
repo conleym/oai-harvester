@@ -80,6 +80,7 @@ public final class OAI2Constants {
     public static final QName ERROR = oai2QName("error");
     public static final QName HEADER = oai2QName("header");
     public static final QName IDENTIFIER = oai2QName("identifier");
+    public static final QName METADATA = oai2QName("metadata");
     public static final QName OAI_PMH = oai2QName("OAI-PMH");
     public static final QName RECORD = oai2QName("record");
     public static final QName RESPONSE_DATE = oai2QName("responseDate");
