@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
@@ -66,7 +67,7 @@ public final class TestAgentOAIEventHandler {
         configuration.setTemplateLoader(new ClassTemplateLoader(
                 this.getClass(), "/"));
         final MessageDigest digest = AgentOAIResponseHandler.digest();
-        for (final Integer i : Arrays.asList(1, 2, 3)) {
+        for (int i = 1; i < 4; i++) {
             final String filename = "/record-" + i + ".xml";
             final InputStream in = this.getClass()
                     .getResourceAsStream(filename);
@@ -146,7 +147,8 @@ public final class TestAgentOAIEventHandler {
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
                 new ArrayBlockingQueue<>(10);
         harvester.start(p, new AgentOAIResponseHandler(uri,
-                harvestedRecordQueue));
+                harvestedRecordQueue, 0, TimeUnit.SECONDS));
+
         Assert.assertEquals(3, harvestedRecordQueue.size());
 
         final Map<String, Map<String, Object>> expectedValues = new HashMap<>();

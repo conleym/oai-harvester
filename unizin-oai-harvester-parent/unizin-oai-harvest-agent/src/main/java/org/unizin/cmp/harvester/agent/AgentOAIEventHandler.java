@@ -30,6 +30,8 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
 
     private final String baseURL;
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
+    private final long offerTimeout;
+    private final TimeUnit offerTimeoutUnit;
     private final XMLOutputFactory outputFactory;
     private final MessageDigest messageDigest;
     private final List<XMLEvent> eventBuffer = new ArrayList<>();
@@ -43,10 +45,14 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
 
     public AgentOAIEventHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
+            final long offerTimeout,
+            final TimeUnit offerTimeoutUnit,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
         this.baseURL = baseURI.toString();
         this.harvestedRecordQueue = harvestedRecordQueue;
+        this.offerTimeout = offerTimeout;
+        this.offerTimeoutUnit = offerTimeoutUnit;
         this.outputFactory = outputFactory;
         this.messageDigest = messageDigest;
     }
@@ -74,7 +80,8 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
         previousRecord.setChecksum(checksum(recordBytes));
         previousRecord.setBaseURL(baseURL);
         try {
-            harvestedRecordQueue.offer(previousRecord, 100, TimeUnit.MILLISECONDS);
+            harvestedRecordQueue.offer(previousRecord, offerTimeout,
+                    offerTimeoutUnit);
         } catch (final InterruptedException e) {
             Thread.interrupted();
             throw new HarvesterException(e);
