@@ -20,12 +20,6 @@ public final class AgentOAIResponseHandler extends AbstractOAIResponseHandler {
 
 
     public AgentOAIResponseHandler(final URI baseURI,
-            final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue)
-                    throws NoSuchAlgorithmException{
-        this(baseURI, harvestedRecordQueue, HarvestAgent.DEFAULT_TIMEOUT);
-    }
-
-    public AgentOAIResponseHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
             final Timeout offerTimeout)
                     throws NoSuchAlgorithmException {
