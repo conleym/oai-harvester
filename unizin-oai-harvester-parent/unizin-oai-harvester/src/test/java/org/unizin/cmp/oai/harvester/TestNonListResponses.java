@@ -110,7 +110,7 @@ public final class TestNonListResponses extends HarvesterTestBase {
         /*
          * In Xerces and the JDK, &#13; (carriage return) becomes "\n".
          */
-        String chr13 = (STAX == STAX_LIB.WOODSTOX) ?
+        final String chr13 = (STAX == STAX_LIB.WOODSTOX) ?
                 new String(Character.toChars(13)) : "\n";
         Assert.assertEquals("This should have a " + chr13 + " newline.",
                 coverage);

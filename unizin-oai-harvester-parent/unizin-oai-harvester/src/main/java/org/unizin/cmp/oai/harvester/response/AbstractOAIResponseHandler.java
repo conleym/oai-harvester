@@ -2,8 +2,9 @@ package org.unizin.cmp.oai.harvester.response;
 
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 
+
 /**
- * {@link OAIResponseHandler} that does nothing.
+ * {@link OAIResponseHandler} that does nothing when notified of harvest events.
  * <p>
  * Subclasses must implement
  * {@link OAIResponseHandler#getEventHandler(HarvestNotification)}.

@@ -5,12 +5,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventWriter;
@@ -22,6 +20,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.OAI2Constants;
+import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 
@@ -64,15 +63,6 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
     }
 
 
-    private boolean isCurrentRecordValid() {
-        return Arrays.asList(currentRecord.getBaseURL(),
-                currentRecord.getXml(), currentRecord.getIdentifier(),
-                currentRecord.getDatestamp())
-                .stream()
-                .noneMatch(Predicate.isEqual(null));
-    }
-
-
     private void offerCurrentRecord() throws XMLStreamException {
         // Set up for next record.
         final HarvestedOAIRecord previousRecord = currentRecord;
@@ -83,11 +73,6 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
         previousRecord.setXml(new String(recordBytes, StandardCharsets.UTF_8));
         previousRecord.setChecksum(checksum(recordBytes));
         previousRecord.setBaseURL(baseURL);
-        if (! isCurrentRecordValid()) {
-            // This is more of a sanity check of the code than anything.
-            LOGGER.warn("Invalid record! Skipping: {}", previousRecord);
-            return;
-        }
         try {
             harvestedRecordQueue.offer(previousRecord, 100, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
@@ -121,7 +106,6 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
         }
     }
 
-
     @Override
     public void onEvent(final XMLEvent e) throws XMLStreamException {
         LOGGER.debug("Got event {}", e);
@@ -129,6 +113,10 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
             currentStartElementQName = e.asStartElement().getName();
             if (currentElementIs(OAI2Constants.RECORD)) {
                 inRecord = true;
+            } else if (currentElementIs(OAI2Constants.HEADER)) {
+                final String status = OAIXMLUtils.attributeValue(
+                        e.asStartElement(), OAI2Constants.HEADER_STATUS_ATTR);
+                currentRecord.setStatus(status);
             } else if (currentElementIs(OAI2Constants.DATESTAMP) ||
                     currentElementIs(OAI2Constants.IDENTIFIER) ||
                     currentElementIs(OAI2Constants.SET_SPEC)) {
@@ -143,18 +131,27 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
                 eventBuffer.add(e);
                 offerCurrentRecord();
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
-                currentRecord.setIdentifier(getAndClearCharBuffer());
+                final String identifier = getAndClearCharBuffer();
+                LOGGER.debug("Setting identifier {}", identifier);
+                currentRecord.setIdentifier(identifier);
             } else if (OAI2Constants.DATESTAMP.equals(name)) {
-                currentRecord.setDatestamp(getAndClearCharBuffer());
+                final String datestamp = getAndClearCharBuffer();
+                LOGGER.debug("Setting datestamp {}", datestamp);
+                currentRecord.setDatestamp(datestamp);
             } else if (OAI2Constants.SET_SPEC.equals(name)) {
-                currentRecord.getSets().add(getAndClearCharBuffer());
+                final String set = getAndClearCharBuffer();
+                LOGGER.debug("Adding set {}", set);
+                currentRecord.getSets().add(set);
             }
+            charBuffer.setLength(0);
         } else if (e.isCharacters() && bufferChars) {
             charBuffer.append(e.asCharacters().getData());
         } else if (currentElementIs(OAI2Constants.HEADER) && e.isAttribute()) {
+            // Not sure this ever happens....
             final Attribute a = (Attribute)e;
             if (OAI2Constants.HEADER_STATUS_ATTR.equals(a.getName())) {
-                currentRecord.setStatus(a.getValue());
+                final String status = a.getValue();
+                currentRecord.setStatus(status);
             }
         }
         if (inRecord) {
