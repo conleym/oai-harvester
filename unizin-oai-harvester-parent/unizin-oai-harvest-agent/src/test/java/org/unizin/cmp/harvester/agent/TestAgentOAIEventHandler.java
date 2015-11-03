@@ -2,6 +2,7 @@ package org.unizin.cmp.harvester.agent;
 
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.CHECKSUM_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.DATESTAMP_ATTRIB;
+import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.SETS_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.STATUS_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.XML_ATTRIB;
 
@@ -14,7 +15,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -152,18 +155,21 @@ public final class TestAgentOAIEventHandler {
         expectedValue.put(DATESTAMP_ATTRIB, "2015-11-02");
         expectedValue.put(XML_ATTRIB, records.get(0));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(0));
+        expectedValue.put(SETS_ATTRIB, Collections.emptySet());
         addExpectedValuesForIdentifier("1", expectedValue, expectedValues);
 
         expectedValue = new HashMap<>();
         expectedValue.put(DATESTAMP_ATTRIB, "2014-01-10");
         expectedValue.put(XML_ATTRIB, records.get(1));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(1));
+        expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set1", "set2")));
         addExpectedValuesForIdentifier("2", expectedValue, expectedValues);
 
         expectedValue = new HashMap<>();
         expectedValue.put(DATESTAMP_ATTRIB, "2010-10-10");
         expectedValue.put(XML_ATTRIB, records.get(2));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(2));
+        expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set3")));
         addExpectedValuesForIdentifier("3", expectedValue, expectedValues);
 
         for (final HarvestedOAIRecord record : harvestedRecordQueue) {
