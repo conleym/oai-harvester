@@ -50,6 +50,11 @@ public final class HarvestNotification {
         public String get(final String paramName) {
             return paramMap.get(paramName);
         }
+
+        @Override
+        public String toString() {
+            return paramMap.toString();
+        }
     }
 
     private final HarvestNotificationType type;
