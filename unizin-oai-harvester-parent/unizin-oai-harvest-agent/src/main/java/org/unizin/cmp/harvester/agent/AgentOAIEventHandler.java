@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventWriter;
@@ -30,8 +29,7 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
 
     private final String baseURL;
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
-    private final long offerTimeout;
-    private final TimeUnit offerTimeoutUnit;
+    private final Timeout offerTimeout;
     private final XMLOutputFactory outputFactory;
     private final MessageDigest messageDigest;
     private final List<XMLEvent> eventBuffer = new ArrayList<>();
@@ -45,14 +43,12 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
 
     public AgentOAIEventHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
-            final long offerTimeout,
-            final TimeUnit offerTimeoutUnit,
+            final Timeout offerTimeout,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
         this.baseURL = baseURI.toString();
         this.harvestedRecordQueue = harvestedRecordQueue;
         this.offerTimeout = offerTimeout;
-        this.offerTimeoutUnit = offerTimeoutUnit;
         this.outputFactory = outputFactory;
         this.messageDigest = messageDigest;
     }
@@ -62,12 +58,10 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
         return Objects.equals(currentStartElementQName, name);
     }
 
-
     private byte[] checksum(final byte[] bytes) {
         messageDigest.update(bytes);
         return messageDigest.digest();
     }
-
 
     private void offerCurrentRecord() throws XMLStreamException {
         // Set up for next record.
@@ -80,21 +74,17 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
         previousRecord.setChecksum(checksum(recordBytes));
         previousRecord.setBaseURL(baseURL);
         try {
-            harvestedRecordQueue.offer(previousRecord, offerTimeout,
-                    offerTimeoutUnit);
+            harvestedRecordQueue.offer(previousRecord, offerTimeout.getTime(),
+                    offerTimeout.getUnit());
         } catch (final InterruptedException e) {
             Thread.interrupted();
             throw new HarvesterException(e);
         }
     }
 
-
-    private String getAndClearCharBuffer() {
-        final String value = charBuffer.toString();
-        charBuffer.setLength(0);
-        return value;
+    private String getBufferedChars() {
+        return charBuffer.toString();
     }
-
 
     private byte[] getAndClearEventBuffer() throws XMLStreamException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -115,7 +105,7 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
 
     @Override
     public void onEvent(final XMLEvent e) throws XMLStreamException {
-        LOGGER.debug("Got event {}", e);
+        LOGGER.trace("Got event {}", e);
         if (e.isStartElement()) {
             currentStartElementQName = e.asStartElement().getName();
             if (currentElementIs(OAI2Constants.RECORD)) {
@@ -138,16 +128,16 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
                 eventBuffer.add(e);
                 offerCurrentRecord();
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
-                final String identifier = getAndClearCharBuffer();
-                LOGGER.debug("Setting identifier {}", identifier);
+                final String identifier = getBufferedChars();
+                LOGGER.trace("Setting identifier {}", identifier);
                 currentRecord.setIdentifier(identifier);
             } else if (OAI2Constants.DATESTAMP.equals(name)) {
-                final String datestamp = getAndClearCharBuffer();
-                LOGGER.debug("Setting datestamp {}", datestamp);
+                final String datestamp = getBufferedChars();
+                LOGGER.trace("Setting datestamp {}", datestamp);
                 currentRecord.setDatestamp(datestamp);
             } else if (OAI2Constants.SET_SPEC.equals(name)) {
-                final String set = getAndClearCharBuffer();
-                LOGGER.debug("Adding set {}", set);
+                final String set = getBufferedChars();
+                LOGGER.trace("Adding set {}", set);
                 currentRecord.getSets().add(set);
             }
             charBuffer.setLength(0);

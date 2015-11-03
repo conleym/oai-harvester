@@ -1,6 +1,7 @@
 package org.unizin.cmp.harvester.agent;
 
 import java.net.URI;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -21,12 +23,14 @@ import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 import com.amazonaws.auth.AWSCredentials;
@@ -35,42 +39,147 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 
 public final class HarvestAgent implements Observer {
-    private static final int DEFAULT_QUEUE_CAPACITY = 10000;
-    private static final long POLL_TIMEOUT = 100;
-    private static final TimeUnit POLL_TIME_UNIT = TimeUnit.MILLISECONDS;
-    private static final int BATCH_SIZE = 20;
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            HarvestAgent.class);
+
+    public static final String DIGEST_ALGORITHM = "MD5";
+    public static final int DEFAULT_BATCH_SIZE = 20;
+    public static final Timeout DEFAULT_TIMEOUT = new Timeout(100,
+            TimeUnit.MILLISECONDS);
+    public static final int DEFAULT_QUEUE_CAPACITY = 10 * 1000;
 
     private static final Collection<? extends Header> DEFAULT_HEADERS =
             Collections.unmodifiableCollection(Arrays.asList(
                     new BasicHeader("from", "dev@unizin.org")));
 
+
+    public static final class Builder {
+        private final DynamoDBMapper mapper;
+
+        private int batchSize = DEFAULT_BATCH_SIZE;
+        private Timeout offerTimeout;
+        private Timeout pollTimeout;
+        private HttpClient httpClient;
+        private BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
+        private ExecutorService executorService;
+
+
+        public Builder(final DynamoDBMapper mapper) {
+            Objects.requireNonNull(mapper, "mapper");
+            this.mapper = mapper;
+        }
+
+        public Builder withHttpClient(final HttpClient httpClient) {
+            this.httpClient = httpClient;
+            return this;
+        }
+
+        public Builder withRecordQueue(
+                final BlockingQueue<HarvestedOAIRecord> queue) {
+            this.harvestedRecordQueue = queue;
+            return this;
+        }
+
+        public Builder withExecutorService(
+                final ExecutorService executorService) {
+            this.executorService = executorService;
+            return this;
+        }
+
+        public Builder withOfferTimeout(final Timeout timeout) {
+            this.offerTimeout = timeout;
+            return this;
+        }
+
+        public Builder withPollTimeout(final Timeout timeout) {
+            this.pollTimeout = timeout;
+            return this;
+        }
+
+        public Builder withBatchSize(final int batchSize) {
+            if (batchSize <= 0) {
+                throw new IllegalArgumentException(
+                        "batchSize must be positive.");
+            }
+            this.batchSize = batchSize;
+            return this;
+        }
+
+        public HarvestAgent build() {
+            if (httpClient == null) {
+                httpClient = HttpClients.custom()
+                        .setDefaultHeaders(DEFAULT_HEADERS)
+                        .build();
+            }
+            if (harvestedRecordQueue == null) {
+                harvestedRecordQueue = new ArrayBlockingQueue<>(DEFAULT_QUEUE_CAPACITY);
+            }
+            if (executorService == null) {
+                executorService = Executors.newCachedThreadPool();
+            }
+            if (offerTimeout == null) {
+                offerTimeout = DEFAULT_TIMEOUT;
+            }
+            if (pollTimeout == null) {
+                pollTimeout = DEFAULT_TIMEOUT;
+            }
+            return new HarvestAgent(httpClient, mapper, harvestedRecordQueue,
+                    executorService, offerTimeout, pollTimeout, batchSize);
+        }
+    }
+
+
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
     private final ExecutorService executorService;
-    private final Set<Harvester> harvesters = Collections.synchronizedSet(new HashSet<>());
+    private final Timeout offerTimeout;
+    private final Timeout pollTimeout;
+    private final int batchSize;
+    private final Object harvestersLock = new Object();
+    private final Set<Harvester> harvesters = new HashSet<>();
     private volatile boolean stopped = false;
     private volatile boolean consumerRunning = false;
 
 
     public HarvestAgent(final HttpClient httpClient,
-            final DynamoDBMapper mapper) {
-        this(httpClient, mapper,
-                new ArrayBlockingQueue<>(DEFAULT_QUEUE_CAPACITY),
-                Executors.newCachedThreadPool());
-    }
-
-
-    public HarvestAgent(final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
-            final ExecutorService executorService) {
+            final ExecutorService executorService,
+            final Timeout offerTimeout,
+            final Timeout pollTimeout,
+            final int batchSize) {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.harvestedRecordQueue = harvestedRecordQueue;
         this.executorService = executorService;
+        this.offerTimeout = offerTimeout;
+        this.pollTimeout = pollTimeout;
+        this.batchSize = batchSize;
     }
 
+    public static final MessageDigest digest()
+            throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(DIGEST_ALGORITHM);
+    }
+
+    private void addHarvester(final Harvester harvester) {
+        synchronized(harvestersLock) {
+            harvesters.add(harvester);
+        }
+    }
+
+    private void removeHarvester(final Harvester harvester) {
+        synchronized(harvestersLock) {
+            harvesters.remove(harvester);
+        }
+    }
+
+    private void removeAllHarvesters() {
+        synchronized(harvestersLock) {
+            harvesters.clear();
+        }
+    }
 
     public void addHarvests(final HarvestParams...params)
             throws NoSuchAlgorithmException {
@@ -83,65 +192,72 @@ public final class HarvestAgent implements Observer {
         }
     }
 
-
     private Runnable createHarvestRunnable(final HarvestParams params)
             throws NoSuchAlgorithmException {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(httpClient)
                 .build();
         harvester.addObserver(this);
-        harvesters.add(harvester);
+        addHarvester(harvester);
+        MDC.put("baseURI", params.getBaseURI().toString());
+        MDC.put("parameters", params.getParameters().toString());
         final OAIResponseHandler handler = new AgentOAIResponseHandler(
-                params.getBaseURI(), harvestedRecordQueue);
+                params.getBaseURI(), harvestedRecordQueue, offerTimeout);
         return () -> {
             try {
                 harvester.start(params, handler);
+            } catch (final Exception e) {
+                LOGGER.error("Error in harvester thread.", e);
             } finally {
-                harvesters.remove(harvester);
+                removeHarvester(harvester);
             }
         };
     }
 
-
     private HarvestedOAIRecord tryPoll() throws InterruptedException {
-        return harvestedRecordQueue.poll(POLL_TIMEOUT, POLL_TIME_UNIT);
+        return harvestedRecordQueue.poll(pollTimeout.getTime(),
+                pollTimeout.getUnit());
     }
-
 
     private void stop() {
         stopped = true;
         for (final Harvester h : harvesters) {
             h.stop();
         }
+        LOGGER.info("Shutting down.");
+        removeAllHarvesters();
         executorService.shutdownNow();
     }
 
-
     private Runnable createConsumerRunnable() {
         return () -> {
-            final List<HarvestedOAIRecord> batch = new ArrayList<>(BATCH_SIZE);
+            final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
             consumerRunning = true;
             try {
-                while (! stopped) {
+                while (! (stopped || Thread.interrupted()) ) {
+                    stopped = stopped || harvesters.isEmpty();
+                    LOGGER.trace("Still going. {}, {}", stopped,
+                            harvesters.isEmpty());
                     try {
                         final HarvestedOAIRecord record = tryPoll();
                         if (record == null) {
                             continue;
                         }
                         batch.add(record);
-                        if (batch.size() % BATCH_SIZE == 0) {
+                        if (batch.size() % batchSize == 0) {
                             mapper.batchWrite(batch, Collections.emptyList());
                             batch.clear();
                         }
                     } catch (final InterruptedException e) {
+                        LOGGER.warn("Consumer interrupted. Stopping.", e);
                         Thread.interrupted();
                         stop();
-                        throw new HarvesterException(e);
                     }
-                    stopped = stopped || harvesters.isEmpty();
                 }
                 // Write any leftovers from the last batch.
                 mapper.batchWrite(batch, Collections.emptyList());
+            } catch (final Exception e) {
+                LOGGER.error("Error in consumer.", e);
             } finally {
                 consumerRunning = false;
                 stop();
@@ -149,12 +265,12 @@ public final class HarvestAgent implements Observer {
         };
     }
 
-
     @Override
     public void update(final Observable o, final Object arg) {
         final HarvestNotification hn = (HarvestNotification)arg;
         if (hn.getType() == HarvestNotificationType.HARVEST_ENDED) {
-            harvesters.remove((Harvester)o);
+            LOGGER.info("Harvest of {} has ended.", hn.getHarvestParameters());
+            removeHarvester((Harvester)o);
         }
     }
 
@@ -173,18 +289,18 @@ public final class HarvestAgent implements Observer {
             }
         };
 
-        // All three of these things are threadsafe.
         final AmazonDynamoDB dynamo = new AmazonDynamoDBAsyncClient(creds);
         dynamo.setEndpoint("http://localhost:8000");
         final DynamoDBMapper mapper = new DynamoDBMapper(dynamo);
-        final HttpClient httpClient = HttpClients.custom()
-                .setDefaultHeaders(DEFAULT_HEADERS)
-                .build();
-
-        final HarvestAgent agent = new HarvestAgent(httpClient, mapper);
+        final HarvestAgent agent = new HarvestAgent.Builder(mapper).build();
         // TODO get list of harvest params from somewhere and pass them in here.
         final URI uri = new URI("http://kb.osu.edu/oai/request");
-        final HarvestParams[] params = { new HarvestParams(uri, OAIVerb.LIST_RECORDS) };
+        final HarvestParams[] params = {
+                new HarvestParams(uri, OAIVerb.LIST_RECORDS)
+                    .withSet("hdl_1811_44593"),
+                new HarvestParams(uri, OAIVerb.LIST_RECORDS)
+                    .withSet("hdl_1811_11"),
+        };
         agent.addHarvests(params);
 
         // Uncomment to check results.

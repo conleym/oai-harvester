@@ -66,7 +66,7 @@ public final class TestAgentOAIEventHandler {
     public TestAgentOAIEventHandler() throws Exception {
         configuration.setTemplateLoader(new ClassTemplateLoader(
                 this.getClass(), "/"));
-        final MessageDigest digest = AgentOAIResponseHandler.digest();
+        final MessageDigest digest = HarvestAgent.digest();
         for (int i = 1; i < 4; i++) {
             final String filename = "/record-" + i + ".xml";
             final InputStream in = this.getClass()
@@ -147,7 +147,7 @@ public final class TestAgentOAIEventHandler {
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
                 new ArrayBlockingQueue<>(10);
         harvester.start(p, new AgentOAIResponseHandler(uri,
-                harvestedRecordQueue, 0, TimeUnit.SECONDS));
+                harvestedRecordQueue, new Timeout(0, TimeUnit.SECONDS)));
 
         Assert.assertEquals(3, harvestedRecordQueue.size());
 
