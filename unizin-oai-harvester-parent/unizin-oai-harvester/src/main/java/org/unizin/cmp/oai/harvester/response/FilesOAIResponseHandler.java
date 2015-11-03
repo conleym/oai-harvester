@@ -48,7 +48,6 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
         this.outputFactory = outputFactory;
     }
 
-
     @Override
     public OAIEventHandler getEventHandler(
             final HarvestNotification notification) {
@@ -71,7 +70,7 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
     }
 
     @Override
-    public void onResponseProcessed(HarvestNotification notification) {
+    public void onResponseProcessed(final HarvestNotification notification) {
         OAIXMLUtils.closeQuietly(eventWriter);
         try (final OutputStream os = outputStream) {
             eventWriter = null;

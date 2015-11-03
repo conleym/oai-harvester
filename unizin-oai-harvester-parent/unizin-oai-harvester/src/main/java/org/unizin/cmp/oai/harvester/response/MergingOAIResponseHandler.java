@@ -151,7 +151,7 @@ public final class MergingOAIResponseHandler extends AbstractOAIResponseHandler 
                 *
                 * We only do this when the harvest has been successful, as we
                 * cannot know what events have been written, and thus cannot
-                * reliably write events.
+                * reliably write events, when there have been errors.
                 *
                 */
                 eventWriter.add(eventFactory.createEndElement(

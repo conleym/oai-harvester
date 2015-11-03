@@ -48,8 +48,8 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
  * suppressed exceptions).
  * <p>
  * Instances take no part in the notification or state management of the
- * harvester beyond what is mentioned above. In particular, no notifications are
- * sent from methods in this class.
+ * harvester beyond what is mentioned above. In particular, no notifications
+ * are sent from methods in this class.
  * <p>
  * Instances can be reused for multiple harvests.
  *
@@ -67,72 +67,79 @@ final class OAIResponseParser {
     }
 
     /**
-    * If the token is {@code null} return {@link #DEFAULT_FINAL_TOKEN}.
-    * Otherwise return the token.
-    * <p>
-    * We cannot set Harvest's {@code resumptionToken} to {@code null}
-    * (purposefully throws NPE). This is because the initial request parameters
-    * are generated when the token is {@code null}.
-    * <p>
-    * The token may be null in the following cases:
-    * <ol>
-    * <li>Non-list responses won't have resumption tokens.</li>
-    * <li>The server doesn't send back an empty token in the last incomplete
-    * list of a list request (it's supposed to, but some don't).</li>
-    * </ol>
-    */
+     * If the token is {@code null} return {@link #DEFAULT_FINAL_TOKEN}.
+     * Otherwise return the token.
+     * <p>
+     * We cannot set Harvest's {@code resumptionToken} to {@code null}
+     * (purposefully throws NPE). This is because the initial request parameters
+     * are generated when the token is {@code null}.
+     * <p>
+     * The token may be null in the following cases:
+     * <ol>
+     * <li>Non-list responses won't have resumption tokens.</li>
+     * <li>The server doesn't send back an empty token in the last incomplete
+     * list of a list request (it's supposed to, but some don't).</li>
+     * </ol>
+     */
     private static ResumptionToken nonNullToken(final ResumptionToken token) {
         return token == null ? DEFAULT_FINAL_TOKEN : token;
     }
 
     /**
-    * Parse a response from an OAI repository and update the harvest state
-    * appropriately.
-    *
-    * @param in
-    *            stream of the response content.
-    * @param harvest
-    *            the current harvest state.
-    * @param eventHandler
-    *            the event handler to which all {@code XMLEvents} will be sent.
-    * @throws XMLStreamException
-    *             if there's an error creating an {@link XMLEventReader} from
-    *             this instance's input factory's
-    *             {@link XMLInputFactory#createXMLEventReader(InputStream)}
-    *             method.
-    */
+     * Parse a response from an OAI repository and update the harvest state
+     * appropriately.
+     *
+     * @param in
+     *            stream of the response content.
+     * @param harvest
+     *            the current harvest state.
+     * @param eventHandler
+     *            the event handler to which all {@code XMLEvents} will be sent.
+     * @throws XMLStreamException
+     *             if there's an error creating an {@link XMLEventReader} from
+     *             this instance's input factory's
+     *             {@link XMLInputFactory#createXMLEventReader(InputStream)}
+     *             method.
+     */
     void parse(final InputStream in, final Harvest harvest,
-            final OAIEventHandler eventHandler) throws XMLStreamException {
+            final OAIEventHandler eventHandler)
+                    throws XMLStreamException {
         final XMLEventReader reader = inputFactory.createXMLEventReader(in);
         final List<OAIError> errorList = new ArrayList<>();
         /*
-        * Here, we need some gymnastics to ensure that protocol exceptions have
-        * "priority", i.e., that other exceptions encountered are suppressed in
-        * favor of protocol exceptions.
-        *
-        * If there were protocol errors, any exception thrown in the try block
-        * will be added to the protocol exception as a suppressed exception.
-        * Otherwise, the exception thrown from the try block, if any, will be
-        * thrown.
-        *
-        * This is basically the opposite of the priority handling used to
-        * suppress exceptions thrown in finally blocks in the harvester proper.
-        */
+         * Here, we need some gymnastics to ensure that protocol exceptions have
+         * "priority", i.e., that other exceptions encountered are suppressed in
+         * favor of protocol exceptions.
+         *
+         * If there were protocol errors, any exception thrown in the try block
+         * will be added to the protocol exception as a suppressed exception.
+         * Otherwise, the exception thrown from the try block, if any, will be
+         * thrown.
+         *
+         * This is basically the opposite of the priority handling used to
+         * suppress exceptions thrown in finally blocks in the harvester proper.
+         */
         RuntimeException tryException = null;
         try {
-            final ResumptionToken resumptionToken = nonNullToken(
-                    readEvents(reader, errorList, harvest, eventHandler));
+            final ResumptionToken resumptionToken = nonNullToken(readEvents(
+                    reader, errorList, harvest, eventHandler));
             logger.debug("Got resumption token {}", resumptionToken);
             final String token = resumptionToken.getToken();
             if ("".equals(token)) {
-                // Harvest is done.
+                /*
+                 * Harvest is done. We never add this final token to the harvest
+                 * state.
+                 */
                 harvest.stop();
             }
             if (errorList.isEmpty()) {
                 /*
-                * If there were errors, the client may wish to retry (not
-                * implemented yet). Only set the token if there are none.
-                */
+                 * In the case of errors, the resumption token is probably our
+                 * own empty string token, or possibly some garbage from a
+                 * non-standard-compliant server. Either way, don't set it so
+                 * the client has the option to retry the request from the
+                 * parameters available from the harvester.
+                 */
                 harvest.setResumptionToken(resumptionToken);
             }
         } catch (final XMLStreamException e) {
@@ -161,8 +168,8 @@ final class OAIResponseParser {
             eventHandler.onEvent(event);
         } catch (final XMLStreamException e) {
             /*
-             * Errors thrown during event handling are, by definition, not parse
-             * errors, and so need to be treated specially here.
+             * Errors thrown during event handling are, by definition, not
+             * parse errors, and so need to be treated specially here.
              */
             throw new HarvesterException(e);
         }
@@ -171,25 +178,25 @@ final class OAIResponseParser {
 
 
     /**
-    * Read the text content of a node until non-text is seen.
-    * <p>
-    * This is used in preference to {@link XMLEventReader#getElementText()},
-    * because we want to pass all events from the input to the
-    * {@code OAIEventHandler}, and that method eats the text events.
-    * <p>
-    * There is also no mixed content in any of the nodes we care about, so this
-    * doesn't handle such cases, instead simply stopping at the first non-text
-    * node.
-    *
-    * @param reader
-    *            the event reader from which to read events.
-    * @param eventHandler
-    *            the handler to which any events read should be sent.
-    * @return a string containing the character content of all text children of
-    *         the reader's current {@link StartElement}, up to and <em>not</em>
-    *         including the first non-text event.
-    * @throws XMLStreamException
-    */
+     * Read the text content of a node until non-text is seen.
+     * <p>
+     * This is used in preference to {@link XMLEventReader#getElementText()},
+     * because we want to pass all events from the input to the
+     * {@code OAIEventHandler}, and that method eats the text events.
+     * <p>
+     * There is also no mixed content in any of the nodes we care about, so this
+     * doesn't handle such cases, instead simply stopping at the first non-text
+     * node.
+     *
+     * @param reader
+     *            the event reader from which to read events.
+     * @param eventHandler
+     *            the handler to which any events read should be sent.
+     * @return a string containing the character content of all text children of
+     *         the reader's current {@link StartElement}, up to and <em>not</em>
+     *         including the first non-text event.
+     * @throws XMLStreamException
+     */
     private String readText(final XMLEventReader reader,
             final OAIEventHandler eventHandler) throws XMLStreamException {
         final StringBuilder sb = new StringBuilder();

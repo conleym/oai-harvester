@@ -216,6 +216,24 @@ public final class Harvester extends Observable {
     }
 
     /**
+     * Get the parameters needed to retry the harvest, starting with the most
+     * recent request.
+     * <p>
+     * These parameters can be passed to
+     * {@link #start(HarvestParams, OAIResponseHandler)} to start a new harvest.
+     * Note that this is a <em>new</em> harvest. In particular, statistics about
+     * the current harvest will be lost.
+     *
+     * @return the parameters needed to retry the most recent request.
+     */
+    public HarvestParams getRetryParams() {
+        if (harvest == null) {
+            throw new IllegalStateException("No current harvest parameters.");
+        }
+        return harvest.getRetryParams();
+    }
+
+    /**
      * Safely run some code requiring a {@code finally} block without losing
      * exceptions.
      * <p>

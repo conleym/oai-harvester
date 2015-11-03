@@ -109,5 +109,9 @@ final class Harvest {
     boolean hasNext() {
         return isStarted && !hasError && !isStoppedByUser;
     }
+
+    HarvestParams getRetryParams() {
+        return params.getRetryParameters(resumptionToken);
+    }
 }
 
