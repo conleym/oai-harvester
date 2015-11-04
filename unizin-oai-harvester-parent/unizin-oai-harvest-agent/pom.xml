@@ -58,36 +58,46 @@
         </executions>
       </plugin>
 
-
-      <!-- Make random ports system properties that tests can use to connect. -->
+      <!-- make local dynamodb go -->
       <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
+        <groupId>com.jcabi</groupId>
+        <artifactId>jcabi-dynamodb-maven-plugin</artifactId>
+        <version>0.7.1</version>
+        <configuration>
+          <port>${dynamodblocal.port}</port>
+          <dist>${project.build.directory}/dynamodb-dist</dist>
+        </configuration>
+        <!-- You'd expect, based on the examples, that a single execution of
+          both start & stop goals during the test phase would work. You'd be
+          wrong: ddb local doesn't even appear to start up. -->
+        <executions>
+          <execution>
+            <!--  Start before the test phase. -->
+            <id>dynamodb-start</id>
+            <phase>process-test-classes</phase>
+            <goals>
+              <goal>start</goal>
+            </goals>
+          </execution>
+          <execution>
+            <!--  Stop after the test phase. -->
+            <id>dynamodb-stop</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <systemPropertyVariables>
             <dynamodb.port>${dynamodblocal.port}</dynamodb.port>
             <wiremock.port>${wiremock.port}</wiremock.port>
           </systemPropertyVariables>
         </configuration>
-      </plugin>
-
-      <!-- make local dynamodb go -->
-      <plugin>
-        <groupId>com.jcabi</groupId>
-        <artifactId>jcabi-dynamodb-maven-plugin</artifactId>
-        <version>0.7.1</version>
-        <executions>
-          <execution>
-            <id>dynamodb-integration-test</id>
-            <goals>
-              <goal>start</goal>
-              <goal>stop</goal>
-            </goals>
-            <configuration>
-              <port>${dynamodblocal.port}</port>
-              <dist>${project.build.directory}/dynamodb-dist</dist>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
 
     </plugins>
@@ -114,7 +124,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <execute />
+                    <ignore />
                   </action>
                 </pluginExecution>
                 <pluginExecution>
@@ -127,7 +137,21 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <execute />
+                    <ignore />
+                  </action>
+                </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.jcabi</groupId>
+                    <artifactId>jcabi-dynamodb-maven-plugin</artifactId>
+                    <versionRange>[0.7.1,)</versionRange>
+                    <goals>
+                      <goal>start</goal>
+                      <goal>stop</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>
