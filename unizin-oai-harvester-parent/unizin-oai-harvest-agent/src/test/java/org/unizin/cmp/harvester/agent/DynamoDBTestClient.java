@@ -28,7 +28,7 @@ public final class DynamoDBTestClient {
     public DynamoDBTestClient(final String tableName) {
         this.tableName = tableName;
         dynamoDB = new AmazonDynamoDBClient(new BasicAWSCredentials("", ""));
-        dynamoDB.setEndpoint(String.format("http://localhost:%s",
+        dynamoDB.setEndpoint(String.format("http://127.0.0.1:%s",
                 Tests.DYNAMO_PORT));
         mapper = new DynamoDBMapper(dynamoDB,
                 new DynamoDBMapperConfig(new TableNameOverride(tableName)));
