@@ -1,5 +1,9 @@
 package org.unizin.cmp.harvester.agent;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.CHECKSUM_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.DATESTAMP_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.SETS_ATTRIB;
@@ -7,9 +11,7 @@ import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.STATUS_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.XML_ATTRIB;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -23,12 +25,6 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.events.XMLEvent;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -48,54 +44,23 @@ import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 
-import freemarker.cache.ClassTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 
 public final class TestAgentOAIEventHandler {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+    @Rule
+    public final WireMockRule wireMock = new WireMockRule(Tests.WIREMOCK_PORT);
 
-    private final Configuration configuration = new Configuration(
-            Configuration.getVersion());
-    private final List<String> records = new ArrayList<>(3);
     private final List<byte[]> checksums = new ArrayList<>(3);
-    private final String listRecords;
 
     public TestAgentOAIEventHandler() throws Exception {
-        configuration.setTemplateLoader(new ClassTemplateLoader(
-                this.getClass(), "/"));
         final MessageDigest digest = HarvestAgent.digest();
-        for (int i = 1; i < 4; i++) {
-            final String filename = "/record-" + i + ".xml";
-            final InputStream in = this.getClass()
-                    .getResourceAsStream(filename);
-            // Run the expected input through StAX to eliminate any newline weirdness.
-            final XMLEventReader r = XMLInputFactory.newFactory().createXMLEventReader(in);
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final XMLEventWriter w = XMLOutputFactory.newFactory().createXMLEventWriter(baos);
-            while (r.hasNext()) {
-               final XMLEvent e = r.nextEvent();
-               if (e.isStartDocument() || e.isEndDocument()) {
-                   continue;
-               }
-               w.add(e);
-            }
-            r.close();
-            w.close();
-            final byte[] bytes = baos.toByteArray();
-            final String str = new String(bytes, StandardCharsets.UTF_8);
-            records.add(new String(bytes, StandardCharsets.UTF_8));
-            digest.update(str.getBytes(StandardCharsets.UTF_8));
+        for (final String record : Tests.TEST_RECORDS) {
+            digest.update(record.getBytes(StandardCharsets.UTF_8));
             checksums.add(digest.digest());
         }
-        final Template template = configuration.getTemplate("oai-list-records.xml");
-        final StringWriter sw = new StringWriter();
-        final Map<String, Object> dataModel = new HashMap<>(1);
-        dataModel.put("records", records);
-        template.process(dataModel, sw);
-        this.listRecords = sw.toString();
     }
 
     /**
@@ -114,11 +79,10 @@ public final class TestAgentOAIEventHandler {
         return list;
     }
 
-
     private static void equals(final byte[] expected, final byte[] actual) {
+        // Use lists to make exception messages intelligible.
         Assert.assertEquals(toList(expected), toList(actual));
     }
-
 
     private static void addExpectedValuesForIdentifier(final String identifier,
             final Map<String, Object> expectedValue,
@@ -127,15 +91,20 @@ public final class TestAgentOAIEventHandler {
         expectedValues.put(identifier, expectedValue);
     }
 
-
     @Test
     public void testHandler() throws Exception {
+        stubFor(get(urlMatching(".*"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody("")));
         final HttpClient httpClient = Mockito.mock(HttpClient.class);
         final HttpResponse response = new BasicHttpResponse(
                 new BasicStatusLine(HttpVersion.HTTP_1_0,
                         HttpStatus.SC_OK, ""));
         final HttpEntity entity = Mockito.mock(HttpEntity.class);
-        final InputStream resp = new ByteArrayInputStream(listRecords.getBytes(StandardCharsets.UTF_8));
+        final InputStream resp = new ByteArrayInputStream(
+                Tests.OAI_LIST_RECORDS_RESPONSE.getBytes(
+                        StandardCharsets.UTF_8));
         Mockito.doReturn(resp).when(entity).getContent();
         response.setEntity(entity);
         Mockito.doReturn(response).when(httpClient).execute(Matchers.any());
@@ -155,21 +124,21 @@ public final class TestAgentOAIEventHandler {
         Map<String, Object> expectedValue = new HashMap<>();
         expectedValue.put(STATUS_ATTRIB, OAI2Constants.DELETED_STATUS);
         expectedValue.put(DATESTAMP_ATTRIB, "2015-11-02");
-        expectedValue.put(XML_ATTRIB, records.get(0));
+        expectedValue.put(XML_ATTRIB, Tests.TEST_RECORDS.get(0));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(0));
         expectedValue.put(SETS_ATTRIB, Collections.emptySet());
         addExpectedValuesForIdentifier("1", expectedValue, expectedValues);
 
         expectedValue = new HashMap<>();
         expectedValue.put(DATESTAMP_ATTRIB, "2014-01-10");
-        expectedValue.put(XML_ATTRIB, records.get(1));
+        expectedValue.put(XML_ATTRIB, Tests.TEST_RECORDS.get(1));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(1));
         expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set1", "set2")));
         addExpectedValuesForIdentifier("2", expectedValue, expectedValues);
 
         expectedValue = new HashMap<>();
         expectedValue.put(DATESTAMP_ATTRIB, "2010-10-10");
-        expectedValue.put(XML_ATTRIB, records.get(2));
+        expectedValue.put(XML_ATTRIB, Tests.TEST_RECORDS.get(2));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(2));
         expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set3")));
         addExpectedValuesForIdentifier("3", expectedValue, expectedValues);

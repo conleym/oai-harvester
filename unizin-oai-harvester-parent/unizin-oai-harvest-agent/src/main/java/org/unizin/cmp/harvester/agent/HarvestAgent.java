@@ -1,6 +1,5 @@
 package org.unizin.cmp.harvester.agent;
 
-import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -26,17 +25,14 @@ import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBAsyncClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch;
 
 public final class HarvestAgent implements Observer {
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -132,6 +128,7 @@ public final class HarvestAgent implements Observer {
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
+    private final List<Runnable> tasks = new ArrayList<>();
     private final ExecutorService executorService;
     private final Timeout offerTimeout;
     private final Timeout pollTimeout;
@@ -139,7 +136,6 @@ public final class HarvestAgent implements Observer {
     private final Object harvestersLock = new Object();
     private final Set<Harvester> harvesters = new HashSet<>();
     private volatile boolean stopped = false;
-    private volatile boolean consumerRunning = false;
 
 
     public HarvestAgent(final HttpClient httpClient,
@@ -185,11 +181,50 @@ public final class HarvestAgent implements Observer {
             throws NoSuchAlgorithmException {
         for (final HarvestParams param : params) {
             final Runnable r = createHarvestRunnable(param);
+            tasks.add(r);
+        }
+    }
+
+    private void writeBatch(final List<HarvestedOAIRecord> batch) {
+        final List<FailedBatch> failed = mapper.batchWrite(batch,
+                Collections.emptyList());
+        if (! failed.isEmpty()) {
+            throw new RuntimeException("Batch failed!");
+        }
+    }
+
+    public void start() {
+        if (tasks.isEmpty()) {
+            return;
+        }
+        for (final Runnable r : tasks) {
             executorService.submit(r);
         }
-        if (params.length > 0 && !consumerRunning) {
-            executorService.submit(createConsumerRunnable());
+        tasks.clear();
+        final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
+        while (! (stopped || harvesters.isEmpty())) {
+            try {
+                final HarvestedOAIRecord record = tryPoll();
+                if (record == null) {
+                    continue;
+                }
+                batch.add(record);
+                if (batch.size() % batchSize == 0) {
+                    LOGGER.info("Writing {} records to database.",
+                            batch.size());
+                    writeBatch(batch);
+                    batch.clear();
+                }
+            } catch (final InterruptedException e) {
+                LOGGER.warn("Consumer interrupted. Stopping.", e);
+                Thread.interrupted();
+                stop();
+            }
         }
+        // Write any leftovers from the last batch.
+        LOGGER.info("Writing final batch of {} records to database.",
+                batch.size());
+        writeBatch(batch);
     }
 
     private Runnable createHarvestRunnable(final HarvestParams params)
@@ -229,42 +264,6 @@ public final class HarvestAgent implements Observer {
         executorService.shutdownNow();
     }
 
-    private Runnable createConsumerRunnable() {
-        return () -> {
-            final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
-            consumerRunning = true;
-            try {
-                while (! (stopped || Thread.interrupted()) ) {
-                    stopped = stopped || harvesters.isEmpty();
-                    LOGGER.trace("Still going. {}, {}", stopped,
-                            harvesters.isEmpty());
-                    try {
-                        final HarvestedOAIRecord record = tryPoll();
-                        if (record == null) {
-                            continue;
-                        }
-                        batch.add(record);
-                        if (batch.size() % batchSize == 0) {
-                            mapper.batchWrite(batch, Collections.emptyList());
-                            batch.clear();
-                        }
-                    } catch (final InterruptedException e) {
-                        LOGGER.warn("Consumer interrupted. Stopping.", e);
-                        Thread.interrupted();
-                        stop();
-                    }
-                }
-                // Write any leftovers from the last batch.
-                mapper.batchWrite(batch, Collections.emptyList());
-            } catch (final Exception e) {
-                LOGGER.error("Error in consumer.", e);
-            } finally {
-                consumerRunning = false;
-                stop();
-            }
-        };
-    }
-
     @Override
     public void update(final Observable o, final Object arg) {
         final HarvestNotification hn = (HarvestNotification)arg;
@@ -272,41 +271,5 @@ public final class HarvestAgent implements Observer {
             LOGGER.info("Harvest of {} has ended.", hn.getHarvestParameters());
             removeHarvester((Harvester)o);
         }
-    }
-
-
-    public static void main(final String[] args) throws Exception {
-        // TODO: these are mine from my own AWS account. They should not be in the final code.
-        final AWSCredentials creds = new AWSCredentials() {
-            @Override
-            public String getAWSSecretKey() {
-                return "RUT1OuyWGu7C+qgI9kBi/vmo+JPwxYKYQifNweVI";
-            }
-
-            @Override
-            public String getAWSAccessKeyId() {
-                return "AKIAISCX6PRATPDNKWJA";
-            }
-        };
-
-        final AmazonDynamoDB dynamo = new AmazonDynamoDBAsyncClient(creds);
-        dynamo.setEndpoint("http://localhost:8000");
-        final DynamoDBMapper mapper = new DynamoDBMapper(dynamo);
-        final HarvestAgent agent = new HarvestAgent.Builder(mapper).build();
-        // TODO get list of harvest params from somewhere and pass them in here.
-        final URI uri = new URI("http://kb.osu.edu/oai/request");
-        final HarvestParams[] params = {
-                new HarvestParams(uri, OAIVerb.LIST_RECORDS)
-                    .withSet("hdl_1811_44593"),
-                new HarvestParams(uri, OAIVerb.LIST_RECORDS)
-                    .withSet("hdl_1811_11"),
-        };
-        agent.addHarvests(params);
-
-        // Uncomment to check results.
-//       final PaginatedScanList<HarvestedOAIRecord> psl = mapper.scan(HarvestedOAIRecord.class, new DynamoDBScanExpression());
-//       for (final HarvestedOAIRecord record : psl) {
-//           System.out.println(record);
-//       }
     }
 }
