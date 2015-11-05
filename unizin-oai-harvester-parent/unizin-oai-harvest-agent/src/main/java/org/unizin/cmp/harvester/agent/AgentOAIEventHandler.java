@@ -4,42 +4,25 @@ import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.unizin.cmp.oai.OAI2Constants;
-import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
-import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
+import org.unizin.cmp.oai.harvester.response.RecordOAIEventHandler;
 
-public final class AgentOAIEventHandler implements OAIEventHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(
-            AgentOAIEventHandler.class);
-
+public final class AgentOAIEventHandler
+extends RecordOAIEventHandler<HarvestedOAIRecord> {
     private final String baseURL;
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
     private final Timeout offerTimeout;
     private final XMLOutputFactory outputFactory;
     private final MessageDigest messageDigest;
-    private final List<XMLEvent> eventBuffer = new ArrayList<>();
-    private final StringBuilder charBuffer = new StringBuilder();
-
-    private boolean inRecord;
-    private boolean bufferChars;
-    private QName currentStartElementQName;
-    private HarvestedOAIRecord currentRecord = new HarvestedOAIRecord();
-
 
     public AgentOAIEventHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
@@ -53,28 +36,14 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
         this.messageDigest = messageDigest;
     }
 
-
-    private boolean currentElementIs(final QName name) {
-        return Objects.equals(currentStartElementQName, name);
-    }
-
     private byte[] checksum(final byte[] bytes) {
         messageDigest.update(bytes);
         return messageDigest.digest();
     }
 
-    private void offerCurrentRecord() throws XMLStreamException {
-        // Set up for next record.
-        final HarvestedOAIRecord previousRecord = currentRecord;
-        currentRecord = new HarvestedOAIRecord();
-
-        // Finalize the record to add.
-        final byte[] recordBytes = getAndClearEventBuffer();
-        previousRecord.setXml(new String(recordBytes, StandardCharsets.UTF_8));
-        previousRecord.setChecksum(checksum(recordBytes));
-        previousRecord.setBaseURL(baseURL);
+    private void offerRecord(final HarvestedOAIRecord record) {
         try {
-            harvestedRecordQueue.offer(previousRecord, offerTimeout.getTime(),
+            harvestedRecordQueue.offer(record, offerTimeout.getTime(),
                     offerTimeout.getUnit());
         } catch (final InterruptedException e) {
             Thread.interrupted();
@@ -82,77 +51,57 @@ public final class AgentOAIEventHandler implements OAIEventHandler {
         }
     }
 
-    private String getBufferedChars() {
-        return charBuffer.toString();
+    private byte[] createXML(final List<XMLEvent> events) throws XMLStreamException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final XMLEventWriter writer = outputFactory.createXMLEventWriter(baos);
+        for (final XMLEvent event : events) {
+            writer.add(event);
+        }
+        return baos.toByteArray();
     }
 
-    private byte[] getAndClearEventBuffer() throws XMLStreamException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    @Override
+    protected void onDatestamp(final HarvestedOAIRecord currentRecord,
+            final String datestamp) {
+        currentRecord.setDatestamp(datestamp);
+    }
+
+    @Override
+    protected void onIdentifier(final HarvestedOAIRecord currentRecord,
+            final String identifier) {
+        currentRecord.setIdentifier(identifier);
+    }
+
+    @Override
+    protected void onSet(final HarvestedOAIRecord currentRecord,
+            final String set) {
+        currentRecord.getSets().add(set);
+    }
+
+    @Override
+    protected void onStatus(final HarvestedOAIRecord currentRecord,
+            final String status) {
+        currentRecord.setStatus(status);
+    }
+
+    @Override
+    protected void onRecordEnd(final HarvestedOAIRecord currentRecord,
+            final List<XMLEvent> recordEvents) {
         try {
-            final XMLEventWriter writer = outputFactory.createXMLEventWriter(baos);
-            for (final XMLEvent event : eventBuffer) {
-                writer.add(event);
-            }
-            return baos.toByteArray();
-        } finally {
-            /*
-             * Clear the buffer regardless of exceptions so that it's possible
-             * to continue with the next record if desired.
-             */
-            eventBuffer.clear();
+            final byte[] bytes = createXML(recordEvents);
+            final byte[] checksum = checksum(bytes);
+            currentRecord.setXml(new String(bytes, StandardCharsets.UTF_8));
+            currentRecord.setChecksum(checksum);
+            offerRecord(currentRecord);
+        } catch (final XMLStreamException e) {
+            throw new HarvesterException(e);
         }
     }
 
     @Override
-    public void onEvent(final XMLEvent e) throws XMLStreamException {
-        LOGGER.trace("Got event {}", e);
-        if (e.isStartElement()) {
-            currentStartElementQName = e.asStartElement().getName();
-            if (currentElementIs(OAI2Constants.RECORD)) {
-                inRecord = true;
-            } else if (currentElementIs(OAI2Constants.HEADER)) {
-                final String status = OAIXMLUtils.attributeValue(
-                        e.asStartElement(), OAI2Constants.HEADER_STATUS_ATTR);
-                currentRecord.setStatus(status);
-            } else if (currentElementIs(OAI2Constants.DATESTAMP) ||
-                    currentElementIs(OAI2Constants.IDENTIFIER) ||
-                    currentElementIs(OAI2Constants.SET_SPEC)) {
-                bufferChars = true;
-            }
-        } else if (e.isEndElement()) {
-            // We never want to buffer characters beyond an end tag.
-            bufferChars = false;
-            final QName name = e.asEndElement().getName();
-            if (OAI2Constants.RECORD.equals(name)) {
-                inRecord = false;
-                eventBuffer.add(e);
-                offerCurrentRecord();
-            } else if (OAI2Constants.IDENTIFIER.equals(name)) {
-                final String identifier = getBufferedChars();
-                LOGGER.trace("Setting identifier {}", identifier);
-                currentRecord.setIdentifier(identifier);
-            } else if (OAI2Constants.DATESTAMP.equals(name)) {
-                final String datestamp = getBufferedChars();
-                LOGGER.trace("Setting datestamp {}", datestamp);
-                currentRecord.setDatestamp(datestamp);
-            } else if (OAI2Constants.SET_SPEC.equals(name)) {
-                final String set = getBufferedChars();
-                LOGGER.trace("Adding set {}", set);
-                currentRecord.getSets().add(set);
-            }
-            charBuffer.setLength(0);
-        } else if (e.isCharacters() && bufferChars) {
-            charBuffer.append(e.asCharacters().getData());
-        } else if (currentElementIs(OAI2Constants.HEADER) && e.isAttribute()) {
-            // Not sure this ever happens....
-            final Attribute a = (Attribute)e;
-            if (OAI2Constants.HEADER_STATUS_ATTR.equals(a.getName())) {
-                final String status = a.getValue();
-                currentRecord.setStatus(status);
-            }
-        }
-        if (inRecord) {
-            eventBuffer.add(e);
-        }
+    protected HarvestedOAIRecord createRecord(final StartElement recordStartElement) {
+        final HarvestedOAIRecord record = new HarvestedOAIRecord();
+        record.setBaseURL(baseURL);
+        return record;
     }
 }
