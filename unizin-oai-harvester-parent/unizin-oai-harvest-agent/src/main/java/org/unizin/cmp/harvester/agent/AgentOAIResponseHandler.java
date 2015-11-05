@@ -14,8 +14,6 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 
 
 public final class AgentOAIResponseHandler extends AbstractOAIResponseHandler {
-    public static final String DIGEST_ALGORITHM = "MD5";
-
     private final AgentOAIEventHandler handler;
 
 
@@ -39,7 +37,8 @@ public final class AgentOAIResponseHandler extends AbstractOAIResponseHandler {
 
 
     @Override
-    public OAIEventHandler getEventHandler(final HarvestNotification notification) {
+    public OAIEventHandler getEventHandler(
+            final HarvestNotification notification) {
         return handler;
     }
 }

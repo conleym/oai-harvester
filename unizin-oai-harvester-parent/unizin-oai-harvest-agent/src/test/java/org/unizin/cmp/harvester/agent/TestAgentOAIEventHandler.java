@@ -154,7 +154,7 @@ public final class TestAgentOAIEventHandler {
             equals((byte[])expectedValue.get(CHECKSUM_ATTRIB),
                    record.getChecksum());
             Assert.assertEquals(expectedValue.get(XML_ATTRIB),
-                    record.getXml());
+                    Tests.decompress(record.getXml()));
         }
     }
 }

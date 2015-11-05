@@ -67,12 +67,12 @@
           <port>${dynamodblocal.port}</port>
           <dist>${project.build.directory}/dynamodb-dist</dist>
         </configuration>
-        <!-- You'd expect, based on the examples, that a single execution of
-          both start & stop goals during the test phase would work. You'd be
-          wrong: ddb local doesn't even appear to start up. -->
+        <!-- You'd expect, based on the examples, that a single execution
+          of both start & stop goals during the test phase would work. You'd be wrong:
+          ddb local doesn't even appear to start up. -->
         <executions>
           <execution>
-            <!--  Start before the test phase. -->
+            <!-- Start before the test phase. -->
             <id>dynamodb-start</id>
             <phase>process-test-classes</phase>
             <goals>
@@ -80,7 +80,7 @@
             </goals>
           </execution>
           <execution>
-            <!--  Stop after the test phase. -->
+            <!-- Stop after the test phase. -->
             <id>dynamodb-stop</id>
             <phase>prepare-package</phase>
             <goals>
@@ -203,6 +203,10 @@
       <artifactId>wiremock</artifactId>
       <version>1.57</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
   </dependencies>
 </project>

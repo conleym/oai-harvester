@@ -1,5 +1,6 @@
 package org.unizin.cmp.harvester.agent;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
@@ -18,6 +20,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
+
+import com.google.common.io.ByteStreams;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
@@ -109,6 +113,16 @@ public final class Tests {
         w.close();
         final byte[] bytes = baos.toByteArray();
         return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+
+    public static String decompress(final byte[] bytes) throws IOException {
+        final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        final GZIPInputStream in = new GZIPInputStream(bais);
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteStreams.copy(in, baos);
+        return new String(baos.toByteArray(), StandardCharsets.UTF_8);
     }
 
 

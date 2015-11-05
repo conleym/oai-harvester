@@ -1,11 +1,12 @@
 package org.unizin.cmp.harvester.agent;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.zip.GZIPOutputStream;
 
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
@@ -60,6 +61,18 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         return baos.toByteArray();
     }
 
+    private byte[] compress(final byte[] rawBytes) {
+        try {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final GZIPOutputStream out = new GZIPOutputStream(baos);
+            out.write(rawBytes);
+            out.close();
+            return baos.toByteArray();
+        } catch (final IOException e) {
+            throw new HarvesterException(e);
+        }
+    }
+
     @Override
     protected void onDatestamp(final HarvestedOAIRecord currentRecord,
             final String datestamp) {
@@ -90,7 +103,7 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         try {
             final byte[] bytes = createXML(recordEvents);
             final byte[] checksum = checksum(bytes);
-            currentRecord.setXml(new String(bytes, StandardCharsets.UTF_8));
+            currentRecord.setXml(compress(bytes));
             currentRecord.setChecksum(checksum);
             offerRecord(currentRecord);
         } catch (final XMLStreamException e) {

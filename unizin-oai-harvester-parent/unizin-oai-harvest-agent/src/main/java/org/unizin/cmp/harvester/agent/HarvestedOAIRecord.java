@@ -44,7 +44,7 @@ public final class HarvestedOAIRecord {
     private String datestamp;
 
     @DynamoDBAttribute(attributeName = XML_ATTRIB)
-    private String xml;
+    private byte[] xml;
 
     @DynamoDBAttribute(attributeName = CHECKSUM_ATTRIB)
     private byte[] checksum;
@@ -84,11 +84,11 @@ public final class HarvestedOAIRecord {
         this.datestamp = datestamp;
     }
 
-    public String getXml() {
+    public byte[] getXml() {
         return xml;
     }
 
-    public void setXml(final String xml) {
+    public void setXml(final byte[] xml) {
         this.xml = xml;
     }
 
@@ -108,6 +108,7 @@ public final class HarvestedOAIRecord {
         this.status = status;
     }
 
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -118,7 +119,7 @@ public final class HarvestedOAIRecord {
         result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
         result = prime * result + ((sets == null) ? 0 : sets.hashCode());
         result = prime * result + ((status == null) ? 0 : status.hashCode());
-        result = prime * result + ((xml == null) ? 0 : xml.hashCode());
+        result = prime * result + Arrays.hashCode(xml);
         return result;
     }
 
@@ -158,10 +159,7 @@ public final class HarvestedOAIRecord {
                 return false;
         } else if (!status.equals(other.status))
             return false;
-        if (xml == null) {
-            if (other.xml != null)
-                return false;
-        } else if (!xml.equals(other.xml))
+        if (!Arrays.equals(xml, other.xml))
             return false;
         return true;
     }
@@ -170,7 +168,7 @@ public final class HarvestedOAIRecord {
     public String toString() {
         return this.getClass().getName() + " [baseURL=" + baseURL +
                 ", identifier=" + identifier + ", sets=" + sets +
-                ", datestamp=" + datestamp + ", xml=" + xml +
+                ", datestamp=" + datestamp + ", xml=" + Arrays.toString(xml) +
                 ", checksum=" + Arrays.toString(checksum) + ", status="+ status
                 + "]";
     }
