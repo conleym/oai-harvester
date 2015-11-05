@@ -62,15 +62,13 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
     }
 
     private byte[] compress(final byte[] rawBytes) {
-        try {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final GZIPOutputStream out = new GZIPOutputStream(baos);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (final GZIPOutputStream out = new GZIPOutputStream(baos)) {
             out.write(rawBytes);
-            out.close();
-            return baos.toByteArray();
         } catch (final IOException e) {
             throw new HarvesterException(e);
         }
+        return baos.toByteArray();
     }
 
     @Override

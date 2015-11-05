@@ -118,11 +118,11 @@ public final class Tests {
 
     public static String decompress(final byte[] bytes) throws IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        final GZIPInputStream in = new GZIPInputStream(bais);
-
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ByteStreams.copy(in, baos);
-        return new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        try (final GZIPInputStream in = new GZIPInputStream(bais)) {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ByteStreams.copy(in, baos);
+            return new String(baos.toByteArray(), StandardCharsets.UTF_8);
+        }
     }
 
 
