@@ -34,11 +34,8 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 
 public final class TestHarvestAgent {
-    private static final String MOCK_OAI_BASE_URI =
-            String.format("http://0.0.0.0:%d/oai", Tests.WIREMOCK_PORT);
-
     @Rule
-    public final WireMockRule wireMockRule = new WireMockRule(Tests.WIREMOCK_PORT);
+    public final WireMockRule wireMockRule = Tests.newWireMockRule();
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -48,7 +45,7 @@ public final class TestHarvestAgent {
 
 
     public TestHarvestAgent() throws URISyntaxException {
-        testURI = new URI(MOCK_OAI_BASE_URI);
+        testURI = new URI(Tests.MOCK_OAI_BASE_URI);
     }
 
     @Before

@@ -10,8 +10,6 @@ import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.SETS_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.STATUS_ATTRIB;
 import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.XML_ATTRIB;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -26,19 +24,11 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.client.HttpClient;
-import org.apache.http.message.BasicHttpResponse;
-import org.apache.http.message.BasicStatusLine;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
@@ -51,7 +41,7 @@ public final class TestAgentOAIEventHandler {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
     @Rule
-    public final WireMockRule wireMock = new WireMockRule(Tests.WIREMOCK_PORT);
+    public final WireMockRule wireMock = Tests.newWireMockRule();
 
     private final List<byte[]> checksums = new ArrayList<>(3);
 
@@ -93,25 +83,15 @@ public final class TestAgentOAIEventHandler {
 
     @Test
     public void testHandler() throws Exception {
+
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
-                        .withBody("")));
-        final HttpClient httpClient = Mockito.mock(HttpClient.class);
-        final HttpResponse response = new BasicHttpResponse(
-                new BasicStatusLine(HttpVersion.HTTP_1_0,
-                        HttpStatus.SC_OK, ""));
-        final HttpEntity entity = Mockito.mock(HttpEntity.class);
-        final InputStream resp = new ByteArrayInputStream(
-                Tests.OAI_LIST_RECORDS_RESPONSE.getBytes(
-                        StandardCharsets.UTF_8));
-        Mockito.doReturn(resp).when(entity).getContent();
-        response.setEntity(entity);
-        Mockito.doReturn(response).when(httpClient).execute(Matchers.any());
+                        .withBody(Tests.OAI_LIST_RECORDS_RESPONSE)));
+
         final Harvester harvester = new Harvester.Builder()
-                .withHttpClient(httpClient)
                 .build();
-        final URI uri = new URI("http://example.oai.com/");
+        final URI uri = new URI(Tests.MOCK_OAI_BASE_URI);
         final HarvestParams p = new HarvestParams(uri, OAIVerb.LIST_RECORDS);
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
                 new ArrayBlockingQueue<>(10);

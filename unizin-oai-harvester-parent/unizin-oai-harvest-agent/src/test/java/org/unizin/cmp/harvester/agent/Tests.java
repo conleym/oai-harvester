@@ -21,6 +21,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
 
 import freemarker.cache.ClassTemplateLoader;
@@ -38,6 +39,9 @@ public final class Tests {
     public static final int WIREMOCK_PORT = Integer.parseInt(
             System.getProperty("wiremock.port",
                     String.valueOf(DEFAULT_WIREMOCK_PORT)));
+
+    public static final String MOCK_OAI_BASE_URI =
+            String.format("http://0.0.0.0:%d/oai", Tests.WIREMOCK_PORT);
 
     private static final Template OAI_LIST_RECORDS_TEMPLATE;
     static {
@@ -125,6 +129,10 @@ public final class Tests {
         }
     }
 
+
+    public static WireMockRule newWireMockRule() {
+        return new WireMockRule(WIREMOCK_PORT);
+    }
 
     /** No instances allowed. */
     private Tests() { }
