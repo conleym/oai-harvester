@@ -3,6 +3,7 @@ package org.unizin.cmp.oai.harvester.response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Observable;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -18,10 +19,16 @@ import org.unizin.cmp.oai.OAIXMLUtils;
 
 /**
  * Event handler implementation that produces record objects.
+ * <p>
+ * Instances are {@code Observable}, and registered observers are notified of
+ * each new record object produced. This mechanism allows decoupling of event
+ * handling from record object handling.
  *
- * @param <T> they type of the record object.
+ * @param <T>
+ *            they type of the record object.
  */
-public abstract class RecordOAIEventHandler<T> implements OAIEventHandler {
+public abstract class RecordOAIEventHandler<T> extends Observable
+implements OAIEventHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             RecordOAIEventHandler.class);
 
@@ -69,6 +76,8 @@ public abstract class RecordOAIEventHandler<T> implements OAIEventHandler {
                 inRecord = false;
                 eventBuffer.add(e);
                 onRecordEnd(currentRecord, copyAndClearBuffer());
+                setChanged();
+                notifyObservers(currentRecord);
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
                 final String identifier = getBufferedChars();
                 LOGGER.trace("Setting identifier {}", identifier);

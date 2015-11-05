@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import javax.xml.stream.XMLEventReader;
 
@@ -27,7 +24,11 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.OAIXMLUtils;
+import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestParams;
+import org.unizin.cmp.oai.harvester.response.AbstractOAIResponseHandler;
+import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
+import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -68,11 +69,17 @@ public final class TestHarvestAgent {
     }
 
     private List<HarvestedOAIRecord> expectedRecords() throws Exception {
-        // TODO: this should be easier to do.
-        final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
-                new ArrayBlockingQueue<>(Tests.TEST_RECORDS.size());
-        final AgentOAIResponseHandler h = new AgentOAIResponseHandler(testURI,
-                harvestedRecordQueue, new Timeout(0, TimeUnit.SECONDS));
+        final AgentOAIEventHandler handler = new AgentOAIEventHandler(testURI);
+        final List<HarvestedOAIRecord> list = new ArrayList<>();
+        handler.addObserver((o, arg) -> {
+            list.add((HarvestedOAIRecord)arg);
+        });
+        final OAIResponseHandler h = new AbstractOAIResponseHandler() {
+            @Override
+            public OAIEventHandler getEventHandler(HarvestNotification notification) {
+                return handler;
+            }
+        };
         final InputStream in = new ByteArrayInputStream(
                 Tests.OAI_LIST_RECORDS_RESPONSE.getBytes(
                         StandardCharsets.UTF_8));
@@ -81,8 +88,6 @@ public final class TestHarvestAgent {
         while (reader.hasNext()) {
             h.getEventHandler(null).onEvent(reader.nextEvent());
         }
-        final List<HarvestedOAIRecord> list = new ArrayList<>();
-        harvestedRecordQueue.drainTo(list);
         return list;
     }
 
