@@ -41,7 +41,6 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.8</version>
         <executions>
           <execution>
             <id>reserver-dynamodb-port</id>
@@ -129,19 +128,6 @@
                 </pluginExecution>
                 <pluginExecution>
                   <pluginExecutionFilter>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>build-helper-maven-plugin</artifactId>
-                    <versionRange>[1.8,)</versionRange>
-                    <goals>
-                      <goal>reserve-network-port</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore />
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
                     <groupId>com.jcabi</groupId>
                     <artifactId>jcabi-dynamodb-maven-plugin</artifactId>
                     <versionRange>[0.7.1,)</versionRange>
@@ -201,8 +187,6 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
-      <version>1.57</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
