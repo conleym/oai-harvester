@@ -17,6 +17,7 @@ import java.util.Map;
 
 import javax.xml.stream.XMLEventReader;
 
+import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -69,11 +70,9 @@ public final class TestHarvestAgent {
     }
 
     private List<HarvestedOAIRecord> expectedRecords() throws Exception {
-        final AgentOAIEventHandler handler = new AgentOAIEventHandler(testURI);
         final List<HarvestedOAIRecord> list = new ArrayList<>();
-        handler.addObserver((o, arg) -> {
-            list.add((HarvestedOAIRecord)arg);
-        });
+        final AgentOAIEventHandler handler = new AgentOAIEventHandler(testURI,
+                (arg) -> list.add(arg));
         final OAIResponseHandler h = new AbstractOAIResponseHandler() {
             @Override
             public OAIEventHandler getEventHandler(HarvestNotification notification) {
@@ -99,7 +98,7 @@ public final class TestHarvestAgent {
         };
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()
-                        .withStatus(200)
+                        .withStatus(HttpStatus.SC_OK)
                         .withBody(Tests.OAI_LIST_RECORDS_RESPONSE)));
         agent.addHarvests(params);
         agent.start();

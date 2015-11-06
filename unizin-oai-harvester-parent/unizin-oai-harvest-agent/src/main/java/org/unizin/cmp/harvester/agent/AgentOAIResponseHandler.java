@@ -3,9 +3,8 @@ package org.unizin.cmp.harvester.agent;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.concurrent.BlockingQueue;
+import java.util.function.Consumer;
 
 import javax.xml.stream.XMLOutputFactory;
 
@@ -16,8 +15,13 @@ import org.unizin.cmp.oai.harvester.response.AbstractOAIResponseHandler;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 
 
+/**
+ * Response handler that receives {@link HarvestedOAIRecord} instances and
+ * offers them to a {@link BlockingQueue} for consumption by another thread.
+ *
+ */
 public final class AgentOAIResponseHandler extends AbstractOAIResponseHandler
-implements Observer {
+implements Consumer<HarvestedOAIRecord> {
     private final AgentOAIEventHandler handler;
 
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
@@ -37,20 +41,10 @@ implements Observer {
             final Timeout offerTimeout,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
-        handler = new AgentOAIEventHandler(baseURI, outputFactory, messageDigest);
-        handler.addObserver(this);
+        handler = new AgentOAIEventHandler(baseURI, this, outputFactory,
+                messageDigest);
         this.harvestedRecordQueue = harvestedRecordQueue;
         this.offerTimeout = offerTimeout;
-    }
-
-    private void offerRecord(final HarvestedOAIRecord record) {
-        try {
-            harvestedRecordQueue.offer(record, offerTimeout.getTime(),
-                    offerTimeout.getUnit());
-        } catch (final InterruptedException e) {
-            Thread.interrupted();
-            throw new HarvesterException(e);
-        }
     }
 
     @Override
@@ -60,7 +54,14 @@ implements Observer {
     }
 
     @Override
-    public void update(final Observable o, final Object arg) {
-        offerRecord((HarvestedOAIRecord)arg);
+    public void accept(final HarvestedOAIRecord record) {
+        try {
+            harvestedRecordQueue.offer(record, offerTimeout.getTime(),
+                    offerTimeout.getUnit());
+        } catch (final InterruptedException e) {
+            Thread.interrupted();
+            // This will stop the harvest.
+            throw new HarvesterException(e);
+        }
     }
 }

@@ -6,6 +6,7 @@ import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
 import javax.xml.stream.XMLEventWriter;
@@ -18,21 +19,28 @@ import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.response.RecordOAIEventHandler;
 
+/**
+ * Record event handler that constructs {@link HarvestedOAIRecord} instances.
+ *
+ */
 public final class AgentOAIEventHandler
 extends RecordOAIEventHandler<HarvestedOAIRecord> {
     private final String baseURL;
     private final XMLOutputFactory outputFactory;
     private final MessageDigest messageDigest;
 
-    public AgentOAIEventHandler(final URI baseURI)
+    public AgentOAIEventHandler(final URI baseURI,
+            final Consumer<HarvestedOAIRecord> recordConsumer)
             throws NoSuchAlgorithmException {
-        this(baseURI, OAIXMLUtils.newOutputFactory(),
+        this(baseURI, recordConsumer, OAIXMLUtils.newOutputFactory(),
                 HarvestAgent.digest());
     }
 
     public AgentOAIEventHandler(final URI baseURI,
+            final Consumer<HarvestedOAIRecord> recordConsumer,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
+        super(recordConsumer);
         this.baseURL = baseURI.toString();
         this.outputFactory = outputFactory;
         this.messageDigest = messageDigest;

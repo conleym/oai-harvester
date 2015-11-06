@@ -173,6 +173,9 @@ public final class HarvestAgent implements Observer {
 
     private void removeAllHarvesters() {
         synchronized(harvestersLock) {
+            for (final Harvester h : harvesters) {
+                h.stop();
+            }
             harvesters.clear();
         }
     }
@@ -256,9 +259,6 @@ public final class HarvestAgent implements Observer {
 
     private void stop() {
         stopped = true;
-        for (final Harvester h : harvesters) {
-            h.stop();
-        }
         LOGGER.info("Shutting down.");
         removeAllHarvesters();
         executorService.shutdownNow();

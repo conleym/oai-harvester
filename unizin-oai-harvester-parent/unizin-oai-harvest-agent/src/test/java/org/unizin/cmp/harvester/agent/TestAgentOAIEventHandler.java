@@ -43,7 +43,7 @@ public final class TestAgentOAIEventHandler {
     @Rule
     public final WireMockRule wireMock = Tests.newWireMockRule();
 
-    private final List<byte[]> checksums = new ArrayList<>(3);
+    private final List<byte[]> checksums = new ArrayList<>();
 
     public TestAgentOAIEventHandler() throws Exception {
         final MessageDigest digest = HarvestAgent.digest();
@@ -83,22 +83,20 @@ public final class TestAgentOAIEventHandler {
 
     @Test
     public void testHandler() throws Exception {
-
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
                         .withBody(Tests.OAI_LIST_RECORDS_RESPONSE)));
-
-        final Harvester harvester = new Harvester.Builder()
-                .build();
+        final Harvester harvester = new Harvester.Builder().build();
         final URI uri = new URI(Tests.MOCK_OAI_BASE_URI);
         final HarvestParams p = new HarvestParams(uri, OAIVerb.LIST_RECORDS);
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
-                new ArrayBlockingQueue<>(10);
+                new ArrayBlockingQueue<>(Tests.TEST_RECORDS.size());
         harvester.start(p, new AgentOAIResponseHandler(uri,
                 harvestedRecordQueue, new Timeout(0, TimeUnit.SECONDS)));
 
-        Assert.assertEquals(3, harvestedRecordQueue.size());
+        Assert.assertEquals(Tests.TEST_RECORDS.size(),
+                harvestedRecordQueue.size());
 
         final Map<String, Map<String, Object>> expectedValues = new HashMap<>();
         Map<String, Object> expectedValue = new HashMap<>();

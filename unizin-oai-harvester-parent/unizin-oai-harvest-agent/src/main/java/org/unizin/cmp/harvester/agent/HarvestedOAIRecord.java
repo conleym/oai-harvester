@@ -88,6 +88,30 @@ public final class HarvestedOAIRecord {
         return xml;
     }
 
+    /**
+     * Set the XML.
+     * <p>
+     * Note that this does <em>not</em> change the checksum. There are three
+     * reasons for this:
+     * <ol>
+     * <li>The DynamoDB mapper uses {@link #setChecksum(byte[])} to set the
+     * checksum when it reads data from the database, so every read would
+     * require recomputing the checksum. Since the mapper will read and set the
+     * checksum itself, this is wasteful.</li>
+     * <li>It would introduce an asymmetry with {@link #setChecksum(byte[])},
+     * which cannot change the XML to match the checksum it receives.</li>
+     * <li>It would introduce a potential source of inconsistency caused by #2:
+     * Suppose the checksum in the database was somehow different from that
+     * which we would compute here, due to programmer error or perhaps data
+     * corruption. Depending upon the order in which the mapper sets the XML and
+     * the checksum (it will always set both to the values it got from the
+     * database), we may have either the correct checksum that we computed or
+     * the incorrect one from the database.</li>
+     * </ol>
+     *
+     * @param xml
+     *            the record's XML as bytes.
+     */
     public void setXml(final byte[] xml) {
         this.xml = xml;
     }
@@ -107,7 +131,6 @@ public final class HarvestedOAIRecord {
     public void setStatus(final String status) {
         this.status = status;
     }
-
 
     @Override
     public int hashCode() {

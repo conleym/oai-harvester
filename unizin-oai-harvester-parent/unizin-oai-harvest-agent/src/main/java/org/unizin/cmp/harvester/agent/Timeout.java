@@ -3,6 +3,10 @@ package org.unizin.cmp.harvester.agent;
 import java.util.concurrent.TimeUnit;
 
 
+/**
+ * Combination of time and {@link TimeUnit}.
+ *
+ */
 public final class Timeout {
     private final long time;
     private final TimeUnit unit;
