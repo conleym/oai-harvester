@@ -3,6 +3,7 @@ package org.unizin.cmp.oai.harvester;
 import static org.mockito.Matchers.eq;
 import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.HARVEST_ENDED;
 import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.RESPONSE_PROCESSED;
+import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.io.IOException;
@@ -133,7 +134,7 @@ public final class TestListResponses extends HarvesterTestBase {
         final OAIResponseHandler h = Mocks.newResponseHandler();
         final Observer obs = Mockito.mock(Observer.class);
         harvester.addObserver(obs);
-        harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS), h);
+        harvester.start(defaultTestParams(), h);
 
         final Supplier<HarvestNotification> hrvStarted = () -> {
             return AdditionalMatchers.and(

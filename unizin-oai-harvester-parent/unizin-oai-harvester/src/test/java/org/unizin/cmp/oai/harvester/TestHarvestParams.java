@@ -1,5 +1,7 @@
 package org.unizin.cmp.oai.harvester;
 
+import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -10,7 +12,7 @@ import org.unizin.cmp.oai.OAIVerb;
  * Minimal tests of harvest parameter validation.
  *
  */
-public final class TestHarvestParams extends HarvesterTestBase {
+public final class TestHarvestParams {
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
 

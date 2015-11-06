@@ -1,5 +1,7 @@
 package org.unizin.cmp.oai.harvester.response;
 
+import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,7 +16,7 @@ import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.HarvesterTestBase;
 import org.unizin.cmp.oai.harvester.TestListResponses;
-import org.unizin.cmp.oai.harvester.Utils;
+import org.unizin.cmp.oai.harvester.IOUtils;
 
 public final class TestMergingHandler extends HarvesterTestBase {
     @Rule
@@ -23,7 +25,7 @@ public final class TestMergingHandler extends HarvesterTestBase {
     private final String expected;
 
     public TestMergingHandler() throws IOException {
-        expected = Utils.fromStream(Utils.fromClasspathFile(
+        expected = IOUtils.fromStream(IOUtils.fromClasspathFile(
                 "/oai-expected/merged-list-records.xml"));
         XMLUnit.setIgnoreAttributeOrder(true);
         XMLUnit.setIgnoreComments(true);

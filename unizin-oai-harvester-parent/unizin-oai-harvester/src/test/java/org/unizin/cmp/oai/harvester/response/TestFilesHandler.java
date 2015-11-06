@@ -1,6 +1,7 @@
 package org.unizin.cmp.oai.harvester.response;
 
-import static org.unizin.cmp.oai.harvester.Utils.fromStream;
+import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.IOUtils.fromStream;
 
 import java.io.File;
 import java.io.FileInputStream;

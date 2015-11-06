@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import com.google.common.io.ByteStreams;
 
-public final class Utils {
+public final class IOUtils {
 
     public static String fromStream(final InputStream in) throws IOException {
         try (final InputStream is = in) {
@@ -22,7 +22,7 @@ public final class Utils {
     }
 
     public static InputStream fromClasspathFile(final String filename) {
-        final InputStream in = Utils.class.getResourceAsStream(filename);
+        final InputStream in = IOUtils.class.getResourceAsStream(filename);
         if (in == null) {
             throw new IllegalArgumentException("File " + filename +
                     " not found on the classpath.");
@@ -31,5 +31,5 @@ public final class Utils {
     }
 
     /** No instances allowed. */
-    private Utils() {}
+    private IOUtils() {}
 }

@@ -1,19 +1,34 @@
 package org.unizin.cmp.oai.harvester;
 
+import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import org.apache.http.HttpStatus;
 import org.hamcrest.CoreMatchers;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
+import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 
-public final class TestHttpClientErrorHandling extends HarvesterTestBase {
+public final class TestHttpClientErrorHandling {
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    private MockHttpClient mockHttpClient;
+
+    @Before
+    public void initMockHttpClient() {
+        mockHttpClient = new MockHttpClient();
+    }
+
+    private Harvester newHarvester() {
+        return new Harvester.Builder().withHttpClient(mockHttpClient).build();
+    }
 
     /**
     * Tests that {@code RuntimeExceptions} thrown by {@code HttpClient} are
@@ -23,12 +38,11 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
     public void testHttpClientRuntimeExceptions() throws Exception {
         mockHttpClient.setRuntimeException(
                 new NullPointerException(Mocks.TEST_EXCEPTION_MESSAGE));
-        final Harvester harvester = defaultTestHarvester();
         // Verb doesn't matter here.
         final HarvestParams params = defaultTestParams();
         exception.expect(NullPointerException.class);
         exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
-        harvester.start(params, Mocks.newResponseHandler());
+        newHarvester().start(params, Mocks.newResponseHandler());
     }
 
     /**
@@ -39,12 +53,11 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
     public void testHttpClientCheckedExceptions() throws Exception {
         mockHttpClient.setCheckedException(new IOException(
                 Mocks.TEST_EXCEPTION_MESSAGE));
-        final Harvester harvester = defaultTestHarvester();
         // Verb doesn't matter here.
         final HarvestParams params = defaultTestParams();
         exception.expect(UncheckedIOException.class);
         try {
-            harvester.start(params, Mocks.newResponseHandler());
+            newHarvester().start(params, Mocks.newResponseHandler());
         } catch (final UncheckedIOException e) {
             final Throwable cause = e.getCause();
             Mocks.assertTestException(cause, IOException.class);
@@ -56,12 +69,11 @@ public final class TestHttpClientErrorHandling extends HarvesterTestBase {
     public void testNotOKStatus() throws Exception {
         mockHttpClient.addResponseFrom(HttpStatus.SC_BAD_GATEWAY,
                 "Something's wrong", "");
-        final Harvester harvester = defaultTestHarvester();
         final HarvestParams params = defaultTestParams();
         exception.expect(HarvesterException.class);
         exception.expectMessage(CoreMatchers.startsWith(
                 String.format("Got HTTP status %d for request",
                         HttpStatus.SC_BAD_GATEWAY)));
-        harvester.start(params, Mocks.newResponseHandler());
+        newHarvester().start(params, Mocks.newResponseHandler());
     }
 }
