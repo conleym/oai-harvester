@@ -8,7 +8,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
-import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 
@@ -35,9 +34,8 @@ public final class TestHarvestRestart {
                     "Look. Something went wrong.");
             final HarvestParams params = defaultTestParams();
             final Harvester harvester = new Harvester.Builder().build();
-            final OAIResponseHandler responseHandler = Mocks.newResponseHandler();
             try {
-                harvester.start(params, responseHandler);
+                harvester.start(params, Mocks.newResponseHandler());
             } catch (final HarvesterException e) {
                 Assert.assertEquals(params, harvester.getRetryParams());
             }
@@ -56,14 +54,12 @@ public final class TestHarvestRestart {
                 "/oai-responses/oai-partial-list-records-response.xml"));
         mockHttpClient.addResponseFrom(HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "Shrug.", "Yet more badness.");
-        final HarvestParams params = defaultTestParams();
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(mockHttpClient)
                 .build();
-        final OAIResponseHandler responseHandler = Mocks.newResponseHandler();
         exception.expect(HarvesterException.class);
         try {
-            harvester.start(params, responseHandler);
+            harvester.start(defaultTestParams(), Mocks.newResponseHandler());
         } catch (final HarvesterException e) {
             /*
              * Not getting the expected results? Check for unexpected

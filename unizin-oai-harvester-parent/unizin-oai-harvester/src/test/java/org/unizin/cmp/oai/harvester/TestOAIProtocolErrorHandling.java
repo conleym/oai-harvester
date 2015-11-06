@@ -65,12 +65,11 @@ public final class TestOAIProtocolErrorHandling {
             throws Exception {
         final String errorResponse = ErrorsTemplate.process(errors);
         setupWithError(errorResponse);
-        final Harvester harvester = new Harvester.Builder().build();
         // Verb doesn't matter here.
-        final HarvestParams params = defaultTestParams();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(params, Mocks.newResponseHandler());
+            new Harvester.Builder().build().start(defaultTestParams(),
+                    Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(errors, e.getOAIErrors());
             throw e;
@@ -127,12 +126,10 @@ public final class TestOAIProtocolErrorHandling {
                 ErrorsTemplate.defaultErrorList()) +
                 " some extra content making the XML invalid.";
         setupWithError(errorResponse);
-        final Harvester harvester = new Harvester.Builder().build();
-        // Verb doesn't matter here.
-        final HarvestParams params = defaultTestParams();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(params, Mocks.newResponseHandler());
+            new Harvester.Builder().build().start(defaultTestParams(),
+                    Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
                     e.getOAIErrors());
@@ -167,10 +164,9 @@ public final class TestOAIProtocolErrorHandling {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(mockHttpClient)
                 .build();
-        final HarvestParams params = defaultTestParams();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(params, Mocks.newResponseHandler());
+            harvester.start(defaultTestParams(), Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
                     e.getOAIErrors());

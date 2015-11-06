@@ -1,5 +1,9 @@
 package org.unizin.cmp.oai.harvester;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.unizin.cmp.oai.harvester.Tests.MOCK_OAI_BASE_URI;
 import static org.unizin.cmp.oai.harvester.Tests.STAX;
 
@@ -15,6 +19,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.http.HttpStatus;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,11 +80,14 @@ public final class TestNonListResponses {
     public void testGetRecord() throws Exception {
         final Instant expectedResponseDate = Instant.now();
         final String expectedIdentifier = "some identifier";
-        final String responseContent = new GetRecordTemplate()
+        final String responseBody = new GetRecordTemplate()
                 .withIdentifier(expectedIdentifier)
                 .withResponseDate(expectedResponseDate)
                 .process();
-        Tests.createWiremockStubForOKGetResponse(responseContent);
+        stubFor(post(urlMatching(".*"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody(responseBody)));
         final Harvester harvester = new Harvester.Builder()
                 .withOAIRequestFactory(PostOAIRequestFactory.getInstance())
                 .build();

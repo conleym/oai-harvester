@@ -43,16 +43,6 @@ public class Tests {
         }
     }
 
-    public static WireMockRule newWireMockRule() {
-        return new WireMockRule(WIREMOCK_PORT);
-    }
-
-    public static WireMockServer newWireMockServer() {
-        final WireMockServer server = new WireMockServer(WIREMOCK_PORT);
-        configureFor(WIREMOCK_PORT);
-        return server;
-    }
-
     public static enum STAX_LIB {
         JDK,
         WOODSTOX,
@@ -91,18 +81,36 @@ public class Tests {
         return new HarvestParams(MOCK_OAI_BASE_URI, verb);
     }
 
-    public static void createWiremockStubForOKGetResponse(final String responseBody) {
+    public static WireMockRule newWireMockRule() {
+        return new WireMockRule(WIREMOCK_PORT);
+    }
+
+    public static WireMockServer newWireMockServer() {
+        final WireMockServer server = new WireMockServer(WIREMOCK_PORT);
+        configureFor(WIREMOCK_PORT);
+        return server;
+    }
+
+    public static void createWiremockStubForOKGetResponse(
+            final String responseBody) {
         createWiremockStubForGetResponse(HttpStatus.SC_OK, responseBody);
     }
 
-    public static void createWiremockStubForGetResponse(final int statusCode, final String responseBody) {
-        stubFor(get(urlMatching(".*"))
+    public static void createWiremockStubForGetResponse(final int statusCode,
+            final String responseBody) {
+        createWiremockStubForGetResponse(statusCode, responseBody, ".*");
+    }
+
+    public static void createWiremockStubForGetResponse(final int statusCode,
+            final String responseBody, final String urlPattern) {
+        stubFor(get(urlMatching(urlPattern))
                 .willReturn(aResponse()
                         .withStatus(statusCode)
                         .withBody(responseBody)));
     }
 
-    public static void testWithWiremockServer(final FunctionThatThrows test) throws Exception {
+    public static void testWithWiremockServer(final FunctionThatThrows test)
+            throws Exception {
         final WireMockServer server = newWireMockServer();
         try {
             server.start();
@@ -118,4 +126,8 @@ public class Tests {
         mockClient.addResponseFrom(HttpStatus.SC_OK, "",
                 arbitraryValidOAIResponse);
     }
+
+
+    /** No instances allowed. */
+    private Tests() { }
 }
