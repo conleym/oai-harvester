@@ -9,6 +9,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLEventFactory;
 
@@ -26,7 +27,6 @@ public class Tests {
     public static interface FunctionThatThrows {
         void apply() throws Exception;
     }
-
 
     public static final int DEFAULT_WIREMOCK_PORT = 9000;
     public static final int WIREMOCK_PORT = Integer.parseInt(
@@ -68,10 +68,17 @@ public class Tests {
         }
     }
 
-    protected static STAX_LIB STAX =
+    public static STAX_LIB STAX =
             STAX_LIB.getImplementation();
 
     public static final OAIVerb DEFAULT_VERB = OAIVerb.LIST_RECORDS;
+
+    public static String URL_PATTERN_WITHOUT_RESUMPTION_TOKEN =
+            "^.*\\?(?:(?!resumptionToken).)*$";
+
+    public static String urlResmptionTokenPattern(final String resumptionToken) {
+        return "\\?.*resumptionToken=" + Pattern.quote(resumptionToken);
+    }
 
     public static HarvestParams defaultTestParams() {
         return new HarvestParams(MOCK_OAI_BASE_URI, DEFAULT_VERB);

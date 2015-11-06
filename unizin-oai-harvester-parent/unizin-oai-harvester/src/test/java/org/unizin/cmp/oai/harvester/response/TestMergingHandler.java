@@ -25,8 +25,8 @@ public final class TestMergingHandler {
     private final String expected;
 
     public TestMergingHandler() throws IOException {
-        expected = IOUtils.stringFromStream(IOUtils.streamFromClasspathFile(
-                "/oai-expected/merged-list-records.xml"));
+        expected = IOUtils.stringFromClasspathFile(
+                "/oai-expected/merged-list-records.xml");
         XMLUnit.setIgnoreAttributeOrder(true);
         XMLUnit.setIgnoreComments(true);
         XMLUnit.setIgnoreWhitespace(true);

@@ -31,6 +31,11 @@ public final class IOUtils {
         return in;
     }
 
+    public static String stringFromClasspathFile(final String filename)
+            throws IOException {
+        return stringFromStream(streamFromClasspathFile(filename));
+    }
+
     /** No instances allowed. */
     private IOUtils() {}
 }
