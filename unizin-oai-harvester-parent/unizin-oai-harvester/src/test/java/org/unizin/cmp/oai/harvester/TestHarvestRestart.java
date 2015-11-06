@@ -1,9 +1,5 @@
 package org.unizin.cmp.oai.harvester;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
 
 import org.apache.http.HttpStatus;
@@ -16,14 +12,9 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-
 public final class TestHarvestRestart {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
-
-    @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
 
     @Test
     public void testRetryParamsThrowsWithoutHarvest() throws Exception {
@@ -38,22 +29,24 @@ public final class TestHarvestRestart {
      */
     @Test
     public void testRestartParametersWithoutToken() throws Exception {
-        stubFor(get(urlMatching(".*"))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR)
-                        .withBody("Look. Something went wrong.")));
-        final HarvestParams params = defaultTestParams();
-        final Harvester harvester = new Harvester.Builder().build();
-        final OAIResponseHandler responseHandler = Mocks.newResponseHandler();
-        try {
-            harvester.start(params, responseHandler);
-        } catch (final HarvesterException e) {
-            Assert.assertEquals(params, harvester.getRetryParams());
-        }
+        Tests.testWithWiremockServer(() -> {
+            Tests.createWiremockStubForGetResponse(
+                    HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                    "Look. Something went wrong.");
+            final HarvestParams params = defaultTestParams();
+            final Harvester harvester = new Harvester.Builder().build();
+            final OAIResponseHandler responseHandler = Mocks.newResponseHandler();
+            try {
+                harvester.start(params, responseHandler);
+            } catch (final HarvesterException e) {
+                Assert.assertEquals(params, harvester.getRetryParams());
+            }
+        });
     }
 
     /**
-     * Tests that the retry parameters contain a resumption token sent by the repository.
+     * Tests that the retry parameters contain a resumption token sent by the
+     * repository.
      */
     @Test
     public void testRestartParmetersWithToken() throws Exception {

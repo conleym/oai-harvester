@@ -1,7 +1,7 @@
 package org.unizin.cmp.oai.harvester.response;
 
+import static org.unizin.cmp.oai.harvester.IOUtils.stringFromStream;
 import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
-import static org.unizin.cmp.oai.harvester.IOUtils.fromStream;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,19 +11,20 @@ import java.util.Iterator;
 
 import org.custommonkey.xmlunit.XMLAssert;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.HarvesterTestBase;
 import org.unizin.cmp.oai.harvester.TestListResponses;
-import org.unizin.cmp.oai.harvester.TestOAIProtocolErrorHandling;
+import org.unizin.cmp.oai.harvester.Tests;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
+import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.MockHttpResponse;
 import org.xml.sax.SAXException;
 
-public final class TestFilesHandler extends HarvesterTestBase {
+public final class TestFilesHandler {
 
     @Rule
     public final TemporaryFolder tempDir = new TemporaryFolder();
@@ -32,9 +33,22 @@ public final class TestFilesHandler extends HarvesterTestBase {
     public final ExpectedException exception = ExpectedException.none();
 
 
+    private MockHttpClient mockHttpClient;
+
+    @Before
+    public void initMockHttpClient() {
+        mockHttpClient = new MockHttpClient();
+    }
+
+    private Harvester newHarvester() {
+        return new Harvester.Builder()
+                .withHttpClient(mockHttpClient)
+                .build();
+    }
+
     private static void fileEquals(final String expected,
             final File file) throws IOException, SAXException {
-        final String fileStr = fromStream(new FileInputStream(file));
+        final String fileStr = stringFromStream(new FileInputStream(file));
         XMLAssert.assertXMLEqual(expected, fileStr);
     }
 
@@ -61,17 +75,17 @@ public final class TestFilesHandler extends HarvesterTestBase {
                 mockHttpClient);
         FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
-        final Harvester harvester = defaultTestHarvester();
+        final Harvester harvester = newHarvester();
         harvester.start(defaultTestParams(), handler);
         fileAssertions();
     }
 
     @Test
     public void testOAIProtocolError() throws Exception {
-        TestOAIProtocolErrorHandling.setupWithDefaultError(mockHttpClient);
+        Tests.setupWithDefaultError(mockHttpClient);
         final FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
-        final Harvester harvester = defaultTestHarvester();
+        final Harvester harvester = newHarvester();
         exception.expect(OAIProtocolException.class);
         try {
             harvester.start(defaultTestParams(), handler);

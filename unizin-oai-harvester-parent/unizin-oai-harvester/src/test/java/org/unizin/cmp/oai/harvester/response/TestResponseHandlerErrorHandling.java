@@ -1,9 +1,5 @@
 package org.unizin.cmp.oai.harvester.response;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
@@ -15,7 +11,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.Tests;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
@@ -37,10 +32,7 @@ public final class TestResponseHandlerErrorHandling {
 
     @Before
     public void setupWiremock() {
-        stubFor(get(urlMatching(".*"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(VALID_XML)));
+        Tests.createWiremockStubForOKGetResponse(VALID_XML);
     }
 
     /**
@@ -51,14 +43,13 @@ public final class TestResponseHandlerErrorHandling {
     @Test
     public void testResponseHandlerXMLStreamException() throws Exception {
         final Harvester harvester = new Harvester.Builder().build();
-        final HarvestParams params = defaultTestParams();
         final OAIResponseHandler mockHandler = Mocks.newResponseHandler();
         final OAIEventHandler mockEventHandler = mockHandler.getEventHandler(null);
         doThrow(new XMLStreamException(Mocks.TEST_EXCEPTION_MESSAGE))
             .when(mockEventHandler).onEvent(any());
         exception.expect(HarvesterException.class);
         try {
-            harvester.start(params, mockHandler);
+            harvester.start(defaultTestParams(), mockHandler);
         } catch (final HarvesterXMLParsingException e) {
             Assert.fail("No parsing exception expected here.");
         } catch (final HarvesterException e) {
@@ -75,29 +66,12 @@ public final class TestResponseHandlerErrorHandling {
     @Test
     public void testResponseHandlerHarvestXMLParsingException() throws Exception {
         final Harvester harvester = new Harvester.Builder().build();
-        final HarvestParams params = defaultTestParams();
         final OAIResponseHandler mockHandler = Mocks.newResponseHandler();
         final OAIEventHandler mockEventHandler = mockHandler.getEventHandler(null);
         doThrow(new HarvesterXMLParsingException(Mocks.TEST_EXCEPTION_MESSAGE))
             .when(mockEventHandler).onEvent(any());
         exception.expect(HarvesterXMLParsingException.class);
         exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
-        harvester.start(params, mockHandler);
-    }
-
-
-    /**
-     * Tests that the harvest continues even if an observer throws.
-     * <p>
-     * Observers really shouldn't throw, but we can't be too careful.
-     */
-    public void testObserverException() throws Exception {
-        final Harvester harvester = new Harvester.Builder().build();
-        // Add a badly-behaved observer.
-        harvester.addObserver((o, arg) -> {
-            throw new RuntimeException(Mocks.TEST_EXCEPTION_MESSAGE);
-        });
-        final OAIResponseHandler mockHandler = Mocks.newResponseHandler();
         harvester.start(defaultTestParams(), mockHandler);
     }
 }

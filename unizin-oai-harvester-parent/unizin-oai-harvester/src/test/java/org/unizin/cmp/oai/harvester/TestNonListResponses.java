@@ -1,11 +1,7 @@
 package org.unizin.cmp.oai.harvester;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.unizin.cmp.oai.harvester.Tests.STAX;
 import static org.unizin.cmp.oai.harvester.Tests.MOCK_OAI_BASE_URI;
+import static org.unizin.cmp.oai.harvester.Tests.STAX;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -83,10 +79,7 @@ public final class TestNonListResponses {
                 .withIdentifier(expectedIdentifier)
                 .withResponseDate(expectedResponseDate)
                 .process();
-        stubFor(post (urlMatching(".*"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(responseContent)));
+        Tests.createWiremockStubForOKGetResponse(responseContent);
         final Harvester harvester = new Harvester.Builder()
                 .withOAIRequestFactory(PostOAIRequestFactory.getInstance())
                 .build();

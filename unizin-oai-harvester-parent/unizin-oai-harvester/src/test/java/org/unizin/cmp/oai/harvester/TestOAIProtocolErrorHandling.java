@@ -1,9 +1,5 @@
 package org.unizin.cmp.oai.harvester;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -44,27 +40,19 @@ import freemarker.template.TemplateException;
 public final class TestOAIProtocolErrorHandling {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    /** WireMock is used for all but one test, so we'll just use the rule. */
     @Rule
     public final WireMockRule wireMock = Tests.newWireMockRule();
-
-    public static void setupWithDefaultError(final MockHttpClient mockClient)
-            throws TemplateException, IOException {
-        final String arbitraryValidOAIResponse = ErrorsTemplate.process();
-        mockClient.addResponseFrom(HttpStatus.SC_OK, "",
-                arbitraryValidOAIResponse);
-    }
 
     private static void setupWithError()
             throws TemplateException, IOException {
         final String errorResponse = ErrorsTemplate.process();
-        setupWithError(errorResponse);
+        Tests.createWiremockStubForOKGetResponse(errorResponse);
     }
 
     private static void setupWithError(final String errorResponse) {
-        stubFor(get(urlMatching(".*"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody(errorResponse)));
+        Tests.createWiremockStubForOKGetResponse(errorResponse);
     }
 
     private Throwable checkSingleSuppressedException(final Throwable t) {
@@ -171,7 +159,8 @@ public final class TestOAIProtocolErrorHandling {
     @Test
     public void testPriorityOverStreamClosingErrors() throws Exception {
         final String arbitraryValidOAIResponse = ErrorsTemplate.process();
-        final InputStream stream = IOUtils.fromString(arbitraryValidOAIResponse);
+        final InputStream stream = IOUtils.streamFromString(
+                arbitraryValidOAIResponse);
         final MockHttpClient mockHttpClient = new MockHttpClient();
         mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "",
                 Mocks.throwsWhenClosed(stream));

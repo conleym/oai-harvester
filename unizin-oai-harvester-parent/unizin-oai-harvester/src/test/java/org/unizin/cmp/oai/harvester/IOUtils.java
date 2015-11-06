@@ -9,19 +9,20 @@ import com.google.common.io.ByteStreams;
 
 public final class IOUtils {
 
-    public static String fromStream(final InputStream in) throws IOException {
+    public static String stringFromStream(final InputStream in)
+            throws IOException {
         try (final InputStream is = in) {
             final byte[] bytes = ByteStreams.toByteArray(is);
             return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 
-    public static InputStream fromString(final String string) {
+    public static InputStream streamFromString(final String string) {
         return new ByteArrayInputStream(string.getBytes(
                 StandardCharsets.UTF_8));
     }
 
-    public static InputStream fromClasspathFile(final String filename) {
+    public static InputStream streamFromClasspathFile(final String filename) {
         final InputStream in = IOUtils.class.getResourceAsStream(filename);
         if (in == null) {
             throw new IllegalArgumentException("File " + filename +
