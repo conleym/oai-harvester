@@ -3,7 +3,7 @@ package org.unizin.cmp.oai.harvester.response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Observable;
+import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -20,24 +20,28 @@ import org.unizin.cmp.oai.OAIXMLUtils;
 /**
  * Event handler implementation that produces record objects.
  * <p>
- * Instances are {@code Observable}, and registered observers are notified of
- * each new record object produced. This mechanism allows decoupling of event
- * handling from record object handling.
+ * Instances have a {@link Consumer} to which finalized records
+ * are sent once finalized for further processing.
  *
  * @param <T>
- *            they type of the record object.
+ *            the type of the record object.
  */
-public abstract class RecordOAIEventHandler<T> extends Observable
+public abstract class RecordOAIEventHandler<T>
 implements OAIEventHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             RecordOAIEventHandler.class);
 
     private List<XMLEvent> eventBuffer = new ArrayList<>();
     private final StringBuilder charBuffer = new StringBuilder();
+    private final Consumer<T> recordHandler;
     private T currentRecord;
     private boolean inRecord;
     private boolean bufferChars;
     private QName currentStartElementQName;
+
+    protected RecordOAIEventHandler(final Consumer<T> recordHandler) {
+        this.recordHandler = recordHandler;
+    }
 
     private boolean currentElementIs(final QName name) {
         return Objects.equals(currentStartElementQName, name);
@@ -76,8 +80,7 @@ implements OAIEventHandler {
                 inRecord = false;
                 eventBuffer.add(e);
                 onRecordEnd(currentRecord, copyAndClearBuffer());
-                setChanged();
-                notifyObservers(currentRecord);
+                recordHandler.accept(currentRecord);
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
                 final String identifier = getBufferedChars();
                 LOGGER.trace("Setting identifier {}", identifier);
@@ -114,8 +117,24 @@ implements OAIEventHandler {
     protected abstract void onSet(T currentRecord, String set);
     protected abstract void onStatus(T currentRecord, String status);
 
+    /**
+     * Called when &lt;/record&gt; is seen to finalize the current record
+     * object.
+     * <p>
+     * This method is called with the current record and a list of XMLEvents
+     * accumulated since the beginning of the record (and including the end
+     * element). This list is mutable, and subclass implementors should consider
+     * themselves free to modify it as needed.
+     * </p>
+     *
+     * @param currentRecord
+     *            the current record object.
+     * @param recordEvents
+     *            a list containing all events since the last &lt;record&gt;,
+     *            including the matching end element.
+     */
     protected abstract void onRecordEnd(T currentRecord,
-            final List<XMLEvent> recordEvents);
+            List<XMLEvent> recordEvents);
 
     /**
      * Implementations must create and return a new instance of the record object.
