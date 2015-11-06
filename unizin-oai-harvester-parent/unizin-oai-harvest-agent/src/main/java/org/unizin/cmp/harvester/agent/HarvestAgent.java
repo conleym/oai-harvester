@@ -266,10 +266,25 @@ public final class HarvestAgent implements Observer {
 
     @Override
     public void update(final Observable o, final Object arg) {
-        final HarvestNotification hn = (HarvestNotification)arg;
-        if (hn.getType() == HarvestNotificationType.HARVEST_ENDED) {
-            LOGGER.info("Harvest of {} has ended.", hn.getHarvestParameters());
-            removeHarvester((Harvester)o);
+        boolean ok = true;
+        if (! (o instanceof Harvester)) {
+            ok = false;
+            LOGGER.error(
+                    "Observable argument was of type {}. Was expecting {}.",
+                    o.getClass().getName(), Harvester.class.getName());
+
+        }
+        if (! (arg instanceof HarvestNotification)) {
+            ok = false;
+            LOGGER.error("Update argument was of type {}. Was expecting {}",
+                    arg.getClass().getName(), HarvestNotification.class.getName());
+        }
+        if (ok) {
+            final HarvestNotification hn = (HarvestNotification)arg;
+            if (hn.getType() == HarvestNotificationType.HARVEST_ENDED) {
+                LOGGER.info("Harvest of {} has ended.", hn.getHarvestParameters());
+                removeHarvester((Harvester)o);
+            }
         }
     }
 }
