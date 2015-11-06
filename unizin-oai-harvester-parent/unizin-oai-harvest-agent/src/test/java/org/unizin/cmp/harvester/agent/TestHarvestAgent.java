@@ -33,6 +33,7 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 import com.amazonaws.services.dynamodbv2.model.ResourceNotFoundException;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.common.io.ByteStreams;
 
 
 public final class TestHarvestAgent {
@@ -69,19 +70,20 @@ public final class TestHarvestAgent {
         return new HarvestAgent.Builder(dynamoDBTestClient.mapper);
     }
 
-    private List<HarvestedOAIRecord> expectedRecords() throws Exception {
+    private List<HarvestedOAIRecord> expectedRecords(final String response)
+            throws Exception {
         final List<HarvestedOAIRecord> list = new ArrayList<>();
         final AgentOAIEventHandler handler = new AgentOAIEventHandler(testURI,
                 (arg) -> list.add(arg));
         final OAIResponseHandler h = new AbstractOAIResponseHandler() {
             @Override
-            public OAIEventHandler getEventHandler(HarvestNotification notification) {
+            public OAIEventHandler getEventHandler(
+                    final HarvestNotification notification) {
                 return handler;
             }
         };
-        final InputStream in = new ByteArrayInputStream(
-                Tests.OAI_LIST_RECORDS_RESPONSE.getBytes(
-                        StandardCharsets.UTF_8));
+        final InputStream in = new ByteArrayInputStream(response.getBytes(
+                StandardCharsets.UTF_8));
         final XMLEventReader reader = OAIXMLUtils.newInputFactory()
                 .createXMLEventReader(in);
         while (reader.hasNext()) {
@@ -90,8 +92,9 @@ public final class TestHarvestAgent {
         return list;
     }
 
-    @Test
-    public void testAgentRun() throws Exception {
+    private void doRun(final String serverResponseBody) throws Exception {
+        final List<HarvestedOAIRecord> expectedRecords = expectedRecords(
+                serverResponseBody);
         final HarvestAgent agent = newAgentBuilder().build();
         final HarvestParams[] params = {
                 new HarvestParams(testURI, OAIVerb.LIST_RECORDS)
@@ -99,19 +102,36 @@ public final class TestHarvestAgent {
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
-                        .withBody(Tests.OAI_LIST_RECORDS_RESPONSE)));
+                        .withBody(serverResponseBody)));
         agent.addHarvests(params);
         agent.start();
-        Assert.assertEquals(Tests.TEST_RECORDS.size(),
-                dynamoDBTestClient.countItems(HarvestedOAIRecord.class));
-        final List<HarvestedOAIRecord> scan = dynamoDBTestClient.scan(
-                HarvestedOAIRecord.class);
+        final List<HarvestedOAIRecord> actualRecords =
+                dynamoDBTestClient.scan(HarvestedOAIRecord.class);
+        Assert.assertEquals(expectedRecords.size(), actualRecords.size());
+
         final Map<String, HarvestedOAIRecord> map = new HashMap<>();
-        for (final HarvestedOAIRecord expectedRecord : expectedRecords()) {
+        for (final HarvestedOAIRecord expectedRecord : expectedRecords) {
             map.put(expectedRecord.getIdentifier(), expectedRecord);
         }
-        for (final HarvestedOAIRecord record : scan) {
-            Assert.assertEquals(map.get(record.getIdentifier()), record);
+        for (final HarvestedOAIRecord actualRecord : actualRecords) {
+            Assert.assertEquals(map.get(actualRecord.getIdentifier()),
+                    actualRecord);
         }
+    }
+
+    @Test
+    public void testAgentRun() throws Exception {
+        doRun(Tests.OAI_LIST_RECORDS_RESPONSE);
+
+        final List<String> updatedRecords = new ArrayList<String>(
+                Tests.TEST_RECORDS);
+        updatedRecords.remove(2);
+        final InputStream in = this.getClass().getResourceAsStream(
+                "/oai-records/record-3a.xml");
+        final String updatedRecord3 = new String(ByteStreams.toByteArray(in),
+                StandardCharsets.UTF_8);
+        updatedRecords.add(updatedRecord3);
+        final String updatedResponse = Tests.listRecordsResponse(updatedRecords);
+        doRun(updatedResponse);
     }
 }

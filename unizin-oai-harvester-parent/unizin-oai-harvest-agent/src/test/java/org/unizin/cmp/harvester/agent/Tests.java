@@ -47,10 +47,10 @@ public final class Tests {
     static {
         final Configuration config = new Configuration(Configuration.getVersion());
         config.setTemplateLoader(new ClassTemplateLoader(
-                Tests.class, "/"));
+                Tests.class, "/oai-response-templates"));
         try {
             OAI_LIST_RECORDS_TEMPLATE = config.getTemplate(
-                    "oai-list-records.xml");
+                    "oai-list-records.ftl.xml");
         } catch (final IOException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -73,14 +73,14 @@ public final class Tests {
 
     public static final String OAI_LIST_RECORDS_RESPONSE;
     static {
-        final Map<String, Object> dataModel = new HashMap<String, Object>(1);
-        dataModel.put("records", TEST_RECORDS);
-        OAI_LIST_RECORDS_RESPONSE = responseTemplate(dataModel);
+        OAI_LIST_RECORDS_RESPONSE = listRecordsResponse(TEST_RECORDS);
     }
 
-    public static String responseTemplate(final Object dataModel) {
+    public static String listRecordsResponse(final List<String> records) {
         try {
             final StringWriter sw = new StringWriter();
+            final Map<String, Object> dataModel = new HashMap<>(1);
+            dataModel.put("records", records);
             OAI_LIST_RECORDS_TEMPLATE.process(dataModel, sw);
             return sw.toString();
         } catch (final IOException e) {
@@ -92,7 +92,7 @@ public final class Tests {
 
     private static String testOAIRecord(int i) throws XMLStreamException {
         final InputStream in = Tests.class.getResourceAsStream(
-                "/record-" + i + ".xml");
+                "/oai-records/record-" + i + ".xml");
         if (in == null) {
             throw new IllegalArgumentException(String.format(
                     "Nonexistant response file requested: %d.", i));
@@ -119,7 +119,6 @@ public final class Tests {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-
     public static String decompress(final byte[] bytes) throws IOException {
         final ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         try (final GZIPInputStream in = new GZIPInputStream(bais)) {
@@ -128,7 +127,6 @@ public final class Tests {
             return new String(baos.toByteArray(), StandardCharsets.UTF_8);
         }
     }
-
 
     public static WireMockRule newWireMockRule() {
         return new WireMockRule(WIREMOCK_PORT);
