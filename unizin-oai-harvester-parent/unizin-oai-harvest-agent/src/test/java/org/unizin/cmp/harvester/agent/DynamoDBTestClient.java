@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.ConsistentReads;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
@@ -30,8 +31,11 @@ public final class DynamoDBTestClient {
         dynamoDB = new AmazonDynamoDBClient(new BasicAWSCredentials("", ""));
         dynamoDB.setEndpoint(String.format("http://127.0.0.1:%s",
                 Tests.DYNAMO_PORT));
-        mapper = new DynamoDBMapper(dynamoDB,
-                new DynamoDBMapperConfig(new TableNameOverride(tableName)));
+        final DynamoDBMapperConfig config = new DynamoDBMapperConfig.Builder()
+                .withTableNameOverride(new TableNameOverride(tableName))
+                .withConsistentReads(ConsistentReads.CONSISTENT)
+                .build();
+        mapper = new DynamoDBMapper(dynamoDB, config);
     }
 
     public void dropTable() {
