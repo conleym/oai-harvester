@@ -31,7 +31,7 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
 
     public AgentOAIEventHandler(final URI baseURI,
             final Consumer<HarvestedOAIRecord> recordConsumer)
-            throws NoSuchAlgorithmException {
+                    throws NoSuchAlgorithmException {
         this(baseURI, recordConsumer, OAIXMLUtils.newOutputFactory(),
                 HarvestAgent.digest());
     }

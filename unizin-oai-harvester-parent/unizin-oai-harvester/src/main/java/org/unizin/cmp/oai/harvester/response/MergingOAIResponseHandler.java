@@ -38,24 +38,24 @@ public final class MergingOAIResponseHandler extends AbstractOAIResponseHandler 
             LoggerFactory.getLogger(MergingOAIResponseHandler.class);
 
     /**
-    * Filter that skips certain elements in order to make a series of
-    * incomplete list responses appear as a single complete list.
-    *
-    * All but the first of the following are skipped:
-    * <ul>
-    * <li>start document</li>
-    * <li>OAI-PMH</li>
-    * <li>request</li>
-    * <li>responseDate</li>
-    * <li>any verb's start element</li>
-    * </ul>
-    *
-    * All of the following are skipped:
-    * <ul>
-    * <li>resumptionToken</li>
-    * <li>end document</li>
-    *
-    */
+     * Filter that skips certain elements in order to make a series of
+     * incomplete list responses appear as a single complete list.
+     *
+     * All but the first of the following are skipped:
+     * <ul>
+     * <li>start document</li>
+     * <li>OAI-PMH</li>
+     * <li>request</li>
+     * <li>responseDate</li>
+     * <li>any verb's start element</li>
+     * </ul>
+     *
+     * All of the following are skipped:
+     * <ul>
+     * <li>resumptionToken</li>
+     * <li>end document</li>
+     *
+     */
     private static final class MergingEventFilter implements EventFilter {
         private boolean skipping;
         private boolean startDoc;
@@ -145,15 +145,15 @@ public final class MergingOAIResponseHandler extends AbstractOAIResponseHandler 
         try {
             if (! notification.hasError()) {
                 /*
-                * The filter doesn't know on its own when the harvest ends, so
-                * it will have filtered out the final closing events. We have
-                * to add them ourselves to make valid XML.
-                *
-                * We only do this when the harvest has been successful, as we
-                * cannot know what events have been written, and thus cannot
-                * reliably write events, when there have been errors.
-                *
-                */
+                 * The filter doesn't know on its own when the harvest ends, so
+                 * it will have filtered out the final closing events. We have
+                 * to add them ourselves to make valid XML.
+                 *
+                 * We only do this when the harvest has been successful, as we
+                 * cannot know what events have been written, and thus cannot
+                 * reliably write events, when there have been errors.
+                 *
+                 */
                 eventWriter.add(eventFactory.createEndElement(
                         notification.getVerb().qname(), null));
                 eventWriter.add(eventFactory.createEndElement(OAI_PMH, null));

@@ -33,20 +33,20 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
  */
 public interface OAIRequestFactory {
     /**
-    * Create an HTTP POST request from the given {@code URI} and parameters.
-    * <p>
-    * Note that any query string included in the base {@code URI} will be sent
-    * with the request.
-    *
-    * @param baseURI the {@code URI} to which the request will be sent.
-    * @param parameters the form parameters to send.
-    * @return an HTTP POST request with the given {@code URI} and parameters.
-    */
+     * Create an HTTP POST request from the given {@code URI} and parameters.
+     * <p>
+     * Note that any query string included in the base {@code URI} will be sent
+     * with the request.
+     *
+     * @param baseURI the {@code URI} to which the request will be sent.
+     * @param parameters the form parameters to send.
+     * @return an HTTP POST request with the given {@code URI} and parameters.
+     */
     public static HttpUriRequest post(final URI baseURI,
             final Map<String, String> parameters) {
         final Iterable<? extends NameValuePair> nvps =
                 parameters.entrySet().stream().map(e ->
-                    new BasicNameValuePair(e.getKey(), e.getValue()))
+                new BasicNameValuePair(e.getKey(), e.getValue()))
                 .collect(Collectors.toList());
         final HttpPost post = new HttpPost(baseURI);
         post.setEntity(new UrlEncodedFormEntity(nvps));
@@ -55,22 +55,22 @@ public interface OAIRequestFactory {
 
 
     /**
-    * Create an HTTP GET request from the given {@code URI} and parameters.
-    * <p>
-    * Note particularly that any query string in the base {@code URI} is
-    * preserved and the supplied parameters appended.
-    *
-    * @param baseURI the {@code URI}.
-    * @param parameters the parameters to add to the {@code baseURI}'s
-    *  query string.
-    * @return an HTTP GET request for the given {@code URI} with the given
-    * parameters appended to the query string.
-    */
+     * Create an HTTP GET request from the given {@code URI} and parameters.
+     * <p>
+     * Note particularly that any query string in the base {@code URI} is
+     * preserved and the supplied parameters appended.
+     *
+     * @param baseURI the {@code URI}.
+     * @param parameters the parameters to add to the {@code baseURI}'s
+     *  query string.
+     * @return an HTTP GET request for the given {@code URI} with the given
+     * parameters appended to the query string.
+     */
     public static HttpUriRequest get(final URI baseURI,
             final Map<String, String> parameters) {
         final URIBuilder uriBuilder = new URIBuilder(baseURI);
         parameters.entrySet().stream().forEach(e ->
-                uriBuilder.addParameter(e.getKey(), e.getValue()));
+        uriBuilder.addParameter(e.getKey(), e.getValue()));
         try {
             return new HttpGet(uriBuilder.build());
         } catch (final URISyntaxException e) {
@@ -80,13 +80,13 @@ public interface OAIRequestFactory {
 
 
     /**
-    * Create an {@code HttpUriRequest} from the given {@code URI} and
-    * parameters.
-    * @param baseURI the base {@code URI}.
-    * @param parameters the parameters to send with the request.
-    * @return an {@code HttpUriRequest} with the given base {@code URI} and
-    * parameters.
-    */
+     * Create an {@code HttpUriRequest} from the given {@code URI} and
+     * parameters.
+     * @param baseURI the base {@code URI}.
+     * @param parameters the parameters to send with the request.
+     * @return an {@code HttpUriRequest} with the given base {@code URI} and
+     * parameters.
+     */
     HttpUriRequest createRequest(URI baseURI,
             Map<String, String> parameters);
 }

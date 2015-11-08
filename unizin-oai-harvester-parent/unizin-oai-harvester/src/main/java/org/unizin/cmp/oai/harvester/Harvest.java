@@ -59,9 +59,9 @@ final class Harvest {
     }
 
     /**
-    * Get the parameters for the next request.
-    * @return the parameters for the next request.
-    */
+     * Get the parameters for the next request.
+     * @return the parameters for the next request.
+     */
     Map<String, String> getRequestParameters() {
         if (resumptionToken != null) {
             final Map<String, String> m = new HashMap<>();
@@ -87,8 +87,8 @@ final class Harvest {
     }
 
     /**
-    * This method should be called only from {@link Harvester#stop()}.
-    */
+     * This method should be called only from {@link Harvester#stop()}.
+     */
     void userStop() {
         this.isStoppedByUser = true;
         stop();

@@ -90,17 +90,17 @@ public final class HarvestParams {
     }
 
     /**
-    * Add an arbitrary nonstandard parameter.
-    * <p>
-    * Nonstandard parameters are never validated.
-    * <p>
-    * Nonstandard parameters are added only to the initial request. To use
-    * a nonstandard parameter in both the initial and subsequent requests,
-    * add it to the {@code baseURI} instead.
-    * @param name the parameter's name
-    * @param value the parameter's value
-    * @return this instance
-    */
+     * Add an arbitrary nonstandard parameter.
+     * <p>
+     * Nonstandard parameters are never validated.
+     * <p>
+     * Nonstandard parameters are added only to the initial request. To use
+     * a nonstandard parameter in both the initial and subsequent requests,
+     * add it to the {@code baseURI} instead.
+     * @param name the parameter's name
+     * @param value the parameter's value
+     * @return this instance
+     */
     public HarvestParams withNonstandardParameter(final String name,
             final String value) {
         nonstandardParameters.put(name, value);
@@ -108,10 +108,10 @@ public final class HarvestParams {
     }
 
     /**
-    * Validate the standard harvest parameters.
-    * @return {@code true} iff this instance's standard parameters are valid
-    * with this instance's verb.
-    */
+     * Validate the standard harvest parameters.
+     * @return {@code true} iff this instance's standard parameters are valid
+     * with this instance's verb.
+     */
     public boolean areValid() {
         return verb.areValidParameters(standardParameters);
     }
@@ -128,8 +128,8 @@ public final class HarvestParams {
         if (resumptionToken != null) {
             p.withResumptionToken(resumptionToken.getToken());
         } else {
-           p.standardParameters.putAll(standardParameters);
-           p.nonstandardParameters.putAll(nonstandardParameters);
+            p.standardParameters.putAll(standardParameters);
+            p.nonstandardParameters.putAll(nonstandardParameters);
         }
         return p;
     }

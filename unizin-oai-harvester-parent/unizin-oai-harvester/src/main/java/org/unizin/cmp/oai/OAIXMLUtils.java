@@ -60,12 +60,12 @@ public final class OAIXMLUtils {
     }
 
     /**
-    * Close an {@link XMLEventReader}, logging any exceptions that occur as
-    * warnings.
-    *
-    * @param reader
-    *            the event reader to close.
-    */
+     * Close an {@link XMLEventReader}, logging any exceptions that occur as
+     * warnings.
+     *
+     * @param reader
+     *            the event reader to close.
+     */
     public static void closeQuietly(final XMLEventReader reader) {
         if (reader == null) {
             return;
@@ -78,12 +78,12 @@ public final class OAIXMLUtils {
     }
 
     /**
-    * Close an {@link XMLEventWriter}, logging any exceptions that occur as
-    * warnings.
-    *
-    * @param writer
-    *            the event writer to close.
-    */
+     * Close an {@link XMLEventWriter}, logging any exceptions that occur as
+     * warnings.
+     *
+     * @param writer
+     *            the event writer to close.
+     */
     public static void closeQuietly(final XMLEventWriter writer) {
         if (writer == null) {
             return;
