@@ -65,7 +65,6 @@ public final class TestOAIProtocolErrorHandling {
             throws Exception {
         final String errorResponse = ErrorsTemplate.process(errors);
         setupWithError(errorResponse);
-        // Verb doesn't matter here.
         exception.expect(OAIProtocolException.class);
         try {
             new Harvester.Builder().build().start(defaultTestParams(),
