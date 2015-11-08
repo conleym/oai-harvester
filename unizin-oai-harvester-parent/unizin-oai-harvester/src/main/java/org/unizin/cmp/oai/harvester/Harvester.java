@@ -425,8 +425,8 @@ public final class Harvester extends Observable {
      * <li>If the consumer throws an exception, this method will still attempt
      * to notify all observers. The exception thrown by the consumer will be
      * thrown after this attempt is made, with any exception thrown while
-     * attempting to notify observers being logged and will <em>not</em> be
-     * thrown.</li>
+     * attempting to notify observers being logged and <em>not</em> thrown.
+     * </li>
      * </ol>
      *
      * @param notification
