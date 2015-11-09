@@ -191,11 +191,25 @@ public final class HarvestAgent implements Observer {
         try {
             final List<FailedBatch> failed = mapper.batchWrite(batch,
                     Collections.emptyList());
-            if (! failed.isEmpty()) {
-                LOGGER.error("Batch failed! {}", failed);
+            if (!failed.isEmpty() && LOGGER.isErrorEnabled()) {
+                final StringBuilder sb = new StringBuilder("Batch failed: " +
+                        batch + "\t[");
+                failed.forEach((fb) -> {
+                    sb.append(fb.getClass().getName())
+                    .append("[unprocessedItems=")
+                    .append(fb.getUnprocessedItems())
+                    .append(", exception=")
+                    .append(fb.getException())
+                    .append("]");
+                });
+                sb.append("]");
+                LOGGER.error(sb.toString());
             }
         } catch (final AmazonClientException e) {
-            LOGGER.error("Error writing batch.", e);
+            if (LOGGER.isErrorEnabled()) {
+                final String msg = "Error writing batch: " + batch;
+                LOGGER.error(msg, e);
+            }
         }
     }
 
@@ -203,9 +217,7 @@ public final class HarvestAgent implements Observer {
         if (tasks.isEmpty()) {
             return;
         }
-        for (final Runnable r : tasks) {
-            executorService.submit(r);
-        }
+        tasks.forEach(executorService::submit);
         tasks.clear();
         final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
         while (! (stopped || harvesters.isEmpty())) {
