@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Observable;
+import java.util.function.Consumer;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -216,6 +217,24 @@ public final class Harvester extends Observable {
     }
 
     /**
+     * Get the parameters needed to retry the harvest, starting with the most
+     * recent request.
+     * <p>
+     * These parameters can be passed to
+     * {@link #start(HarvestParams, OAIResponseHandler)} to start a new harvest.
+     * Note that this is a <em>new</em> harvest. In particular, statistics about
+     * the current harvest will be lost.
+     *
+     * @return the parameters needed to retry the most recent request.
+     */
+    public HarvestParams getRetryParams() {
+        if (harvest == null) {
+            throw new IllegalStateException("No current harvest parameters.");
+        }
+        return harvest.getRetryParams();
+    }
+
+    /**
      * Safely run some code requiring a {@code finally} block without losing
      * exceptions.
      * <p>
@@ -295,10 +314,7 @@ public final class Harvester extends Observable {
         try (final InputStream in = is) { // Make sure streams get closed.
             harvest.responseReceived();
             final HarvestNotification notification =
-                    harvest.createNotification(
-                            HarvestNotificationType.RESPONSE_RECEIVED);
-            sendToObservers(notification);
-            responseHandler.onResponseReceived(notification);
+                    sendResponseReceivedNotifcations();
             responseParser.parse(in, harvest,
                     responseHandler.getEventHandler(notification));
         } catch (final XMLStreamException | IOException e) {
@@ -312,7 +328,7 @@ public final class Harvester extends Observable {
             harvest.error();
             throw new HarvesterException(e);
         } catch (final RuntimeException e) {
-            /* Catchall that includes all HarvesterExceptions. */
+            /* Catch-all that includes all HarvesterExceptions. */
             harvest.error();
             throw e;
         }
@@ -399,48 +415,104 @@ public final class Harvester extends Observable {
     }
 
     /**
+     * Sends a notification first to a consumer (one of the
+     * {@link OAIResponseHandler} event notification methods), then to
+     * registered observers.
+     * <p>
+     * This method makes the following guarantees:
+     * <ol>
+     * <li>The consumer receives the notification first.</li>
+     * <li>If the consumer throws an exception, this method will still attempt
+     * to notify all observers. The exception thrown by the consumer will be
+     * thrown after this attempt is made, with any exception thrown while
+     * attempting to notify observers being logged and <em>not</em> thrown.
+     * </li>
+     * </ol>
+     *
+     * @param notification
+     *            the notification to send.
+     * @param consumer
+     *            the consumer that should receive the notification before
+     *            registered observers.
+     */
+    private void sendNotifications(final HarvestNotification notification,
+            final Consumer<HarvestNotification> consumer) {
+        try {
+            consumer.accept(notification);
+        } finally {
+            sendToObservers(notification);
+        }
+    }
+
+    /**
      * Send a {@link HarvestNotificationType#HARVEST_STARTED} notification to
-     * the harvest's response handler and to all registered observers.
+     * the harvest's response handler and to registered observers.
      */
     private void sendHarvestStartNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.HARVEST_STARTED);
-        responseHandler.onHarvestStart(notification);
-        sendToObservers(notification);
+        sendNotifications(notification, responseHandler::onHarvestStart);
     }
 
     /**
      * Send a {@link HarvestNotificationType#HARVEST_ENDED} notification to the
-     * harvest's response handler and to all registered observers.
+     * harvest's response handler and to registered observers.
      */
     private void sendHarvestEndNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.HARVEST_ENDED);
-        responseHandler.onHarvestEnd(notification);
-        sendToObservers(notification);
+        sendNotifications(notification, responseHandler::onHarvestEnd);
+    }
+
+    /**
+     * Send a {@link HarvestNotificationType#RESPONSE_RECEIVED} notification to
+     * the harvest's response handler and to registered observers.
+     */
+    private HarvestNotification sendResponseReceivedNotifcations() {
+        final HarvestNotification notification = harvest.createNotification(
+                HarvestNotificationType.RESPONSE_RECEIVED);
+        sendNotifications(notification, responseHandler::onResponseReceived);
+        return notification;
     }
 
     /**
      * Send a {@link HarvestNotificationType#RESPONSE_PROCESSED} notification to
-     * the harvest's response handler and to all registered observers.
+     * the harvest's response handler and to registered observers.
      */
     private void sendResponseEndNotifications() {
-        final HarvestNotification notification =
-                harvest.createNotification(
-                        HarvestNotificationType.RESPONSE_PROCESSED);
-        responseHandler.onResponseProcessed(notification);
-        sendToObservers(notification);
+        final HarvestNotification notification = harvest.createNotification(
+                HarvestNotificationType.RESPONSE_PROCESSED);
+        sendNotifications(notification, responseHandler::onResponseProcessed);
     }
 
     /**
-     * Send a notification to all registered observers.
+     * Send a notification to registered observers.
+     *
+     * <h2>Error Handling</h2>
+     * <p>
+     * Observers should not throw exceptions when receiving updates (by
+     * convention). If an observer should defy convention and throw, we want to
+     * ensure that the operation of the harvester is not disrupted. Thus, this
+     * method does not throw any exceptions. Any exceptions thrown by observers
+     * will be logged.
+     * </p>
+     * <p>
+     * Because {@code Observable} makes no guarantees about notification order,
+     * we cannot either. Nor can we guarantee that an attempt is made to notify
+     * every registered observer if any one of them throws while being updated.
+     * </p>
      *
      * @param notification
      *            the notification to send.
      */
     private void sendToObservers(final HarvestNotification notification) {
         setChanged();
-        notifyObservers(notification);
+        try {
+            notifyObservers(notification);
+        } catch (final Exception e) {
+            LOGGER.error("Caught an exception while notifying observers.",
+                    e);
+        }
     }
 }
 

@@ -35,25 +35,25 @@ public enum OAIDateGranularity {
     }
 
     /**
-    * Get an instance from a format string.
-    * <p>
-    * The format string should be the value of the {@code granularity} from a
-    * repository's <a href=
-    * "http://www.openarchives.org/OAI/openarchivesprotocol.html#Identify">
-    * Identify response</a>.
-    *
-    * @param format
-    *            the format string.
-    * @return the corresponding granularity, or {@code null} if the format is
-    *         not recognized.
-    */
+     * Get an instance from a format string.
+     * <p>
+     * The format string should be the value of the {@code granularity} from a
+     * repository's <a href=
+     * "http://www.openarchives.org/OAI/openarchivesprotocol.html#Identify">
+     * Identify response</a>.
+     *
+     * @param format
+     *            the format string.
+     * @return the corresponding granularity, or {@code null} if the format is
+     *         not recognized.
+     */
     public static OAIDateGranularity fromFormat(final String format) {
         switch(format) {
-            case "YYYY-MM-DD":
-                return DAY;
-            case "YYYY-MM-DDThh:mm:ssZ":
-            default:
-                return null;
+        case "YYYY-MM-DD":
+            return DAY;
+        case "YYYY-MM-DDThh:mm:ssZ":
+        default:
+            return null;
         }
     }
 }

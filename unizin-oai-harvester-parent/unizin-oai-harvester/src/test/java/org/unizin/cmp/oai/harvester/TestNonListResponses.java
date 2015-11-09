@@ -1,5 +1,12 @@
 package org.unizin.cmp.oai.harvester;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
+import static org.unizin.cmp.oai.harvester.Tests.MOCK_OAI_BASE_URI;
+import static org.unizin.cmp.oai.harvester.Tests.STAX;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.time.Instant;
@@ -19,13 +26,18 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
+import org.unizin.cmp.oai.harvester.Tests.STAX_LIB;
 import org.unizin.cmp.oai.harvester.response.MergingOAIResponseHandler;
 import org.unizin.cmp.oai.templates.GetRecordTemplate;
 import org.w3c.dom.Document;
 
-public final class TestNonListResponses extends HarvesterTestBase {
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
+public final class TestNonListResponses {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+    @Rule
+    public final WireMockRule wireMock = Tests.newWireMockRule();
 
     private static final NamespaceContext OAI_CONTEXT = new NamespaceContext(){
 
@@ -68,17 +80,18 @@ public final class TestNonListResponses extends HarvesterTestBase {
     public void testGetRecord() throws Exception {
         final Instant expectedResponseDate = Instant.now();
         final String expectedIdentifier = "some identifier";
-        final String responseContent = new GetRecordTemplate()
+        final String responseBody = new GetRecordTemplate()
                 .withIdentifier(expectedIdentifier)
                 .withResponseDate(expectedResponseDate)
                 .process();
-        mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "",
-                responseContent);
+        stubFor(post(urlMatching(".*"))
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBody(responseBody)));
         final Harvester harvester = new Harvester.Builder()
-                .withHttpClient(mockHttpClient)
                 .withOAIRequestFactory(PostOAIRequestFactory.getInstance())
                 .build();
-        final HarvestParams params = new HarvestParams(TEST_URI,
+        final HarvestParams params = new HarvestParams(MOCK_OAI_BASE_URI,
                 OAIVerb.GET_RECORD)
                 .withIdentifier(expectedIdentifier);
         Assert.assertTrue(params.areValid());
@@ -110,7 +123,7 @@ public final class TestNonListResponses extends HarvesterTestBase {
         /*
          * In Xerces and the JDK, &#13; (carriage return) becomes "\n".
          */
-        String chr13 = (STAX == STAX_LIB.WOODSTOX) ?
+        final String chr13 = (STAX == STAX_LIB.WOODSTOX) ?
                 new String(Character.toChars(13)) : "\n";
         Assert.assertEquals("This should have a " + chr13 + " newline.",
                 coverage);

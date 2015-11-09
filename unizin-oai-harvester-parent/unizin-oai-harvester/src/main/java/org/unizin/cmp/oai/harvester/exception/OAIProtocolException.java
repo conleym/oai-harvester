@@ -17,12 +17,12 @@ public final class OAIProtocolException extends HarvesterException {
     private final List<OAIError> errors;
 
     /**
-    * Create a new instance with a list of OAI protocol errors.
-    *
-    * @param errors a list of {@link OAIError}s that occurred. The list itself
-    * should implement {@link java.io.Serializable} if the instance is to be
-    * serialized.
-    */
+     * Create a new instance with a list of OAI protocol errors.
+     *
+     * @param errors a list of {@link OAIError}s that occurred. The list itself
+     * should implement {@link java.io.Serializable} if the instance is to be
+     * serialized.
+     */
     public OAIProtocolException(final List<OAIError> errors) {
         super("OAI protocol error(s).");
         // Yes, unmodifiableList returns a Serializable List.

@@ -10,6 +10,7 @@ import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIDateGranularity;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.OAIVerb;
+import org.unizin.cmp.oai.ResumptionToken;
 
 
 /**
@@ -89,17 +90,17 @@ public final class HarvestParams {
     }
 
     /**
-    * Add an arbitrary nonstandard parameter.
-    * <p>
-    * Nonstandard parameters are never validated.
-    * <p>
-    * Nonstandard parameters are added only to the initial request. To use
-    * a nonstandard parameter in both the initial and subsequent requests,
-    * add it to the {@code baseURI} instead.
-    * @param name the parameter's name
-    * @param value the parameter's value
-    * @return this instance
-    */
+     * Add an arbitrary nonstandard parameter.
+     * <p>
+     * Nonstandard parameters are never validated.
+     * <p>
+     * Nonstandard parameters are added only to the initial request. To use
+     * a nonstandard parameter in both the initial and subsequent requests,
+     * add it to the {@code baseURI} instead.
+     * @param name the parameter's name
+     * @param value the parameter's value
+     * @return this instance
+     */
     public HarvestParams withNonstandardParameter(final String name,
             final String value) {
         nonstandardParameters.put(name, value);
@@ -107,10 +108,10 @@ public final class HarvestParams {
     }
 
     /**
-    * Validate the standard harvest parameters.
-    * @return {@code true} iff this instance's standard parameters are valid
-    * with this instance's verb.
-    */
+     * Validate the standard harvest parameters.
+     * @return {@code true} iff this instance's standard parameters are valid
+     * with this instance's verb.
+     */
     public boolean areValid() {
         return verb.areValidParameters(standardParameters);
     }
@@ -120,6 +121,57 @@ public final class HarvestParams {
         allParams.putAll(nonstandardParameters);
         allParams.put(OAI2Constants.VERB_PARAM_NAME, verb.localPart());
         return allParams;
+    }
+
+    public HarvestParams getRetryParameters(final ResumptionToken resumptionToken) {
+        final HarvestParams p = new HarvestParams(baseURI, verb);
+        if (resumptionToken != null) {
+            p.withResumptionToken(resumptionToken.getToken());
+        } else {
+            p.standardParameters.putAll(standardParameters);
+            p.nonstandardParameters.putAll(nonstandardParameters);
+        }
+        return p;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((baseURI == null) ? 0 : baseURI.hashCode());
+        result = prime * result + ((nonstandardParameters == null) ? 0 : nonstandardParameters.hashCode());
+        result = prime * result + ((standardParameters == null) ? 0 : standardParameters.hashCode());
+        result = prime * result + ((verb == null) ? 0 : verb.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        HarvestParams other = (HarvestParams) obj;
+        if (baseURI == null) {
+            if (other.baseURI != null)
+                return false;
+        } else if (!baseURI.equals(other.baseURI))
+            return false;
+        if (nonstandardParameters == null) {
+            if (other.nonstandardParameters != null)
+                return false;
+        } else if (!nonstandardParameters.equals(other.nonstandardParameters))
+            return false;
+        if (standardParameters == null) {
+            if (other.standardParameters != null)
+                return false;
+        } else if (!standardParameters.equals(other.standardParameters))
+            return false;
+        if (verb != other.verb)
+            return false;
+        return true;
     }
 
     @Override

@@ -31,38 +31,38 @@ public final class OAIError implements Serializable {
     }
 
     /**
-    * Get the raw string representation of the error code associated with this
-    * error.
-    * <p>
-    * This exists to allow support for any nonstandard error codes that might
-    * be received from repositories.
-    *
-    * @return the raw string representation of the error code associated with
-    *         this error.
-    */
+     * Get the raw string representation of the error code associated with this
+     * error.
+     * <p>
+     * This exists to allow support for any nonstandard error codes that might
+     * be received from repositories.
+     *
+     * @return the raw string representation of the error code associated with
+     *         this error.
+     */
     public String getErrorCodeString() {
         return errorCodeString;
     }
 
     /**
-    * Get this error's code.
-    *
-    * @return an optional containing this error's code, or an empty optional if
-    *         the code is nonstandard or was not provided.
-    */
+     * Get this error's code.
+     *
+     * @return an optional containing this error's code, or an empty optional if
+     *         the code is nonstandard or was not provided.
+     */
     public Optional<OAIErrorCode> getErrorCode() {
         // Optional is not Serializable, so we can't store it.
         return Optional.ofNullable(errorCode);
     }
 
     /**
-    * Get the message associated with this error.
-    * <p>
-    * This method never returns {@code null}. If no message was provided,
-    * returns the empty string.
-    *
-    * @return the non-{@code null} message sent with this error.
-    */
+     * Get the message associated with this error.
+     * <p>
+     * This method never returns {@code null}. If no message was provided,
+     * returns the empty string.
+     *
+     * @return the non-{@code null} message sent with this error.
+     */
     public String getMessage() {
         return message;
     }

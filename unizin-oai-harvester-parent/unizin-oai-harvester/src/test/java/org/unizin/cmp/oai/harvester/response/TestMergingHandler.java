@@ -1,10 +1,11 @@
 package org.unizin.cmp.oai.harvester.response;
 
+import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.http.HttpStatus;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Rule;
@@ -12,19 +13,20 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.HarvesterTestBase;
+import org.unizin.cmp.oai.harvester.IOUtils;
 import org.unizin.cmp.oai.harvester.TestListResponses;
-import org.unizin.cmp.oai.harvester.Utils;
+import org.unizin.cmp.oai.harvester.Tests;
+import org.unizin.cmp.oai.mocks.MockHttpClient;
 
-public final class TestMergingHandler extends HarvesterTestBase {
+public final class TestMergingHandler {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     private final String expected;
 
     public TestMergingHandler() throws IOException {
-        expected = Utils.fromStream(Utils.fromClasspathFile(
-                "/oai-expected/merged-list-records.xml"));
+        expected = IOUtils.stringFromClasspathFile(
+                "/oai-expected/merged-list-records.xml");
         XMLUnit.setIgnoreAttributeOrder(true);
         XMLUnit.setIgnoreComments(true);
         XMLUnit.setIgnoreWhitespace(true);
@@ -40,18 +42,20 @@ public final class TestMergingHandler extends HarvesterTestBase {
 
     @Test
     public void testSingleResponse() throws Exception {
-        mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", expected);
-        final Harvester harvester = defaultTestHarvester();
-        final HarvestParams params = defaultTestParams();
-        test(harvester, params);
+        Tests.testWithWiremockServer(() -> {
+            Tests.createWiremockStubForOKGetResponse(expected);
+            test(new Harvester.Builder().build(), defaultTestParams());
+        });
     }
 
     @Test
     public void testMultipleResponses() throws Exception {
+        final MockHttpClient mockHttpClient = new MockHttpClient();
         TestListResponses.setupWithDefaultListRecordsResponse(true,
                 mockHttpClient);
-        final Harvester harvester = defaultTestHarvester();
-        final HarvestParams params = defaultTestParams();
-        test(harvester, params);
+        final Harvester harvester = new Harvester.Builder()
+                .withHttpClient(mockHttpClient)
+                .build();
+        test(harvester, defaultTestParams());
     }
 }
