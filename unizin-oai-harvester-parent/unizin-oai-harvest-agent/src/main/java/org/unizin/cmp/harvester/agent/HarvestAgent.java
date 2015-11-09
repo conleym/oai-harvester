@@ -31,6 +31,7 @@ import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch;
 
@@ -154,7 +155,7 @@ public final class HarvestAgent implements Observer {
         this.batchSize = batchSize;
     }
 
-    public static final MessageDigest digest()
+    public static MessageDigest digest()
             throws NoSuchAlgorithmException {
         return MessageDigest.getInstance(DIGEST_ALGORITHM);
     }
@@ -173,9 +174,7 @@ public final class HarvestAgent implements Observer {
 
     private void removeAllHarvesters() {
         synchronized(harvestersLock) {
-            for (final Harvester h : harvesters) {
-                h.stop();
-            }
+            harvesters.forEach(Harvester::stop);
             harvesters.clear();
         }
     }
@@ -189,10 +188,14 @@ public final class HarvestAgent implements Observer {
     }
 
     private void writeBatch(final List<HarvestedOAIRecord> batch) {
-        final List<FailedBatch> failed = mapper.batchWrite(batch,
-                Collections.emptyList());
-        if (! failed.isEmpty()) {
-            throw new RuntimeException("Batch failed!");
+        try {
+            final List<FailedBatch> failed = mapper.batchWrite(batch,
+                    Collections.emptyList());
+            if (! failed.isEmpty()) {
+                LOGGER.error("Batch failed! {}", failed);
+            }
+        } catch (final AmazonClientException e) {
+            LOGGER.error("Error writing batch.", e);
         }
     }
 
