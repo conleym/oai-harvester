@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.unizin.cmp</groupId>
   <artifactId>unizin-oai-harvester-parent</artifactId>
@@ -12,6 +11,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j.version>1.7.12</slf4j.version>
+    <github.project>unizin/oai-harvester</github.project>
+    <scm.connection>scm:git:git@github.com:${github.project}.git</scm.connection>
   </properties>
 
 
@@ -35,6 +36,27 @@
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>1.8</version>
         </plugin>
+        <plugin>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.5.3</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <tagNameFormat>@{project.version}</tagNameFormat>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.3</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.8.2</version>
+        </plugin>
+
         <!--This plugin's configuration is used to store Eclipse m2e settings
           only. It has no influence on the Maven build itself. -->
         <plugin>
@@ -54,7 +76,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore/>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>
@@ -127,9 +149,56 @@
     </dependencies>
   </dependencyManagement>
 
+
   <modules>
     <module>unizin-oai-harvester</module>
     <module>simple-importer</module>
     <module>unizin-oai-harvest-agent</module>
   </modules>
+
+
+  <scm>
+    <connection>${scm.connection}</connection>
+    <url>${scm.connection}</url>
+    <developerConnection>${scm.connection}</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+
+  <!-- -Pupstream defines jenkins repository for release builds. -->
+  <profiles>
+    <profile>
+      <id>upstream</id>
+      <activation>
+        <property>
+          <name>env.Jenkins.Repository</name>
+        </property>
+      </activation>
+      <repositories>
+        <repository>
+          <id>upstream</id>
+          <url>${env.Jenkins.Repository}</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>upstream</id>
+          <url>${env.Jenkins.Repository}</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+
 </project>
