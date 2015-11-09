@@ -164,40 +164,4 @@
   </scm>
 
 
-  <!-- -Pupstream defines jenkins repository for release builds. -->
-  <profiles>
-    <profile>
-      <id>upstream</id>
-      <activation>
-        <property>
-          <name>env.Jenkins.Repository</name>
-        </property>
-      </activation>
-      <repositories>
-        <repository>
-          <id>upstream</id>
-          <url>${env.Jenkins.Repository}</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>upstream</id>
-          <url>${env.Jenkins.Repository}</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
-
 </project>
