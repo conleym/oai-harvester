@@ -56,6 +56,7 @@ public final class Harvester extends Observable {
          * @param httpClient
          *            the http client instance the resulting harvester will use
          *            to execute all its requests.
+         * @return this builder.
          */
         public Builder withHttpClient(final HttpClient httpClient) {
             this.httpClient = httpClient;
@@ -73,6 +74,7 @@ public final class Harvester extends Observable {
          *            be namespace-aware. In addition, it is <em>highly</em>
          *            recommended that DTDs be disabled for security reasons.
          *            See {@link OAIXMLUtils#newInputFactory()} for details.
+         * @return this builder.
          */
         public Builder withXMLInputFactory(final XMLInputFactory inputFactory) {
             this.inputFactory = inputFactory;
@@ -89,6 +91,7 @@ public final class Harvester extends Observable {
          *            the request factory that will be used to make
          *            {@code HttpUriRequest} objects for each request the
          *            resulting harvester makes.
+         * @return this builder.
          */
         public Builder withOAIRequestFactory(
                 final OAIRequestFactory requestFactory) {
