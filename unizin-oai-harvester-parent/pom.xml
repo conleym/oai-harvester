@@ -161,7 +161,6 @@
     <connection>${scm.connection}</connection>
     <url>${scm.connection}</url>
     <developerConnection>${scm.connection}</developerConnection>
-    <tag>HEAD</tag>
   </scm>
 
 
