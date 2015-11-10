@@ -82,7 +82,7 @@ public final class HarvestNotification {
 
     private final HarvestNotificationType type;
     private final boolean isStarted;
-    private final boolean hasError;
+    private final Exception exception;
     private final boolean isStoppedByUser;
     private final ResumptionToken resumptionToken;
     private final Instant lastResponseDate;
@@ -90,17 +90,21 @@ public final class HarvestNotification {
     private final NotificationParams notificationParams;
     private final Map<String, Long> stats;
 
-    public HarvestNotification(final HarvestNotificationType type, final boolean isStarted, final boolean hasError,
-            final boolean isStoppedByUser, final ResumptionToken resumptionToken, final Instant lastResponseDate,
+    public HarvestNotification(final HarvestNotificationType type,
+            final boolean isStarted, final Exception exception,
+            final boolean isStoppedByUser,
+            final ResumptionToken resumptionToken,
+            final Instant lastResponseDate,
             final HarvestParams params, final Map<String, Long> stats) {
         this.type = type;
         this.isStarted = isStarted;
-        this.hasError = hasError;
+        this.exception = exception;
         this.isStoppedByUser = isStoppedByUser;
         this.resumptionToken = resumptionToken;
         this.lastResponseDate = lastResponseDate;
         this.params = params;
-        this.notificationParams = new NotificationParams(Collections.unmodifiableMap(params.getParameters()));
+        this.notificationParams = new NotificationParams(Collections
+                .unmodifiableMap(params.getParameters()));
         this.stats = Collections.unmodifiableMap(stats);
     }
 
@@ -139,7 +143,11 @@ public final class HarvestNotification {
     }
 
     public boolean hasError() {
-        return hasError;
+        return exception != null;
+    }
+
+    public Exception getException() {
+        return exception;
     }
 
     public boolean isStarted() {
@@ -152,10 +160,14 @@ public final class HarvestNotification {
 
     @Override
     public String toString() {
-        return new StringBuilder(this.getClass().getName()).append("[type=").append(type).append(", isStarted=")
-                .append(isStarted).append(", hasError=").append(hasError).append(", stoppedByUser=")
-                .append(isStoppedByUser).append(", resumptionToken=").append(resumptionToken)
-                .append(", lastResponseDate=").append(lastResponseDate).append(", stats=").append(stats).append("]")
+        return new StringBuilder(this.getClass().getName())
+                .append("[type=").append(type)
+                .append(", isStarted=").append(isStarted)
+                .append(", exception=").append(exception)
+                .append(", stoppedByUser=").append(isStoppedByUser)
+                .append(", resumptionToken=").append(resumptionToken)
+                .append(", lastResponseDate=").append(lastResponseDate)
+                .append(", stats=").append(stats).append("]")
                 .toString();
     }
 }

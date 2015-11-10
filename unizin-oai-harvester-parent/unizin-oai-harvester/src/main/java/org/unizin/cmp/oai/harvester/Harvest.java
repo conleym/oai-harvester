@@ -21,7 +21,7 @@ final class Harvest {
     private HttpUriRequest request;
     private volatile boolean isStarted;
     private volatile boolean isStoppedByUser;
-    private boolean hasError;
+    private Exception exception;
     private ResumptionToken resumptionToken;
     private Instant lastResponseDate;
     private long requestCount;
@@ -37,7 +37,7 @@ final class Harvest {
         stats.put(HarvestNotification.Statistics.REQUEST_COUNT, requestCount);
         stats.put(HarvestNotification.Statistics.RESPONSE_COUNT,
                 responseCount);
-        return new HarvestNotification(type, isStarted, hasError, isStoppedByUser,
+        return new HarvestNotification(type, isStarted, exception, isStoppedByUser,
                 resumptionToken, lastResponseDate, params, stats);
     }
 
@@ -94,8 +94,8 @@ final class Harvest {
         stop();
     }
 
-    void error() {
-        hasError = true;
+    void error(final Exception e) {
+        exception = e;
         stop();
     }
 
@@ -108,7 +108,11 @@ final class Harvest {
     }
 
     boolean hasNext() {
-        return isStarted && !hasError && !isStoppedByUser;
+        return isStarted;
+    }
+
+    Exception getException() {
+        return exception;
     }
 
     HarvestParams getRetryParams() {

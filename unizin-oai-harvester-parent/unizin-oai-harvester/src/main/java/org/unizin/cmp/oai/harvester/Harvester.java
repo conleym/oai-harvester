@@ -129,7 +129,7 @@ public final class Harvester extends Observable {
                                 createRequest(parameters));
                         return contentOf(response);
                     } catch (final RuntimeException e) {
-                        harvest.error();
+                        harvest.error(e);
                         throw e;
                     }
                 }
@@ -333,14 +333,14 @@ public final class Harvester extends Observable {
              *
              * IOException can only be thrown when closing the stream.
              */
-            harvest.error();
+            harvest.error(e);
             throw new HarvesterException(e);
         } catch (final RuntimeException e) {
             /*
              * Make sure anybody who's listening for notifications knows there
              * was an error.
              */
-            harvest.error();
+            harvest.error(e);
             throw e;
         }
     }
