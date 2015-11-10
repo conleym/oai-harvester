@@ -122,11 +122,16 @@ public final class Harvester extends Observable {
 
                 @Override
                 public InputStream next() {
-                    final Map<String, String> parameters =
-                            harvest.getRequestParameters();
-                    final HttpResponse response = executeRequest(
-                            createRequest(parameters));
-                    return contentOf(response);
+                    try {
+                        final Map<String, String> parameters =
+                                harvest.getRequestParameters();
+                        final HttpResponse response = executeRequest(
+                                createRequest(parameters));
+                        return contentOf(response);
+                    } catch (final RuntimeException e) {
+                        harvest.error();
+                        throw e;
+                    }
                 }
             };
         }
@@ -331,7 +336,10 @@ public final class Harvester extends Observable {
             harvest.error();
             throw new HarvesterException(e);
         } catch (final RuntimeException e) {
-            /* Catch-all that includes all HarvesterExceptions. */
+            /*
+             * Make sure anybody who's listening for notifications knows there
+             * was an error.
+             */
             harvest.error();
             throw e;
         }

@@ -96,6 +96,7 @@ final class Harvest {
 
     void error() {
         hasError = true;
+        stop();
     }
 
     void requestSent() {
