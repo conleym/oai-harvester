@@ -36,7 +36,7 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * harvest.
  * </p>
  * <p>
- * Instances are not immutable, but public methods can be safely called from
+ * Instances are mutable, but public methods can be safely called from
  * multiple threads.
  * </p>
  * <h2>Use in Multiple Threads</h2>
@@ -66,13 +66,8 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * </p>
  * <p>
  * In this simple example, the response handler is not shared between threads,
- * but the harvester's design allows for shared handlers, provided the handler
- * itself is safe for use in multiple threads.
- * </p>
- * <p>
- * The only restriction to observe is that
- * {@link #start(HarvestParams, OAIResponseHandler)} is <em>not</em> safe to
- * call from multiple threads.
+ * but the harvester's design allows for shared handlers, provided the handlers
+ * themselves are safe for use in multiple threads.
  * </p>
  */
 public final class Harvester extends Observable {
@@ -181,7 +176,16 @@ public final class Harvester extends Observable {
     private final OAIRequestFactory requestFactory;
     private final OAIResponseParser responseParser;
 
-    private volatile Harvest harvest;
+    /**
+     * The current harvest state.
+     * <p>
+     * Must be {@code volatile} so that a harvest can be started via
+     * {@link #start(HarvestParams, OAIResponseHandler)} called from one thread
+     * and stopped via {@link #stop()} called from another.
+     * </p>
+     */
+    // Initial value has false for all flags and cannot be restarted.
+    private volatile Harvest harvest = new Harvest();
 
     /**
      * Create a new instance.
@@ -242,7 +246,7 @@ public final class Harvester extends Observable {
      */
     public void start(final HarvestParams params,
             final OAIResponseHandler responseHandler) {
-        if (this.harvest != null && this.harvest.hasNext()) {
+        if (this.harvest.hasNext()) {
             throw new IllegalStateException(
                     "Cannot start a new harvest while one is in progress.");
         }
@@ -252,11 +256,14 @@ public final class Harvester extends Observable {
 
     /**
      * Stop the current harvest, if any.
+     * <p>
+     * Note that, if the current harvest is running in another thread, it may
+     * not stop immediately. Clients wishing to take action when a harvest ends
+     * should add observers to be notified of events.
+     * </p>
      */
     public void stop() {
-        if (harvest != null) {
-            harvest.requestStop();
-        }
+        harvest.requestStop();
     }
 
     /**
@@ -269,11 +276,10 @@ public final class Harvester extends Observable {
      * the current harvest will be lost.
      *
      * @return the parameters needed to retry the most recent request.
+     * @throws IllegalStateException
+     *             if there is no current harvest.
      */
     public HarvestParams getRetryParams() {
-        if (harvest == null) {
-            throw new IllegalStateException("No current harvest parameters.");
-        }
         return harvest.getRetryParams();
     }
 

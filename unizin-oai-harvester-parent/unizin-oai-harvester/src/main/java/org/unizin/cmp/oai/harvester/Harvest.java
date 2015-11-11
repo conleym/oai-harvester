@@ -31,11 +31,22 @@ final class Harvest {
     private final State state = new State();
     private HttpUriRequest request;
     private Exception exception;
+    /**
+     * The resumption token from the last response, if any.
+     * <p>
+     * Must be {@code volatile} so that {@link #getRetryParams()} can be called
+     * from multiple threads.
+     * </p>
+     */
     private volatile ResumptionToken resumptionToken;
     private Instant lastResponseDate;
     private long requestCount;
     private long responseCount;
 
+
+    Harvest() {
+        this(null, null);
+    }
 
     Harvest(final HarvestParams params,
             final OAIResponseHandler responseHandler) {
@@ -120,16 +131,10 @@ final class Harvest {
     }
 
     boolean hasNext() {
-        if (Thread.interrupted()) {
-            /* On the off chance that somebody else down the line is interested
-             * in the interrupted flag, turn it back on.
-             *
-             * We do this because we don't necessarily have complete control
-             * over all the code running in this thread, and because it doesn't
-             * hurt anything -- interrupting the current thread is always
-             * allowed.
-             */
-            Thread.currentThread().interrupt();
+        /* On the off chance that somebody else down the line is interested
+         * in the interrupted flag, we avoid clearing it.
+         */
+        if (Thread.currentThread().isInterrupted()) {
             state.interrupted = true;
             stop();
         }
@@ -137,7 +142,10 @@ final class Harvest {
     }
 
     HarvestParams getRetryParams() {
-        return params.getRetryParameters(resumptionToken);
+        if (params != null) {
+            return params.getRetryParameters(resumptionToken);
+        }
+        throw new IllegalStateException("No current harvest parameters.");
     }
 
     OAIResponseHandler getResponseHandler() {

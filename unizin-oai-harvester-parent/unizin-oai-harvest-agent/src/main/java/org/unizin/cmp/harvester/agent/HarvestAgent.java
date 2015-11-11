@@ -136,7 +136,7 @@ public final class HarvestAgent implements Observer {
     private final int batchSize;
     private final Object harvestersLock = new Object();
     private final Set<Harvester> harvesters = new HashSet<>();
-    private volatile boolean stopped = false;
+    private volatile boolean stopped;
 
 
     public HarvestAgent(final HttpClient httpClient,
@@ -187,6 +187,12 @@ public final class HarvestAgent implements Observer {
         }
     }
 
+    private boolean shouldStop() {
+        synchronized (harvestersLock) {
+            return stopped || harvesters.isEmpty();
+        }
+    }
+
     private void writeBatch(final List<HarvestedOAIRecord> batch) {
         try {
             final List<FailedBatch> failed = mapper.batchWrite(batch,
@@ -220,7 +226,7 @@ public final class HarvestAgent implements Observer {
         tasks.forEach(executorService::submit);
         tasks.clear();
         final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
-        while (! (stopped || harvesters.isEmpty())) {
+        while (!shouldStop()) {
             try {
                 final HarvestedOAIRecord record = tryPoll();
                 if (record == null) {
@@ -287,7 +293,6 @@ public final class HarvestAgent implements Observer {
             LOGGER.error(
                     "Observable argument was of type {}. Was expecting {}.",
                     o.getClass().getName(), Harvester.class.getName());
-
         }
         if (! (arg instanceof HarvestNotification)) {
             ok = false;

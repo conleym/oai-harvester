@@ -2,7 +2,7 @@ package org.unizin.cmp.oai.harvester;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
@@ -39,9 +39,9 @@ public final class TestHttpClientErrorHandling {
     private static void verifyResponseHandler(final OAIResponseHandler h) {
         inOrderVerify(h).onHarvestStart(NotificationMatchers
                 .harvestStarted());
-        inOrder(h).verify(h, times(0)).onResponseReceived(any());
-        inOrder(h).verify(h, times(0)).getEventHandler(any());
-        inOrder(h).verify(h, times(0)).onResponseProcessed(any());
+        inOrder(h).verify(h, never()).onResponseReceived(any());
+        inOrder(h).verify(h, never()).getEventHandler(any());
+        inOrder(h).verify(h, never()).onResponseProcessed(any());
         inOrderVerify(h).onHarvestEnd(NotificationMatchers
                 .harvestEndedWithError());
     }
