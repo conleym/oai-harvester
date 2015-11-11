@@ -11,6 +11,8 @@ import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
+import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
+import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 /**
  * Internal-use-only mutable harvest state.
@@ -25,6 +27,7 @@ final class Harvest {
     }
 
     private final HarvestParams params;
+    private final OAIResponseHandler responseHandler;
     private final State state = new State();
     private HttpUriRequest request;
     private Exception exception;
@@ -34,8 +37,10 @@ final class Harvest {
     private long responseCount;
 
 
-    Harvest(final HarvestParams params) {
+    Harvest(final HarvestParams params,
+            final OAIResponseHandler responseHandler) {
         this.params = params;
+        this.responseHandler = responseHandler;
     }
 
     HarvestNotification createNotification(
@@ -133,6 +138,14 @@ final class Harvest {
 
     HarvestParams getRetryParams() {
         return params.getRetryParameters(resumptionToken);
+    }
+
+    OAIResponseHandler getResponseHandler() {
+        return responseHandler;
+    }
+
+    OAIEventHandler getEventHandler(final HarvestNotification notification) {
+        return responseHandler.getEventHandler(notification);
     }
 }
 

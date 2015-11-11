@@ -182,7 +182,6 @@ public final class Harvester extends Observable {
     private final OAIResponseParser responseParser;
 
     private volatile Harvest harvest;
-    private OAIResponseHandler responseHandler;
 
     /**
      * Create a new instance.
@@ -247,8 +246,7 @@ public final class Harvester extends Observable {
             throw new IllegalStateException(
                     "Cannot start a new harvest while one is in progress.");
         }
-        this.harvest = new Harvest(params);
-        this.responseHandler = responseHandler;
+        this.harvest = new Harvest(params, responseHandler);
         harvest();
     }
 
@@ -361,7 +359,7 @@ public final class Harvester extends Observable {
             final HarvestNotification notification =
                     sendResponseReceivedNotifcations();
             responseParser.parse(in, harvest,
-                    responseHandler.getEventHandler(notification));
+                    harvest.getEventHandler(notification));
         } catch (final XMLStreamException | IOException e) {
             /*
              * Note: XMLStreamExceptions thrown due to XML parsing
@@ -499,7 +497,8 @@ public final class Harvester extends Observable {
     private void sendHarvestStartNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.HARVEST_STARTED);
-        sendNotifications(notification, responseHandler::onHarvestStart);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onHarvestStart);
     }
 
     /**
@@ -509,7 +508,8 @@ public final class Harvester extends Observable {
     private void sendHarvestEndNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.HARVEST_ENDED);
-        sendNotifications(notification, responseHandler::onHarvestEnd);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onHarvestEnd);
     }
 
     /**
@@ -519,7 +519,8 @@ public final class Harvester extends Observable {
     private HarvestNotification sendResponseReceivedNotifcations() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.RESPONSE_RECEIVED);
-        sendNotifications(notification, responseHandler::onResponseReceived);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onResponseReceived);
         return notification;
     }
 
@@ -530,7 +531,8 @@ public final class Harvester extends Observable {
     private void sendResponseEndNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.RESPONSE_PROCESSED);
-        sendNotifications(notification, responseHandler::onResponseProcessed);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onResponseProcessed);
     }
 
     /**
