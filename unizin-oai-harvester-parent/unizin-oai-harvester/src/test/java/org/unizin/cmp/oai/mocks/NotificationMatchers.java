@@ -14,15 +14,15 @@ import org.unizin.cmp.oai.harvester.HarvestNotification.Statistics;
 
 public final class NotificationMatchers {
     public static final Predicate<HarvestNotification> RUNNING = (hn) -> {
-        return hn.isStarted() && !hn.isStoppedByUser() && !hn.hasError();
+        return hn.isRunning() && !hn.isExplicitlyStopped() && !hn.hasError();
     };
 
     public static final Predicate<HarvestNotification> NOT_RUNNING = (hn) -> {
-        return !hn.isStarted() && !hn.isStoppedByUser() && !hn.hasError();
+        return !hn.isRunning() && !hn.isExplicitlyStopped() && !hn.hasError();
     };
 
     public static final Predicate<HarvestNotification> HAS_ERROR = (hn) -> {
-        return !hn.isStarted() && !hn.isStoppedByUser() && hn.hasError();
+        return !hn.isRunning() && !hn.isExplicitlyStopped() && hn.hasError();
     };
 
     public static final HarvestNotification harvestStarted() {
@@ -64,7 +64,7 @@ public final class NotificationMatchers {
     public static final HarvestNotification lastResponseProcessedSuccessfully() {
         return Mocks.matcherFromPredicate((hn) -> {
             return hn.getType() == RESPONSE_PROCESSED &&
-                    !hn.isStarted() && !hn.isStoppedByUser() && !hn.hasError();
+                    !hn.isRunning() && !hn.isExplicitlyStopped() && !hn.hasError();
         },
                 HarvestNotification.class);
     }

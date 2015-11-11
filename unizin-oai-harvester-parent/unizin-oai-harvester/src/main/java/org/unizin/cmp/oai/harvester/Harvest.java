@@ -11,33 +11,56 @@ import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
+import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
+import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 /**
  * Internal-use-only mutable harvest state.
  *
  */
 final class Harvest {
+
+    static final class State {
+        volatile boolean running;
+        volatile boolean explicitlyStopped;
+        boolean interrupted;
+    }
+
     private final HarvestParams params;
+    private final OAIResponseHandler responseHandler;
+    private final State state = new State();
     private HttpUriRequest request;
-    private volatile boolean isStarted;
-    private volatile boolean isStoppedByUser;
-    private boolean hasError;
-    private ResumptionToken resumptionToken;
+    private Exception exception;
+    /**
+     * The resumption token from the last response, if any.
+     * <p>
+     * Must be {@code volatile} so that {@link #getRetryParams()} can be called
+     * from multiple threads.
+     * </p>
+     */
+    private volatile ResumptionToken resumptionToken;
     private Instant lastResponseDate;
     private long requestCount;
     private long responseCount;
 
 
-    Harvest(final HarvestParams params) {
-        this.params = params;
+    Harvest() {
+        this(null, null);
     }
 
-    HarvestNotification createNotification(final HarvestNotificationType type) {
+    Harvest(final HarvestParams params,
+            final OAIResponseHandler responseHandler) {
+        this.params = params;
+        this.responseHandler = responseHandler;
+    }
+
+    HarvestNotification createNotification(
+            final HarvestNotificationType type) {
         final Map<String, Long> stats = new HashMap<>(2);
         stats.put(HarvestNotification.Statistics.REQUEST_COUNT, requestCount);
         stats.put(HarvestNotification.Statistics.RESPONSE_COUNT,
                 responseCount);
-        return new HarvestNotification(type, isStarted, hasError, isStoppedByUser,
+        return new HarvestNotification(type, state, exception,
                 resumptionToken, lastResponseDate, params, stats);
     }
 
@@ -79,23 +102,24 @@ final class Harvest {
     }
 
     void start() {
-        isStarted = true;
+        state.running = true;
     }
 
     void stop() {
-        isStarted = false;
+        state.running = false;
     }
 
     /**
      * This method should be called only from {@link Harvester#stop()}.
      */
-    void userStop() {
-        this.isStoppedByUser = true;
+    void requestStop() {
+        state.explicitlyStopped = true;
         stop();
     }
 
-    void error() {
-        hasError = true;
+    void error(final Exception e) {
+        exception = e;
+        stop();
     }
 
     void requestSent() {
@@ -107,11 +131,29 @@ final class Harvest {
     }
 
     boolean hasNext() {
-        return isStarted && !hasError && !isStoppedByUser;
+        /* On the off chance that somebody else down the line is interested
+         * in the interrupted flag, we avoid clearing it.
+         */
+        if (Thread.currentThread().isInterrupted()) {
+            state.interrupted = true;
+            stop();
+        }
+        return state.running;
     }
 
     HarvestParams getRetryParams() {
-        return params.getRetryParameters(resumptionToken);
+        if (params != null) {
+            return params.getRetryParameters(resumptionToken);
+        }
+        throw new IllegalStateException("No current harvest parameters.");
+    }
+
+    OAIResponseHandler getResponseHandler() {
+        return responseHandler;
+    }
+
+    OAIEventHandler getEventHandler(final HarvestNotification notification) {
+        return responseHandler.getEventHandler(notification);
     }
 }
 

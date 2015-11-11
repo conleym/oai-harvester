@@ -31,10 +31,44 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * "http://www.openarchives.org/OAI/openarchivesprotocol.html#harvester">
  * harvester</a>.
  * <p>
- * Each instance is a wrapper around an instance of {@link HttpClient}, together
- * with a mutable state object representing the state of the current harvest.
+ * Each instance is a wrapper around an instance of {@link HttpClient},
+ * together with a mutable state object representing the state of the current
+ * harvest.
+ * </p>
  * <p>
- * Instances are neither immutable nor safe for use in multiple threads.
+ * Instances are mutable, but public methods can be safely called from
+ * multiple threads.
+ * </p>
+ * <h2>Use in Multiple Threads</h2>
+ * <p>
+ * Harvester instances can be used in multiple
+ * threads by creating a harvester in one thread and running it in another, as
+ * in the following simple example:
+ * </p>
+ * <pre>
+ *   // This is the main thread.
+ *
+ *   // Customize builder to taste.
+ *   final Harvester har = new Harvester.Builder().build();
+ *   // Define your parameters....
+ *   final HarvesterParams params = ...;
+ *   Thread t = new Thread(() -> {
+ *      // Harvest runs in this thread.
+ *      OAIResponseHandler handler = ...;
+ *      har.start(params, handler);
+ *   });
+ *   t.start();
+ * </pre>
+ * <p>
+ * If desired, one can call {@code t.interrupt()} or {@code har.stop()} to stop
+ * the harvest from the main thread. Once either of these steps are taken, the
+ * harvest will stop after the current response has been fully processed.
+ * </p>
+ * <p>
+ * In this simple example, the response handler is not shared between threads,
+ * but the harvester's design allows for shared handlers, provided the handlers
+ * themselves are safe for use in multiple threads.
+ * </p>
  */
 public final class Harvester extends Observable {
     private static final Logger LOGGER =
@@ -122,11 +156,16 @@ public final class Harvester extends Observable {
 
                 @Override
                 public InputStream next() {
-                    final Map<String, String> parameters =
-                            harvest.getRequestParameters();
-                    final HttpResponse response = executeRequest(
-                            createRequest(parameters));
-                    return contentOf(response);
+                    try {
+                        final Map<String, String> parameters =
+                                harvest.getRequestParameters();
+                        final HttpResponse response = executeRequest(
+                                createRequest(parameters));
+                        return contentOf(response);
+                    } catch (final RuntimeException e) {
+                        harvest.error(e);
+                        throw e;
+                    }
                 }
             };
         }
@@ -137,8 +176,16 @@ public final class Harvester extends Observable {
     private final OAIRequestFactory requestFactory;
     private final OAIResponseParser responseParser;
 
-    private Harvest harvest;
-    private OAIResponseHandler responseHandler;
+    /**
+     * The current harvest state.
+     * <p>
+     * Must be {@code volatile} so that a harvest can be started via
+     * {@link #start(HarvestParams, OAIResponseHandler)} called from one thread
+     * and stopped via {@link #stop()} called from another.
+     * </p>
+     */
+    // Initial value has false for all flags and cannot be restarted.
+    private volatile Harvest harvest = new Harvest();
 
     /**
      * Create a new instance.
@@ -199,24 +246,24 @@ public final class Harvester extends Observable {
      */
     public void start(final HarvestParams params,
             final OAIResponseHandler responseHandler) {
-        if (this.harvest != null && this.harvest.hasNext()) {
+        if (this.harvest.hasNext()) {
             throw new IllegalStateException(
                     "Cannot start a new harvest while one is in progress.");
         }
-        this.harvest = new Harvest(params);
-        this.responseHandler = responseHandler;
+        this.harvest = new Harvest(params, responseHandler);
         harvest();
     }
 
     /**
      * Stop the current harvest, if any.
      * <p>
-     * This method is safe to call from multiple threads.
+     * Note that, if the current harvest is running in another thread, it may
+     * not stop immediately. Clients wishing to take action when a harvest ends
+     * should add observers to be notified of events.
+     * </p>
      */
     public void stop() {
-        if (harvest != null) {
-            harvest.userStop();
-        }
+        harvest.requestStop();
     }
 
     /**
@@ -229,11 +276,10 @@ public final class Harvester extends Observable {
      * the current harvest will be lost.
      *
      * @return the parameters needed to retry the most recent request.
+     * @throws IllegalStateException
+     *             if there is no current harvest.
      */
     public HarvestParams getRetryParams() {
-        if (harvest == null) {
-            throw new IllegalStateException("No current harvest parameters.");
-        }
         return harvest.getRetryParams();
     }
 
@@ -319,7 +365,7 @@ public final class Harvester extends Observable {
             final HarvestNotification notification =
                     sendResponseReceivedNotifcations();
             responseParser.parse(in, harvest,
-                    responseHandler.getEventHandler(notification));
+                    harvest.getEventHandler(notification));
         } catch (final XMLStreamException | IOException e) {
             /*
              * Note: XMLStreamExceptions thrown due to XML parsing
@@ -328,11 +374,14 @@ public final class Harvester extends Observable {
              *
              * IOException can only be thrown when closing the stream.
              */
-            harvest.error();
+            harvest.error(e);
             throw new HarvesterException(e);
         } catch (final RuntimeException e) {
-            /* Catch-all that includes all HarvesterExceptions. */
-            harvest.error();
+            /*
+             * Make sure anybody who's listening for notifications knows there
+             * was an error.
+             */
+            harvest.error(e);
             throw e;
         }
     }
@@ -454,7 +503,8 @@ public final class Harvester extends Observable {
     private void sendHarvestStartNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.HARVEST_STARTED);
-        sendNotifications(notification, responseHandler::onHarvestStart);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onHarvestStart);
     }
 
     /**
@@ -464,7 +514,8 @@ public final class Harvester extends Observable {
     private void sendHarvestEndNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.HARVEST_ENDED);
-        sendNotifications(notification, responseHandler::onHarvestEnd);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onHarvestEnd);
     }
 
     /**
@@ -474,7 +525,8 @@ public final class Harvester extends Observable {
     private HarvestNotification sendResponseReceivedNotifcations() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.RESPONSE_RECEIVED);
-        sendNotifications(notification, responseHandler::onResponseReceived);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onResponseReceived);
         return notification;
     }
 
@@ -485,7 +537,8 @@ public final class Harvester extends Observable {
     private void sendResponseEndNotifications() {
         final HarvestNotification notification = harvest.createNotification(
                 HarvestNotificationType.RESPONSE_PROCESSED);
-        sendNotifications(notification, responseHandler::onResponseProcessed);
+        sendNotifications(notification,
+                harvest.getResponseHandler()::onResponseProcessed);
     }
 
     /**
