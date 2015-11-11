@@ -31,10 +31,49 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * "http://www.openarchives.org/OAI/openarchivesprotocol.html#harvester">
  * harvester</a>.
  * <p>
- * Each instance is a wrapper around an instance of {@link HttpClient}, together
- * with a mutable state object representing the state of the current harvest.
+ * Each instance is a wrapper around an instance of {@link HttpClient},
+ * together with a mutable state object representing the state of the current
+ * harvest.
+ * </p>
  * <p>
- * Instances are neither immutable nor safe for use in multiple threads.
+ * Instances are not immutable, but public methods can be safely called from
+ * multiple threads.
+ * </p>
+ * <h2>Use in Multiple Threads</h2>
+ * <p>
+ * Harvester instances can be used in multiple
+ * threads by creating a harvester in one thread and running it in another, as
+ * in the following simple example:
+ * </p>
+ * <pre>
+ *   // This is the main thread.
+ *
+ *   // Customize builder to taste.
+ *   final Harvester har = new Harvester.Builder().build();
+ *   // Define your parameters....
+ *   final HarvesterParams params = ...;
+ *   Thread t = new Thread(() -> {
+ *      // Harvest runs in this thread.
+ *      OAIResponseHandler handler = ...;
+ *      har.start(params, handler);
+ *   });
+ *   t.start();
+ * </pre>
+ * <p>
+ * If desired, one can call {@code t.interrupt()} or {@code har.stop()} to stop
+ * the harvest from the main thread. Once either of these steps are taken, the
+ * harvest will stop after the current response has been fully processed.
+ * </p>
+ * <p>
+ * In this simple example, the response handler is not shared between threads,
+ * but the harvester's design allows for shared handlers, provided the handler
+ * itself is safe for use in multiple threads.
+ * </p>
+ * <p>
+ * The only restriction to observe is that
+ * {@link #start(HarvestParams, OAIResponseHandler)} is <em>not</em> safe to
+ * call from multiple threads.
+ * </p>
  */
 public final class Harvester extends Observable {
     private static final Logger LOGGER =
@@ -142,7 +181,7 @@ public final class Harvester extends Observable {
     private final OAIRequestFactory requestFactory;
     private final OAIResponseParser responseParser;
 
-    private Harvest harvest;
+    private volatile Harvest harvest;
     private OAIResponseHandler responseHandler;
 
     /**
@@ -215,12 +254,10 @@ public final class Harvester extends Observable {
 
     /**
      * Stop the current harvest, if any.
-     * <p>
-     * This method is safe to call from multiple threads.
      */
     public void stop() {
         if (harvest != null) {
-            harvest.userStop();
+            harvest.requestStop();
         }
     }
 

@@ -303,7 +303,7 @@ public final class TestListResponses {
                     Mocks.matcherFromPredicate(
                             (hn) -> {
                                 return hn.getType() == HARVEST_ENDED &&
-                                !hn.isStarted() && hn.isStoppedByUser() &&
+                                !hn.isRunning() && hn.isExplicitlyStopped() &&
                                 !hn.hasError();
                             },
                             HarvestNotification.class));

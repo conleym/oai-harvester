@@ -17,12 +17,18 @@ import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
  *
  */
 final class Harvest {
+
+    static final class State {
+        volatile boolean running;
+        volatile boolean explicitlyStopped;
+        boolean interrupted;
+    }
+
     private final HarvestParams params;
+    private final State state = new State();
     private HttpUriRequest request;
-    private volatile boolean isStarted;
-    private volatile boolean isStoppedByUser;
     private Exception exception;
-    private ResumptionToken resumptionToken;
+    private volatile ResumptionToken resumptionToken;
     private Instant lastResponseDate;
     private long requestCount;
     private long responseCount;
@@ -32,12 +38,13 @@ final class Harvest {
         this.params = params;
     }
 
-    HarvestNotification createNotification(final HarvestNotificationType type) {
+    HarvestNotification createNotification(
+            final HarvestNotificationType type) {
         final Map<String, Long> stats = new HashMap<>(2);
         stats.put(HarvestNotification.Statistics.REQUEST_COUNT, requestCount);
         stats.put(HarvestNotification.Statistics.RESPONSE_COUNT,
                 responseCount);
-        return new HarvestNotification(type, isStarted, exception, isStoppedByUser,
+        return new HarvestNotification(type, state, exception,
                 resumptionToken, lastResponseDate, params, stats);
     }
 
@@ -79,18 +86,18 @@ final class Harvest {
     }
 
     void start() {
-        isStarted = true;
+        state.running = true;
     }
 
     void stop() {
-        isStarted = false;
+        state.running = false;
     }
 
     /**
      * This method should be called only from {@link Harvester#stop()}.
      */
-    void userStop() {
-        this.isStoppedByUser = true;
+    void requestStop() {
+        state.explicitlyStopped = true;
         stop();
     }
 
@@ -108,11 +115,20 @@ final class Harvest {
     }
 
     boolean hasNext() {
-        return isStarted;
-    }
-
-    Exception getException() {
-        return exception;
+        if (Thread.interrupted()) {
+            /* On the off chance that somebody else down the line is interested
+             * in the interrupted flag, turn it back on.
+             *
+             * We do this because we don't necessarily have complete control
+             * over all the code running in this thread, and because it doesn't
+             * hurt anything -- interrupting the current thread is always
+             * allowed.
+             */
+            Thread.currentThread().interrupt();
+            state.interrupted = true;
+            stop();
+        }
+        return state.running;
     }
 
     HarvestParams getRetryParams() {

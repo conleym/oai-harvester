@@ -8,6 +8,7 @@ import java.util.Map;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
+import org.unizin.cmp.oai.harvester.Harvest.State;
 
 /**
  * Immutable snapshot of harvest state.
@@ -81,9 +82,10 @@ public final class HarvestNotification {
     }
 
     private final HarvestNotificationType type;
-    private final boolean isStarted;
+    private final boolean running;
+    private final boolean explicitlyStopped;
+    private final boolean interrupted;
     private final Exception exception;
-    private final boolean isStoppedByUser;
     private final ResumptionToken resumptionToken;
     private final Instant lastResponseDate;
     private final HarvestParams params;
@@ -91,15 +93,15 @@ public final class HarvestNotification {
     private final Map<String, Long> stats;
 
     public HarvestNotification(final HarvestNotificationType type,
-            final boolean isStarted, final Exception exception,
-            final boolean isStoppedByUser,
+            final State state, final Exception exception,
             final ResumptionToken resumptionToken,
             final Instant lastResponseDate,
             final HarvestParams params, final Map<String, Long> stats) {
         this.type = type;
-        this.isStarted = isStarted;
+        this.running = state.running;
+        this.explicitlyStopped = state.explicitlyStopped;
+        this.interrupted = state.interrupted;
         this.exception = exception;
-        this.isStoppedByUser = isStoppedByUser;
         this.resumptionToken = resumptionToken;
         this.lastResponseDate = lastResponseDate;
         this.params = params;
@@ -138,8 +140,16 @@ public final class HarvestNotification {
         return resumptionToken;
     }
 
-    public boolean isStoppedByUser() {
-        return isStoppedByUser;
+    public boolean isRunning() {
+        return running;
+    }
+
+    public boolean isExplicitlyStopped() {
+        return explicitlyStopped;
+    }
+
+    public boolean isInterrupted() {
+        return interrupted;
     }
 
     public boolean hasError() {
@@ -150,10 +160,6 @@ public final class HarvestNotification {
         return exception;
     }
 
-    public boolean isStarted() {
-        return isStarted;
-    }
-
     public NotificationParams getHarvestParameters() {
         return notificationParams;
     }
@@ -162,9 +168,10 @@ public final class HarvestNotification {
     public String toString() {
         return new StringBuilder(this.getClass().getName())
                 .append("[type=").append(type)
-                .append(", isStarted=").append(isStarted)
+                .append(", running=").append(running)
+                .append(", explicitlyStopped=").append(explicitlyStopped)
+                .append(", interrupted=").append(interrupted)
                 .append(", exception=").append(exception)
-                .append(", stoppedByUser=").append(isStoppedByUser)
                 .append(", resumptionToken=").append(resumptionToken)
                 .append(", lastResponseDate=").append(lastResponseDate)
                 .append(", stats=").append(stats).append("]")
