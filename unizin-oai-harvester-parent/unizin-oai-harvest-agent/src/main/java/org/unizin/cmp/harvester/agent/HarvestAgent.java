@@ -134,8 +134,8 @@ public final class HarvestAgent implements Observer {
     private final Timeout offerTimeout;
     private final Timeout pollTimeout;
     private final int batchSize;
-    private final Object harvestersLock = new Object();
-    private final Set<Harvester> harvesters = new HashSet<>();
+    private final Object runningHarvestersLock = new Object();
+    private final Set<Harvester> runningHarvesters = new HashSet<>();
     private volatile boolean stopped;
 
 
@@ -161,21 +161,21 @@ public final class HarvestAgent implements Observer {
     }
 
     private void addHarvester(final Harvester harvester) {
-        synchronized(harvestersLock) {
-            harvesters.add(harvester);
+        synchronized(runningHarvestersLock) {
+            runningHarvesters.add(harvester);
         }
     }
 
     private void removeHarvester(final Harvester harvester) {
-        synchronized(harvestersLock) {
-            harvesters.remove(harvester);
+        synchronized(runningHarvestersLock) {
+            runningHarvesters.remove(harvester);
         }
     }
 
     private void removeAllHarvesters() {
-        synchronized(harvestersLock) {
-            harvesters.forEach(Harvester::stop);
-            harvesters.clear();
+        synchronized(runningHarvestersLock) {
+            runningHarvesters.forEach(Harvester::stop);
+            runningHarvesters.clear();
         }
     }
 
@@ -188,8 +188,8 @@ public final class HarvestAgent implements Observer {
     }
 
     private boolean shouldStop() {
-        synchronized (harvestersLock) {
-            return stopped || harvesters.isEmpty();
+        synchronized (runningHarvestersLock) {
+            return stopped || runningHarvesters.isEmpty();
         }
     }
 

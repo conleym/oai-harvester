@@ -85,7 +85,7 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
     @Override
     protected void onSet(final HarvestedOAIRecord currentRecord,
             final String set) {
-        currentRecord.getSets().add(set);
+        currentRecord.addSet(set);
     }
 
     @Override

@@ -92,7 +92,7 @@ public final class HarvestNotification {
     private final NotificationParams notificationParams;
     private final Map<String, Long> stats;
 
-    public HarvestNotification(final HarvestNotificationType type,
+    HarvestNotification(final HarvestNotificationType type,
             final State state, final Exception exception,
             final ResumptionToken resumptionToken,
             final Instant lastResponseDate,
