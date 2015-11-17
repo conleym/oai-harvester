@@ -255,15 +255,33 @@ public final class Harvester extends Observable {
     }
 
     /**
-     * Stop the current harvest, if any.
+     * Stop the current harvest, if any, after the current response is fully
+     * processed.
      * <p>
-     * Note that, if the current harvest is running in another thread, it may
-     * not stop immediately. Clients wishing to take action when a harvest ends
-     * should add observers to be notified of events.
+     * Note that the current harvest may not stop immediately. Clients wishing
+     * to take action when a harvest ends should add observers to be notified of
+     * events.
      * </p>
      */
     public void stop() {
         harvest.requestStop();
+    }
+
+    /**
+     * Stop the current harvest, if any, as soon as possible.
+     * <p>
+     * This stops the harvest without regard for any ongoing processing.
+     * Depending upon guarantees made by response handlers, the results may not
+     * be valid.
+     * </p>
+      * <p>
+     * Note that the current harvest may not stop immediately. Clients wishing
+     * to take action when a harvest ends should add observers to be notified of
+     * events.
+     * </p>
+     */
+    public void cancel() {
+        harvest.cancel();
     }
 
     /**

@@ -160,6 +160,10 @@ final class OAIResponseParser {
         }
     }
 
+    private boolean hasNext(final XMLEventReader reader, final Harvest harvest) {
+        return reader.hasNext() && !harvest.isCancelled();
+    }
+
     private XMLEvent nextEvent(final XMLEventReader reader,
             final OAIEventHandler eventHandler) throws XMLStreamException {
         final XMLEvent event = reader.nextEvent();
@@ -192,15 +196,18 @@ final class OAIResponseParser {
      *            the event reader from which to read events.
      * @param eventHandler
      *            the handler to which any events read should be sent.
+     * @param harvest
+     *            the current harvest state.
      * @return a string containing the character content of all text children of
      *         the reader's current {@link StartElement}, up to and <em>not</em>
      *         including the first non-text event.
      * @throws XMLStreamException
      */
     private String readText(final XMLEventReader reader,
-            final OAIEventHandler eventHandler) throws XMLStreamException {
+            final OAIEventHandler eventHandler, final Harvest harvest)
+                    throws XMLStreamException {
         final StringBuilder sb = new StringBuilder();
-        while (reader.hasNext() && reader.peek().isCharacters()) {
+        while (hasNext(reader, harvest) && reader.peek().isCharacters()) {
             final XMLEvent event = nextEvent(reader, eventHandler);
             sb.append(event.asCharacters().getData());
         }
@@ -214,18 +221,20 @@ final class OAIResponseParser {
                     throws XMLStreamException {
         try {
             ResumptionToken resumptionToken = null;
-            while (reader.hasNext()) {
+            while (hasNext(reader, harvest)) {
                 final XMLEvent event = nextEvent(reader, eventHandler);
                 if (event.isStartElement()) {
                     final StartElement startElement = event.asStartElement();
                     if (isError(startElement)) {
-                        final String message = readText(reader, eventHandler);
+                        final String message = readText(reader, eventHandler,
+                                harvest);
                         final String code = OAIXMLUtils.attributeValue(
                                 startElement, ERROR_CODE_ATTR);
                         final OAIError error = new OAIError(code, message);
                         errorList.add(error);
                     } else if (isResumptionToken(startElement)) {
-                        final String token = readText(reader, eventHandler);
+                        final String token = readText(reader, eventHandler,
+                                harvest);
                         final Long completeListSize = optionalAttributeValue(
                                 startElement, RT_COMPLETE_LIST_SIZE_ATTR,
                                 Long::parseLong);
@@ -237,7 +246,8 @@ final class OAIResponseParser {
                         resumptionToken = new ResumptionToken(token,
                                 completeListSize, cursor, expirationDate);
                     } else if (isResponseDate(startElement)) {
-                        final String date = readText(reader, eventHandler);
+                        final String date = readText(reader, eventHandler,
+                                harvest);
                         try {
                             final Instant responseDate = Instant.parse(date);
                             harvest.setLastResponseDate(responseDate);

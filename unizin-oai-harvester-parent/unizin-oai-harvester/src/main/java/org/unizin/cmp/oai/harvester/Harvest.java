@@ -23,6 +23,7 @@ final class Harvest {
     static final class State {
         volatile boolean running;
         volatile boolean explicitlyStopped;
+        volatile boolean cancelled;
         boolean interrupted;
     }
 
@@ -107,6 +108,15 @@ final class Harvest {
 
     void stop() {
         state.running = false;
+    }
+
+    void cancel() {
+        state.cancelled = true;
+        requestStop();
+    }
+
+    boolean isCancelled() {
+        return state.cancelled;
     }
 
     /**
