@@ -129,7 +129,8 @@ public final class MergingOAIResponseHandler extends AbstractOAIResponseHandler 
             final XMLOutputFactory outputFactory,
             final XMLEventFactory eventFactory) throws XMLStreamException {
         this.eventWriter = outputFactory.createXMLEventWriter(out);
-        this.eventHandler = new FilteringOAIEventHandler(eventWriter,
+        this.eventHandler = new FilteringOAIEventHandler(
+                new EventWriterOAIEventHandler(eventWriter),
                 mergingFilters());
         this.eventFactory = eventFactory;
     }

@@ -63,7 +63,8 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
             final File destFile = new File(dest);
             outputStream = new FileOutputStream(destFile);
             eventWriter = outputFactory.createXMLEventWriter(outputStream);
-            eventHandler = new FilteringOAIEventHandler(eventWriter);
+            eventHandler = new FilteringOAIEventHandler(
+                    new EventWriterOAIEventHandler(eventWriter));
         } catch (final XMLStreamException | IOException e) {
             throw new HarvesterException(e);
         }

@@ -108,7 +108,8 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
     }
 
     @Override
-    protected HarvestedOAIRecord createRecord(final StartElement recordStartElement) {
+    protected HarvestedOAIRecord createRecord(
+            final StartElement recordStartElement) {
         final HarvestedOAIRecord record = new HarvestedOAIRecord();
         record.setBaseURL(baseURL);
         return record;
