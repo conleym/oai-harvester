@@ -230,9 +230,9 @@ public final class HarvestAgent {
                 pollTimeout.getUnit());
     }
 
-    private void stop() {
+    public void stop() {
         LOGGER.info("Shutting down.");
-        runningHarvesters.stopAll();
+        runningHarvesters.cancelAll();
         stopped = true;
     }
 

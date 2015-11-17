@@ -49,9 +49,18 @@ final class RunningHarvesters {
     }
 
     /**
+     * Cancel all running harvests.
+     */
+    void cancelAll() {
+        synchronized(lock) {
+            harvesters.forEach(Harvester::cancel);
+        }
+    }
+
+    /**
      * Create and return a {@code Runnable} for a managed harvest.
      * <p>
-     * This method first adds the given key, harvester pair to itself, then
+     * This method first adds the given key-harvester pair to itself, then
      * produces a new {@code Runnable} that executes the given {@code Runnable}.
      * When its execution completes, the key-harvester pair will be removed.
      *
