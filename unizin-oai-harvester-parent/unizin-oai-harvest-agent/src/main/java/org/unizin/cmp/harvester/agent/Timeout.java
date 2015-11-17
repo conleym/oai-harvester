@@ -24,4 +24,9 @@ public final class Timeout {
     public TimeUnit getUnit() {
         return unit;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%d %s", time, unit);
+    }
 }
