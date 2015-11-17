@@ -45,7 +45,7 @@ public final class HarvestAgent {
             TimeUnit.MILLISECONDS);
     public static final int DEFAULT_QUEUE_CAPACITY = 10 * 1000;
 
-    private static final Collection<? extends Header> DEFAULT_HEADERS =
+    public static final Collection<? extends Header> DEFAULT_HEADERS =
             Collections.unmodifiableCollection(Arrays.asList(
                     new BasicHeader("from", "dev@unizin.org")));
 
@@ -233,7 +233,6 @@ public final class HarvestAgent {
     private void stop() {
         LOGGER.info("Shutting down.");
         runningHarvesters.stopAll();
-        executorService.shutdownNow();
         stopped = true;
     }
 
