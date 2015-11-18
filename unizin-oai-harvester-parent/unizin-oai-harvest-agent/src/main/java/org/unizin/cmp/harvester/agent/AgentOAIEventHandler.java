@@ -51,7 +51,8 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         return messageDigest.digest();
     }
 
-    private byte[] createXML(final List<XMLEvent> events) throws XMLStreamException {
+    private byte[] createXML(final List<XMLEvent> events)
+            throws XMLStreamException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final XMLEventWriter writer = outputFactory.createXMLEventWriter(baos);
         for (final XMLEvent event : events) {

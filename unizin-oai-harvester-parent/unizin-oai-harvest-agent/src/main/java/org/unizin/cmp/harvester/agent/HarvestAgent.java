@@ -32,7 +32,14 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
 
 /**
  * A combination of a single consumer and one or more producer threads.
- *
+ * <p>
+ * The producers create {@link HarvestedOAIRecord} instances and place them on a
+ * {@link BlockingQueue}. The consumer reads objects from this queue and writes
+ * them in batches to DynamoDB.
+ * </p>
+ * <p>
+ * Instances are safe for use in multiple threads.
+ * </p>
  */
 public final class HarvestAgent {
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -154,7 +161,7 @@ public final class HarvestAgent {
     private final int batchSize;
     private final RunningHarvesters runningHarvesters =
             new RunningHarvesters();
-    private volatile boolean stopped;
+    private volatile boolean running;
 
 
     public HarvestAgent(final HttpClient httpClient,
@@ -206,9 +213,10 @@ public final class HarvestAgent {
     }
 
     public void start() {
-        if (tasks.isEmpty()) {
+        if (running || tasks.isEmpty()) {
             return;
         }
+        running = true;
         tasks.forEach(executorService::submit);
         tasks.clear();
         final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
@@ -240,7 +248,7 @@ public final class HarvestAgent {
     }
 
     private boolean shouldStop() {
-        return stopped || runningHarvesters.isEmpty();
+        return !running || runningHarvesters.isEmpty();
     }
 
     private HarvestedOAIRecord tryPoll() throws InterruptedException {
@@ -251,7 +259,7 @@ public final class HarvestAgent {
     public void stop() {
         LOGGER.info("Shutting down.");
         runningHarvesters.cancelAll();
-        stopped = true;
+        running = false;
     }
 
     private void writeBatch(final List<HarvestedOAIRecord> batch) {
