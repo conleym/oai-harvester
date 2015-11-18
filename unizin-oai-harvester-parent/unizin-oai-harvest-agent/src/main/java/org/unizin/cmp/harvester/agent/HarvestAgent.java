@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Observer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -30,9 +31,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch;
 
 /**
- * A combination of a single consumer and multiple producer threads.
- * <p>
- * Each instance should be used once and discarded.
+ * A combination of a single consumer and one or more producer threads.
  *
  */
 public final class HarvestAgent {
@@ -59,6 +58,8 @@ public final class HarvestAgent {
         private HttpClient httpClient;
         private BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
         private ExecutorService executorService;
+        private List<HarvestParams> harvestParams;
+        private List<Observer> harvestObservers;
 
 
         public Builder(final DynamoDBMapper mapper) {
@@ -102,7 +103,17 @@ public final class HarvestAgent {
             return this;
         }
 
-        public HarvestAgent build() {
+        public Builder withHarvestObservers(final Observer...observers) {
+            harvestObservers = Arrays.asList(observers);
+            return this;
+        }
+
+        public Builder withHarvestParams(final HarvestParams...params) {
+            harvestParams = Arrays.asList(params);
+            return this;
+        }
+
+        public HarvestAgent build() throws NoSuchAlgorithmException {
             if (httpClient == null) {
                 httpClient = HttpClients.custom()
                         .setDefaultHeaders(DEFAULT_HEADERS)
@@ -120,8 +131,15 @@ public final class HarvestAgent {
             if (pollTimeout == null) {
                 pollTimeout = DEFAULT_TIMEOUT;
             }
+            if (harvestParams == null) {
+                harvestParams = Collections.emptyList();
+            }
+            if (harvestObservers == null) {
+                harvestObservers = Collections.emptyList();
+            }
             return new HarvestAgent(httpClient, mapper, harvestedRecordQueue,
-                    executorService, offerTimeout, pollTimeout, batchSize);
+                    executorService, offerTimeout, pollTimeout, batchSize,
+                    harvestParams, harvestObservers);
         }
     }
 
@@ -145,7 +163,9 @@ public final class HarvestAgent {
             final ExecutorService executorService,
             final Timeout offerTimeout,
             final Timeout pollTimeout,
-            final int batchSize) {
+            final int batchSize,
+            final List<HarvestParams> harvestParams,
+            final List<Observer> harvestObservers) throws NoSuchAlgorithmException {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.harvestedRecordQueue = harvestedRecordQueue;
@@ -153,6 +173,11 @@ public final class HarvestAgent {
         this.offerTimeout = offerTimeout;
         this.pollTimeout = pollTimeout;
         this.batchSize = batchSize;
+
+        for (final HarvestParams hp: harvestParams) {
+            final Runnable r = createHarvestRunnable(hp, harvestObservers);
+            tasks.add(r);
+        }
     }
 
     public static MessageDigest digest()
@@ -160,19 +185,12 @@ public final class HarvestAgent {
         return MessageDigest.getInstance(DIGEST_ALGORITHM);
     }
 
-    public void addHarvests(final HarvestParams...params)
-            throws NoSuchAlgorithmException {
-        for (final HarvestParams param : params) {
-            final Runnable r = createHarvestRunnable(param);
-            tasks.add(r);
-        }
-    }
-
-    private Runnable createHarvestRunnable(final HarvestParams params)
-            throws NoSuchAlgorithmException {
+    private Runnable createHarvestRunnable(final HarvestParams params,
+            final Iterable<Observer> observers) throws NoSuchAlgorithmException {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(httpClient)
                 .build();
+        observers.forEach(harvester::addObserver);
         final OAIResponseHandler handler = new AgentOAIResponseHandler(
                 params.getBaseURI(), harvestedRecordQueue, offerTimeout);
         final Runnable harvest = () -> {

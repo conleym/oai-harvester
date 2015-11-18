@@ -95,15 +95,13 @@ public final class TestHarvestAgent {
     private void doRun(final String serverResponseBody) throws Exception {
         final List<HarvestedOAIRecord> expectedRecords = expectedRecords(
                 serverResponseBody);
-        final HarvestAgent agent = newAgentBuilder().build();
-        final HarvestParams[] params = {
-                new HarvestParams(testURI, OAIVerb.LIST_RECORDS)
-        };
+        final HarvestAgent agent = newAgentBuilder()
+                .withHarvestParams(new HarvestParams(testURI, OAIVerb.LIST_RECORDS))
+                .build();
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
                         .withBody(serverResponseBody)));
-        agent.addHarvests(params);
         agent.start();
         final List<HarvestedOAIRecord> actualRecords =
                 dynamoDBTestClient.scan(HarvestedOAIRecord.class);
