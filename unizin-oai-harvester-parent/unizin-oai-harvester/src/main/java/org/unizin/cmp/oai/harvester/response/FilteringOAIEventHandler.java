@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.xml.stream.EventFilter;
-import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
@@ -13,25 +12,26 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@link OAIEventHandler} with and optional list of event filters. Events
- * accepted by all filters will be written to the supplied event writer.
+ * accepted by all filters will be sent a delegate event handler.
  * <p>
  * The filters are applied in order, and each event is sent to every filter in
  * the list.
+ * </p>
  */
 public final class FilteringOAIEventHandler implements OAIEventHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             FilteringOAIEventHandler.class);
 
-    private final XMLEventWriter eventWriter;
     private final List<EventFilter> filters;
+    private final OAIEventHandler delegate;
 
-    public FilteringOAIEventHandler(final XMLEventWriter eventWriter) {
-        this(eventWriter, Collections.emptyList());
+    public FilteringOAIEventHandler(final OAIEventHandler delegate) {
+        this(delegate, Collections.emptyList());
     }
 
-    public FilteringOAIEventHandler(final XMLEventWriter eventWriter,
+    public FilteringOAIEventHandler(final OAIEventHandler delegate,
             final List<EventFilter> filters) {
-        this.eventWriter = eventWriter;
+        this.delegate = delegate;
         this.filters = filters;
     }
 
@@ -57,7 +57,7 @@ public final class FilteringOAIEventHandler implements OAIEventHandler {
         final boolean accept = accept(event);
         if (accept) {
             LOGGER.trace("Accepting event {}", event);
-            eventWriter.add(event);
+            delegate.onEvent(event);
         } else {
             LOGGER.trace("Rejecting event {}", event);
         }

@@ -84,6 +84,7 @@ public final class HarvestNotification {
     private final HarvestNotificationType type;
     private final boolean running;
     private final boolean explicitlyStopped;
+    private final boolean cancelled;
     private final boolean interrupted;
     private final Exception exception;
     private final ResumptionToken resumptionToken;
@@ -92,7 +93,7 @@ public final class HarvestNotification {
     private final NotificationParams notificationParams;
     private final Map<String, Long> stats;
 
-    public HarvestNotification(final HarvestNotificationType type,
+    HarvestNotification(final HarvestNotificationType type,
             final State state, final Exception exception,
             final ResumptionToken resumptionToken,
             final Instant lastResponseDate,
@@ -100,6 +101,7 @@ public final class HarvestNotification {
         this.type = type;
         this.running = state.running;
         this.explicitlyStopped = state.explicitlyStopped;
+        this.cancelled = state.cancelled;
         this.interrupted = state.interrupted;
         this.exception = exception;
         this.resumptionToken = resumptionToken;
@@ -148,6 +150,10 @@ public final class HarvestNotification {
         return explicitlyStopped;
     }
 
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
     public boolean isInterrupted() {
         return interrupted;
     }
@@ -170,6 +176,7 @@ public final class HarvestNotification {
                 .append("[type=").append(type)
                 .append(", running=").append(running)
                 .append(", explicitlyStopped=").append(explicitlyStopped)
+                .append(", cancelled=").append(cancelled)
                 .append(", interrupted=").append(interrupted)
                 .append(", exception=").append(exception)
                 .append(", resumptionToken=").append(resumptionToken)

@@ -20,8 +20,16 @@ import org.unizin.cmp.oai.OAIXMLUtils;
 /**
  * Event handler implementation that produces record objects.
  * <p>
- * Instances have a {@link Consumer} to which finalized records
- * are sent once finalized for further processing.
+ * Instances have a {@link Consumer} to which finalized records are sent once
+ * finalized for further processing.
+ * </p>
+ *
+ * <h2>Cancelled Harvests</h2>
+ * <p>
+ * Because each record is buffered until complete, this handler can guarantee
+ * that each processed record is valid and complete, even if the harvest is
+ * cancelled.
+ * </p>
  *
  * @param <T>
  *            the type of the record object.

@@ -85,7 +85,7 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
     @Override
     protected void onSet(final HarvestedOAIRecord currentRecord,
             final String set) {
-        currentRecord.getSets().add(set);
+        currentRecord.addSet(set);
     }
 
     @Override
@@ -108,7 +108,8 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
     }
 
     @Override
-    protected HarvestedOAIRecord createRecord(final StartElement recordStartElement) {
+    protected HarvestedOAIRecord createRecord(
+            final StartElement recordStartElement) {
         final HarvestedOAIRecord record = new HarvestedOAIRecord();
         record.setBaseURL(baseURL);
         return record;

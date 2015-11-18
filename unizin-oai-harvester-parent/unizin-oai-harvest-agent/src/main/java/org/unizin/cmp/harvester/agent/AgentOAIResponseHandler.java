@@ -56,11 +56,18 @@ implements Consumer<HarvestedOAIRecord> {
     @Override
     public void accept(final HarvestedOAIRecord record) {
         try {
-            harvestedRecordQueue.offer(record, offerTimeout.getTime(),
-                    offerTimeout.getUnit());
+            if (!harvestedRecordQueue.offer(record, offerTimeout.getTime(),
+                    offerTimeout.getUnit())) {
+                throw new HarvesterException(String.format(
+                        "Timed out after %s trying to offer record.",
+                        offerTimeout));
+            }
         } catch (final InterruptedException e) {
+            // Interrupting the thread ensures that the harvest ends
+            // after the current response is processed.
             Thread.interrupted();
-            // This will stop the harvest.
+            // This will stop the harvest _now_. We'll preserve the interrupted
+            // status anyway.
             throw new HarvesterException(e);
         }
     }

@@ -37,7 +37,7 @@ public final class HarvestedOAIRecord {
     private String identifier;
 
     @DynamoDBAttribute(attributeName = SETS_ATTRIB)
-    private Set<String> sets = new HashSet<>();
+    private Set<String> sets;
 
     @DynamoDBIndexRangeKey(localSecondaryIndexName = "DatestampIndex")
     @DynamoDBAttribute(attributeName = DATESTAMP_ATTRIB)
@@ -66,6 +66,13 @@ public final class HarvestedOAIRecord {
 
     public void setIdentifier(final String identifier) {
         this.identifier = identifier;
+    }
+
+    public void addSet(final String set) {
+        if (sets == null) {
+            sets = new HashSet<String>();
+        }
+        sets.add(set);
     }
 
     public Set<String> getSets() {
