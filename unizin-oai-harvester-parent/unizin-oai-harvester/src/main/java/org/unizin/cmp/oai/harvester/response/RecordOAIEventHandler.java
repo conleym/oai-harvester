@@ -7,7 +7,6 @@ import java.util.function.Consumer;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -107,13 +106,6 @@ implements OAIEventHandler {
             charBuffer.setLength(0);
         } else if (e.isCharacters() && bufferChars) {
             charBuffer.append(e.asCharacters().getData());
-        } else if (currentElementIs(OAI2Constants.HEADER) && e.isAttribute()) {
-            // Not sure this ever happens....
-            final Attribute a = (Attribute)e;
-            if (OAI2Constants.HEADER_STATUS_ATTR.equals(a.getName())) {
-                final String status = a.getValue();
-                onStatus(currentRecord, status);
-            }
         }
         if (inRecord) {
             eventBuffer.add(e);
