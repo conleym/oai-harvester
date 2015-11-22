@@ -459,7 +459,10 @@ public final class Harvester extends Observable {
                     "Got HTTP status %d for request %s.",
                     statusCode,
                     harvest.getRequest()));
-        } catch (final IllegalStateException | IOException e) {
+        } catch (final HarvesterException e) {
+            // Avoid wrapping the exception we just threw.
+            throw e;
+        } catch (final RuntimeException | IOException e) {
             throw new HarvesterException(e);
         }
     }
