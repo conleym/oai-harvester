@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 
-import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.Harvest.State;
@@ -61,27 +60,6 @@ public final class HarvestNotification {
         }
     }
 
-    /** Gives read-only access to the enclosed {@link HarvestParams}. */
-    public static final class NotificationParams {
-        private final Map<String, String> paramMap;
-
-        private NotificationParams(final Map<String, String> m) {
-            this.paramMap = m;
-        }
-
-        public String get(final OAIRequestParameter param) {
-            return paramMap.get(param.paramName());
-        }
-
-        public String get(final String paramName) {
-            return paramMap.get(paramName);
-        }
-
-        @Override
-        public String toString() {
-            return paramMap.toString();
-        }
-    }
 
     private final HarvestNotificationType type;
     private final boolean running;
@@ -92,7 +70,6 @@ public final class HarvestNotification {
     private final ResumptionToken resumptionToken;
     private final Instant lastResponseDate;
     private final HarvestParams params;
-    private final NotificationParams notificationParams;
     private final Map<String, Long> stats;
 
     HarvestNotification(final HarvestNotificationType type,
@@ -109,8 +86,6 @@ public final class HarvestNotification {
         this.resumptionToken = resumptionToken;
         this.lastResponseDate = lastResponseDate;
         this.params = params;
-        this.notificationParams = new NotificationParams(Collections
-                .unmodifiableMap(params.getParameters()));
         this.stats = Collections.unmodifiableMap(stats);
     }
 
@@ -168,8 +143,8 @@ public final class HarvestNotification {
         return exception;
     }
 
-    public NotificationParams getHarvestParameters() {
-        return notificationParams;
+    public HarvestParams getHarvestParameters() {
+        return params;
     }
 
     @Override

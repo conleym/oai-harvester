@@ -76,7 +76,7 @@ public final class TestFilesHandler {
         FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
         final Harvester harvester = newHarvester();
-        harvester.start(defaultTestParams(), handler);
+        harvester.start(defaultTestParams().build(), handler);
         fileAssertions();
     }
 
@@ -88,7 +88,7 @@ public final class TestFilesHandler {
         final Harvester harvester = newHarvester();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(defaultTestParams(), handler);
+            harvester.start(defaultTestParams().build(), handler);
         } catch (final OAIProtocolException e) {
             fileAssertions();
             throw e;

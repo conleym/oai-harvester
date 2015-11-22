@@ -4,6 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.unizin.cmp</groupId>
   <artifactId>unizin-oai-harvester-parent</artifactId>
+  <name>Unizin OAI Harvester Parent</name>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 

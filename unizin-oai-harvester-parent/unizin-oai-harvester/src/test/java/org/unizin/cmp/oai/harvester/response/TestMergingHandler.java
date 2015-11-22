@@ -44,7 +44,7 @@ public final class TestMergingHandler {
     public void testSingleResponse() throws Exception {
         Tests.testWithWiremockServer(() -> {
             Tests.createWiremockStubForOKGetResponse(expected);
-            test(new Harvester.Builder().build(), defaultTestParams());
+            test(new Harvester.Builder().build(), defaultTestParams().build());
         });
     }
 
@@ -56,6 +56,6 @@ public final class TestMergingHandler {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(mockHttpClient)
                 .build();
-        test(harvester, defaultTestParams());
+        test(harvester, defaultTestParams().build());
     }
 }

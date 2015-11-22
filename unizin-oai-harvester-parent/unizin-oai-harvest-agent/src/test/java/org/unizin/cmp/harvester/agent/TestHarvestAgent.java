@@ -96,7 +96,8 @@ public final class TestHarvestAgent {
         final List<HarvestedOAIRecord> expectedRecords = expectedRecords(
                 serverResponseBody);
         final HarvestAgent agent = newAgentBuilder()
-                .withHarvestParams(new HarvestParams(testURI, OAIVerb.LIST_RECORDS))
+                .withHarvestParams(new HarvestParams.Builder(testURI,
+                        OAIVerb.LIST_RECORDS).build())
                 .build();
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()

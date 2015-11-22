@@ -80,12 +80,12 @@ public class Tests {
         return "\\?.*resumptionToken=" + Pattern.quote(resumptionToken);
     }
 
-    public static HarvestParams defaultTestParams() {
-        return new HarvestParams(MOCK_OAI_BASE_URI, DEFAULT_VERB);
+    public static HarvestParams.Builder defaultTestParams() {
+        return new HarvestParams.Builder(MOCK_OAI_BASE_URI, DEFAULT_VERB);
     }
 
-    public static HarvestParams defaultTestParams(final OAIVerb verb) {
-        return new HarvestParams(MOCK_OAI_BASE_URI, verb);
+    public static HarvestParams.Builder defaultTestParams(final OAIVerb verb) {
+        return new HarvestParams.Builder(MOCK_OAI_BASE_URI, verb);
     }
 
     public static WireMockRule newWireMockRule() {

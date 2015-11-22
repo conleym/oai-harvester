@@ -101,13 +101,13 @@ public final class TestListResponses {
     }
 
     /**
-    * Set up with two incomplete lists. First has two records, second has one.
-    *
-    * @param sendFinalResumptionToken
-    *            should we follow the standard and send an empty resumption
-    *            token in the last incomplete list? If {@code false}, do what
-    *            many repositories actually do, and send no token at all.
-    */
+     * Set up with two incomplete lists. First has two records, second has one.
+     *
+     * @param sendFinalResumptionToken
+     *            should we follow the standard and send an empty resumption
+     *            token in the last incomplete list? If {@code false}, do what
+     *            many repositories actually do, and send no token at all.
+     */
     public static void setupWithDefaultListRecordsResponse(
             final boolean sendFinalResumptionToken,
             final MockHttpClient mockClient)
@@ -148,7 +148,7 @@ public final class TestListResponses {
         final OAIResponseHandler h = Mocks.newResponseHandler();
         final Observer obs = Mockito.mock(Observer.class);
         harvester.addObserver(obs);
-        harvester.start(defaultTestParams(), h);
+        harvester.start(defaultTestParams().build(), h);
 
         final Supplier<HarvestNotification> hrvStarted = () -> {
             return AdditionalMatchers.and(
@@ -210,9 +210,9 @@ public final class TestListResponses {
     }
 
     /**
-    * Tests that the harvester correctly stops when an empty
-    * &lt;resumptionToken&gt; element is found in the response.
-    */
+     * Tests that the harvester correctly stops when an empty
+     * &lt;resumptionToken&gt; element is found in the response.
+     */
     @Test
     public void testListRecords() throws Exception {
         setupWithDefaultListRecordsResponse(true, mockHttpClient);
@@ -221,9 +221,9 @@ public final class TestListResponses {
     }
 
     /**
-    * Tests that the harvester correctly stops when no &lt;resumptionToken&gt;
-    * element is found in the response.
-    */
+     * Tests that the harvester correctly stops when no &lt;resumptionToken&gt;
+     * element is found in the response.
+     */
     @Test
     public void testListRecordsWithNoFinalResumptionToken() throws Exception {
         setupWithDefaultListRecordsResponse(false, mockHttpClient);
@@ -232,9 +232,9 @@ public final class TestListResponses {
     }
 
     /**
-    * Tests that the harvester handles the
-    * {@link OAIErrorCode#BAD_RESUMPTION_TOKEN} error correctly.
-    */
+     * Tests that the harvester handles the
+     * {@link OAIErrorCode#BAD_RESUMPTION_TOKEN} error correctly.
+     */
     @Test
     public void testListRecordsWithBadResumptionToken() throws Exception {
         final ListRecordsTemplate lrt = new ListRecordsTemplate()
@@ -253,7 +253,8 @@ public final class TestListResponses {
         mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", secondResp);
         exception.expect(OAIProtocolException.class);
         try {
-            newHarvester().start(defaultTestParams(OAIVerb.LIST_RECORDS),
+            newHarvester().start(defaultTestParams(OAIVerb.LIST_RECORDS)
+                    .build(),
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(errors, e.getOAIErrors());
@@ -263,9 +264,9 @@ public final class TestListResponses {
 
 
     /**
-    * Tests that {@code Observers} can stop the harvest via
-    * {@link Harvester#stop()}.
-    */
+     * Tests that {@code Observers} can stop the harvest via
+     * {@link Harvester#stop()}.
+     */
     @Test
     public void testStop() throws Exception {
         setupWithDefaultListRecordsResponse(true, mockHttpClient);
@@ -283,7 +284,7 @@ public final class TestListResponses {
         harvester.addObserver(obs);
         final Observer mockObserver = Mockito.mock(Observer.class);
         harvester.addObserver(mockObserver);
-        harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS), rh);
+        harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS).build(), rh);
 
         inOrderVerify(rh).onHarvestStart(NotificationMatchers.harvestStarted());
         inOrderVerify(mockObserver).update(eq(harvester),
@@ -303,8 +304,8 @@ public final class TestListResponses {
                     Mocks.matcherFromPredicate(
                             (hn) -> {
                                 return hn.getType() == HARVEST_ENDED &&
-                                !hn.isRunning() && hn.isExplicitlyStopped() &&
-                                !hn.hasError();
+                                        !hn.isRunning() && hn.isExplicitlyStopped() &&
+                                        !hn.hasError();
                             },
                             HarvestNotification.class));
         };

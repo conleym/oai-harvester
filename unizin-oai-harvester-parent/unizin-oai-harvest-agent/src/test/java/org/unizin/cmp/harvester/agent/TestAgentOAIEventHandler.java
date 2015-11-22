@@ -89,7 +89,8 @@ public final class TestAgentOAIEventHandler {
                         .withBody(Tests.OAI_LIST_RECORDS_RESPONSE)));
         final Harvester harvester = new Harvester.Builder().build();
         final URI uri = new URI(Tests.MOCK_OAI_BASE_URI);
-        final HarvestParams p = new HarvestParams(uri, OAIVerb.LIST_RECORDS);
+        final HarvestParams p = new HarvestParams.Builder(uri,
+                OAIVerb.LIST_RECORDS).build();
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
                 new ArrayBlockingQueue<>(Tests.TEST_RECORDS.size());
         harvester.start(p, new AgentOAIResponseHandler(uri,

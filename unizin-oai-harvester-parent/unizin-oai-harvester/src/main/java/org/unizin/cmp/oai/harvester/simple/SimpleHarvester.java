@@ -33,9 +33,10 @@ public class SimpleHarvester {
                         setOutputDir.mkdirs();
                         Harvester harvester = new Harvester.Builder()
                                 .build();
-                        HarvestParams params = new HarvestParams(repository.url,
+                        HarvestParams params = new HarvestParams.Builder(repository.url,
                                 OAIVerb.LIST_RECORDS)
-                                .withSet(set);
+                                .withSet(set)
+                                .build();
                         OAIResponseHandler responseHandler =
                                 new FilesOAIResponseHandler(setOutputDir);
                         harvester.start(params, responseHandler);

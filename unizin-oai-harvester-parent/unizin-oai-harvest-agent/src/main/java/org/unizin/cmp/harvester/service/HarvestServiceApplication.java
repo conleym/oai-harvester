@@ -15,7 +15,6 @@ import io.dropwizard.setup.Environment;
 
 public final class HarvestServiceApplication
 extends Application<HarvestServiceConfiguration> {
-    private static final String APP_NAME = "Harvest Service";
     private static final String CONNECTION_POOL_NAME =
             "HarvestService Database Connection Pool";
 
@@ -25,11 +24,6 @@ extends Application<HarvestServiceConfiguration> {
     public void initialize(final Bootstrap<HarvestServiceConfiguration> bootstrap) {
         super.initialize(bootstrap);
         this.bootstrap = bootstrap;
-    }
-
-    @Override
-    public String getName() {
-        return APP_NAME;
     }
 
     private DataSource createConnectionPool(
