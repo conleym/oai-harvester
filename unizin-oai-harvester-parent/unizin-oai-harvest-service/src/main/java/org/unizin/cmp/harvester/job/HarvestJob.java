@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,9 +41,9 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
  * Instances are safe for use in multiple threads.
  * </p>
  */
-public final class HarvestAgent {
+public final class HarvestJob {
     private static final Logger LOGGER = LoggerFactory.getLogger(
-            HarvestAgent.class);
+            HarvestJob.class);
 
     public static final String DIGEST_ALGORITHM = "MD5";
     public static final int DEFAULT_BATCH_SIZE = 20;
@@ -120,7 +120,7 @@ public final class HarvestAgent {
             return this;
         }
 
-        public HarvestAgent build() throws NoSuchAlgorithmException {
+        public HarvestJob build() throws NoSuchAlgorithmException {
             if (httpClient == null) {
                 httpClient = HttpClients.custom()
                         .setDefaultHeaders(DEFAULT_HEADERS)
@@ -144,7 +144,7 @@ public final class HarvestAgent {
             if (harvestObservers == null) {
                 harvestObservers = Collections.emptyList();
             }
-            return new HarvestAgent(httpClient, mapper, harvestedRecordQueue,
+            return new HarvestJob(httpClient, mapper, harvestedRecordQueue,
                     executorService, offerTimeout, pollTimeout, batchSize,
                     harvestParams, harvestObservers);
         }
@@ -164,7 +164,7 @@ public final class HarvestAgent {
     private volatile boolean running;
 
 
-    public HarvestAgent(final HttpClient httpClient,
+    public HarvestJob(final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
             final ExecutorService executorService,
@@ -198,7 +198,7 @@ public final class HarvestAgent {
                 .withHttpClient(httpClient)
                 .build();
         observers.forEach(harvester::addObserver);
-        final OAIResponseHandler handler = new AgentOAIResponseHandler(
+        final OAIResponseHandler handler = new JobOAIResponseHandler(
                 params.getBaseURI(), harvestedRecordQueue, offerTimeout);
         final Runnable harvest = () -> {
             MDC.put("baseURI", params.getBaseURI().toString());

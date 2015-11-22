@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import java.util.concurrent.TimeUnit;
 

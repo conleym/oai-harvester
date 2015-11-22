@@ -6,7 +6,7 @@
     <artifactId>unizin-oai-harvester-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
-  <artifactId>unizin-oai-harvest-agent</artifactId>
+  <artifactId>unizin-oai-harvest-service</artifactId>
   <name>Unizin OAI Harvester Service</name>
 
   <properties>

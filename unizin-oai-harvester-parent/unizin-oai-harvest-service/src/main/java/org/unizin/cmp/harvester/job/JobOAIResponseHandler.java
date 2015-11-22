@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import java.net.URI;
 import java.security.MessageDigest;
@@ -20,28 +20,28 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
  * offers them to a {@link BlockingQueue} for consumption by another thread.
  *
  */
-public final class AgentOAIResponseHandler extends AbstractOAIResponseHandler
+public final class JobOAIResponseHandler extends AbstractOAIResponseHandler
 implements Consumer<HarvestedOAIRecord> {
-    private final AgentOAIEventHandler handler;
+    private final JobOAIEventHandler handler;
 
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
     private final Timeout offerTimeout;
 
 
-    public AgentOAIResponseHandler(final URI baseURI,
+    public JobOAIResponseHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
             final Timeout offerTimeout)
                     throws NoSuchAlgorithmException {
         this(baseURI, harvestedRecordQueue, offerTimeout,
-                OAIXMLUtils.newOutputFactory(), HarvestAgent.digest());
+                OAIXMLUtils.newOutputFactory(), HarvestJob.digest());
     }
 
-    public AgentOAIResponseHandler(final URI baseURI,
+    public JobOAIResponseHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
             final Timeout offerTimeout,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
-        handler = new AgentOAIEventHandler(baseURI, this, outputFactory,
+        handler = new JobOAIEventHandler(baseURI, this, outputFactory,
                 messageDigest);
         this.harvestedRecordQueue = harvestedRecordQueue;
         this.offerTimeout = offerTimeout;

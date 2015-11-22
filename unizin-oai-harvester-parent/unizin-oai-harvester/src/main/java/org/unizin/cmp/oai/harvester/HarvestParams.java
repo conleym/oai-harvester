@@ -106,7 +106,7 @@ public final class HarvestParams {
          * @return {@code true} iff this instance's standard parameters are valid
          * with this instance's verb.
          */
-        public boolean areValid() {
+        public boolean isValid() {
             return verb.areValidParameters(standardParameters);
         }
 

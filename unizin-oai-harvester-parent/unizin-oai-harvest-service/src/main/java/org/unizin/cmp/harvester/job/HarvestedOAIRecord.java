@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import java.util.Arrays;
 import java.util.HashSet;

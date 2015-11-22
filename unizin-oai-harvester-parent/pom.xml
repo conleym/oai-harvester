@@ -167,7 +167,7 @@
   <modules>
     <module>unizin-oai-harvester</module>
     <module>simple-importer</module>
-    <module>unizin-oai-harvest-agent</module>
+    <module>unizin-oai-harvest-service</module>
   </modules>
 
 

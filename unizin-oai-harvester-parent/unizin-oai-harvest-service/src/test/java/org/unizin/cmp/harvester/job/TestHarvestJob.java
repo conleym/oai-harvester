@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -23,6 +23,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.unizin.cmp.harvester.job.JobOAIEventHandler;
+import org.unizin.cmp.harvester.job.HarvestJob;
+import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
@@ -36,7 +39,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
 
 
-public final class TestHarvestAgent {
+public final class TestHarvestJob {
     @Rule
     public final WireMockRule wireMockRule = Tests.newWireMockRule();
 
@@ -47,7 +50,7 @@ public final class TestHarvestAgent {
             this.getClass().getSimpleName());
 
 
-    public TestHarvestAgent() throws URISyntaxException {
+    public TestHarvestJob() throws URISyntaxException {
         testURI = new URI(Tests.MOCK_OAI_BASE_URI);
     }
 
@@ -66,14 +69,14 @@ public final class TestHarvestAgent {
                 dynamoDBTestClient.countItems(HarvestedOAIRecord.class));
     }
 
-    private HarvestAgent.Builder newAgentBuilder() {
-        return new HarvestAgent.Builder(dynamoDBTestClient.mapper);
+    private HarvestJob.Builder newJobBuilder() {
+        return new HarvestJob.Builder(dynamoDBTestClient.mapper);
     }
 
     private List<HarvestedOAIRecord> expectedRecords(final String response)
             throws Exception {
         final List<HarvestedOAIRecord> list = new ArrayList<>();
-        final AgentOAIEventHandler handler = new AgentOAIEventHandler(testURI,
+        final JobOAIEventHandler handler = new JobOAIEventHandler(testURI,
                 (arg) -> list.add(arg));
         final OAIResponseHandler h = new AbstractOAIResponseHandler() {
             @Override
@@ -95,7 +98,7 @@ public final class TestHarvestAgent {
     private void doRun(final String serverResponseBody) throws Exception {
         final List<HarvestedOAIRecord> expectedRecords = expectedRecords(
                 serverResponseBody);
-        final HarvestAgent agent = newAgentBuilder()
+        final HarvestJob job = newJobBuilder()
                 .withHarvestParams(new HarvestParams.Builder(testURI,
                         OAIVerb.LIST_RECORDS).build())
                 .build();
@@ -103,7 +106,7 @@ public final class TestHarvestAgent {
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
                         .withBody(serverResponseBody)));
-        agent.start();
+        job.start();
         final List<HarvestedOAIRecord> actualRecords =
                 dynamoDBTestClient.scan(HarvestedOAIRecord.class);
         Assert.assertEquals(expectedRecords.size(), actualRecords.size());
@@ -119,7 +122,7 @@ public final class TestHarvestAgent {
     }
 
     @Test
-    public void testAgentRun() throws Exception {
+    public void testJobRun() throws Exception {
         doRun(Tests.OAI_LIST_RECORDS_RESPONSE);
 
         final List<String> updatedRecords = new ArrayList<String>(

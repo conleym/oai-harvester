@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,20 +23,20 @@ import org.unizin.cmp.oai.harvester.response.RecordOAIEventHandler;
  * Record event handler that constructs {@link HarvestedOAIRecord} instances.
  *
  */
-public final class AgentOAIEventHandler
+public final class JobOAIEventHandler
 extends RecordOAIEventHandler<HarvestedOAIRecord> {
     private final String baseURL;
     private final XMLOutputFactory outputFactory;
     private final MessageDigest messageDigest;
 
-    public AgentOAIEventHandler(final URI baseURI,
+    public JobOAIEventHandler(final URI baseURI,
             final Consumer<HarvestedOAIRecord> recordConsumer)
                     throws NoSuchAlgorithmException {
         this(baseURI, recordConsumer, OAIXMLUtils.newOutputFactory(),
-                HarvestAgent.digest());
+                HarvestJob.digest());
     }
 
-    public AgentOAIEventHandler(final URI baseURI,
+    public JobOAIEventHandler(final URI baseURI,
             final Consumer<HarvestedOAIRecord> recordConsumer,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
