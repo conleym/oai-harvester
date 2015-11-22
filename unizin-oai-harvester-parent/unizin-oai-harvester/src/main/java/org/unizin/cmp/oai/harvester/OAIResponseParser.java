@@ -165,8 +165,10 @@ final class OAIResponseParser {
     }
 
     private XMLEvent nextEvent(final XMLEventReader reader,
-            final OAIEventHandler eventHandler) throws XMLStreamException {
+            final OAIEventHandler eventHandler, final Harvest harvest)
+                    throws XMLStreamException {
         final XMLEvent event = reader.nextEvent();
+        harvest.xmlEventReceived();
         logger.trace("Read event {}", event);
         try {
             eventHandler.onEvent(event);
@@ -179,7 +181,6 @@ final class OAIResponseParser {
         }
         return event;
     }
-
 
     /**
      * Read the text content of a node until non-text is seen.
@@ -208,7 +209,7 @@ final class OAIResponseParser {
                     throws XMLStreamException {
         final StringBuilder sb = new StringBuilder();
         while (hasNext(reader, harvest) && reader.peek().isCharacters()) {
-            final XMLEvent event = nextEvent(reader, eventHandler);
+            final XMLEvent event = nextEvent(reader, eventHandler, harvest);
             sb.append(event.asCharacters().getData());
         }
         return sb.toString();
@@ -222,7 +223,8 @@ final class OAIResponseParser {
         try {
             ResumptionToken resumptionToken = null;
             while (hasNext(reader, harvest)) {
-                final XMLEvent event = nextEvent(reader, eventHandler);
+                final XMLEvent event = nextEvent(reader, eventHandler,
+                        harvest);
                 if (event.isStartElement()) {
                     final StartElement startElement = event.asStartElement();
                     if (isError(startElement)) {

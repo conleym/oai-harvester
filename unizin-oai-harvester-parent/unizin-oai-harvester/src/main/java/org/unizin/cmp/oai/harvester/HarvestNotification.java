@@ -53,6 +53,8 @@ public final class HarvestNotification {
          * The number of valid responses received so far during this harvest.
          */
         public static final String RESPONSE_COUNT = "responseCount";
+        /** The number of XML events parsed during this harvest. */
+        public static final String XML_EVENT_COUNT = "xmlEventCount";
 
         /** No instances allowed. */
         private Statistics() {
