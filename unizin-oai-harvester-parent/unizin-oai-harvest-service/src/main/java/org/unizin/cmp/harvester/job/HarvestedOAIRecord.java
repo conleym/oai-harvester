@@ -1,6 +1,7 @@
 package org.unizin.cmp.harvester.job;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,43 +15,88 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
  * DynamoDB mapped harvested record.
  * <p>
  * Getters and setters are required by the DynamoDB wrapper.
+ * </p>
+ * <p>
+ * When adding instance variables to this class, reference the list of <a href=
+ * "http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/JavaSDKHighLevel.html#JavaSupportedTypeORMModel">
+ * supported types</a>. Custom mapping is best avoided if possible.
+ * </p>
  *
  */
 @DynamoDBTable(tableName = HarvestedOAIRecord.TABLE_NAME)
 public final class HarvestedOAIRecord {
     public static final String TABLE_NAME = "HarvestedOAIRecords";
-    public static final String OAI_ID_ATTRIB = "oai-identifier";
-    public static final String DATESTAMP_ATTRIB = "datestamp";
-    public static final String SETS_ATTRIB = "sets";
-    public static final String BASE_URL_ATTRIB = "base-url";
-    public static final String XML_ATTRIB = "xml";
-    public static final String CHECKSUM_ATTRIB = "xml-checksum";
-    public static final String STATUS_ATTRIB = "status";
+    public static final String OAI_ID_ATTRIB = "Identifier";
+    public static final String DATESTAMP_ATTRIB = "Datestamp";
+    public static final String SETS_ATTRIB = "Sets";
+    public static final String BASE_URL_ATTRIB = "BaseUrl";
+    public static final String XML_ATTRIB = "XML";
+    public static final String CHECKSUM_ATTRIB = "XMLChecksum";
+    public static final String STATUS_ATTRIB = "Status";
+    public static final String HARVEST_TIMESTAMP = "HarvestTimestamp";
 
 
+    /**
+     * The base URL of the repository from which this record was harvested.
+     */
     @DynamoDBAttribute(attributeName = BASE_URL_ATTRIB)
     @DynamoDBHashKey
     private String baseURL;
 
+    /**
+     * The OAI identifier of this record.
+     */
     @DynamoDBAttribute(attributeName = OAI_ID_ATTRIB)
     @DynamoDBRangeKey
     private String identifier;
 
+    /**
+     * The setSpecs of the sets to which this record belongs, or {@code null} if
+     * it belongs to none.
+     */
     @DynamoDBAttribute(attributeName = SETS_ATTRIB)
     private Set<String> sets;
 
+    /**
+     * The last modified timestamp of the record, according to the repository.
+     */
     @DynamoDBIndexRangeKey(localSecondaryIndexName = "DatestampIndex")
     @DynamoDBAttribute(attributeName = DATESTAMP_ATTRIB)
     private String datestamp;
 
+    /**
+     * The record's XML (everything from &lt;record&gt; to &lt;/record&gt;).
+     */
     @DynamoDBAttribute(attributeName = XML_ATTRIB)
     private byte[] xml;
 
+    /**
+     * A checksum of the record's XML.
+     */
     @DynamoDBAttribute(attributeName = CHECKSUM_ATTRIB)
     private byte[] checksum;
 
+    /**
+     * The deleted status of this record, according to the repository.
+     */
     @DynamoDBAttribute(attributeName = STATUS_ATTRIB)
     private String status;
+
+    /**
+     * The time of the last successful harvest of this record.
+     */
+    @DynamoDBIndexRangeKey(localSecondaryIndexName = "HarvestTimestampIndex")
+    @DynamoDBAttribute(attributeName = HARVEST_TIMESTAMP)
+    private Date harvestedTimestamp;
+
+
+    public Date getHarvestedTimestamp() {
+        return harvestedTimestamp;
+    }
+
+    public void setHarvestedTimestamp(Date harvestedTimestamp) {
+        this.harvestedTimestamp = harvestedTimestamp;
+    }
 
     public String getBaseURL() {
         return baseURL;
@@ -140,12 +186,24 @@ public final class HarvestedOAIRecord {
     }
 
     @Override
+    public String toString() {
+        return this.getClass().getName() + " [baseURL=" + baseURL +
+                ", identifier=" + identifier + ", sets=" + sets +
+                ", datestamp=" + datestamp +
+                ", harvested timestamp=" + harvestedTimestamp +
+                ", xml=" + Arrays.toString(xml) +
+                ", checksum=" + Arrays.toString(checksum) +
+                ", status="+ status+ "]";
+    }
+
+    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((baseURL == null) ? 0 : baseURL.hashCode());
         result = prime * result + Arrays.hashCode(checksum);
         result = prime * result + ((datestamp == null) ? 0 : datestamp.hashCode());
+        result = prime * result + ((harvestedTimestamp == null) ? 0 : harvestedTimestamp.hashCode());
         result = prime * result + ((identifier == null) ? 0 : identifier.hashCode());
         result = prime * result + ((sets == null) ? 0 : sets.hashCode());
         result = prime * result + ((status == null) ? 0 : status.hashCode());
@@ -174,6 +232,11 @@ public final class HarvestedOAIRecord {
                 return false;
         } else if (!datestamp.equals(other.datestamp))
             return false;
+        if (harvestedTimestamp == null) {
+            if (other.harvestedTimestamp != null)
+                return false;
+        } else if (!harvestedTimestamp.equals(other.harvestedTimestamp))
+            return false;
         if (identifier == null) {
             if (other.identifier != null)
                 return false;
@@ -192,14 +255,5 @@ public final class HarvestedOAIRecord {
         if (!Arrays.equals(xml, other.xml))
             return false;
         return true;
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getName() + " [baseURL=" + baseURL +
-                ", identifier=" + identifier + ", sets=" + sets +
-                ", datestamp=" + datestamp + ", xml=" + Arrays.toString(xml) +
-                ", checksum=" + Arrays.toString(checksum) + ", status="+ status
-                + "]";
     }
 }
