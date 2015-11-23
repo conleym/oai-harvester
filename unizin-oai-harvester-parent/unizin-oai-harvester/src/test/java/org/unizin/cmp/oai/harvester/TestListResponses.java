@@ -30,7 +30,7 @@ import org.unizin.cmp.oai.OAIError;
 import org.unizin.cmp.oai.OAIErrorCode;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
-import org.unizin.cmp.oai.harvester.HarvestNotification.Statistics;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.MockHttpClient;
@@ -274,7 +274,7 @@ public final class TestListResponses {
             final Harvester h = (Harvester)o;
             final HarvestNotification hn = (HarvestNotification)arg;
             if (hn.getType() == RESPONSE_PROCESSED &&
-                    hn.getStat(Statistics.REQUEST_COUNT) == 1L) {
+                    hn.getStat(HarvestStatistic.REQUEST_COUNT) == 1L) {
                 h.stop();
             }
         };

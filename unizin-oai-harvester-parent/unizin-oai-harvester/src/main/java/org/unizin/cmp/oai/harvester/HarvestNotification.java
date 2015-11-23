@@ -39,25 +39,20 @@ public final class HarvestNotification {
         RESPONSE_PROCESSED
     }
 
-    /**
-     * Names of statistics recorded by the harvester.
-     *
-     * @see HarvestNotification#getStats()
-     * @see HarvestNotification#getStat(String)
-     */
-    public static final class Statistics {
+
+    public static enum HarvestStatistic {
         /** The number of requests sent so far during this harvest. */
-        public static final String REQUEST_COUNT = "requestCount";
+        REQUEST_COUNT,
         /**
          * The number of valid responses received so far during this harvest.
+         * <p>
+         * There's no need to count invalid responses, as the first will stop
+         * the harvest.
+         * </p>
          */
-        public static final String RESPONSE_COUNT = "responseCount";
+        RESPONSE_COUNT,
         /** The number of XML events parsed during this harvest. */
-        public static final String XML_EVENT_COUNT = "xmlEventCount";
-
-        /** No instances allowed. */
-        private Statistics() {
-        }
+        XML_EVENT_COUNT,
     }
 
 
@@ -70,13 +65,14 @@ public final class HarvestNotification {
     private final ResumptionToken resumptionToken;
     private final Instant lastResponseDate;
     private final HarvestParams params;
-    private final Map<String, Long> stats;
+    private final Map<HarvestStatistic, Long> stats;
 
     HarvestNotification(final HarvestNotificationType type,
             final State state, final Exception exception,
             final ResumptionToken resumptionToken,
             final Instant lastResponseDate,
-            final HarvestParams params, final Map<String, Long> stats) {
+            final HarvestParams params,
+            final Map<HarvestStatistic, Long> stats) {
         this.type = type;
         this.running = state.running;
         this.explicitlyStopped = state.explicitlyStopped;
@@ -95,11 +91,11 @@ public final class HarvestNotification {
      *
      * @return an immutable map containing all the harvest stats.
      */
-    public Map<String, Long> getStats() {
+    public Map<HarvestStatistic, Long> getStats() {
         return stats;
     }
 
-    public Long getStat(final String stat) {
+    public Long getStat(final HarvestStatistic stat) {
         return stats.get(stat);
     }
 
