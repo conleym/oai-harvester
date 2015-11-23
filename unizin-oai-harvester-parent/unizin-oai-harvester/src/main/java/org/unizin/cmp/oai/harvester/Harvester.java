@@ -31,20 +31,19 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * "http://www.openarchives.org/OAI/openarchivesprotocol.html#harvester">
  * harvester</a>.
  * <p>
- * Each instance is a wrapper around an instance of {@link HttpClient},
- * together with a mutable state object representing the state of the current
- * harvest.
+ * Each instance is a wrapper around an instance of {@link HttpClient}, together
+ * with a mutable state object representing the state of the current harvest.
  * </p>
  * <p>
- * Instances are mutable, but public methods can be safely called from
- * multiple threads.
+ * Instances are mutable, but public methods can be safely called from multiple
+ * threads.
  * </p>
  * <h2>Use in Multiple Threads</h2>
  * <p>
- * Harvester instances can be used in multiple
- * threads by creating a harvester in one thread and running it in another, as
- * in the following simple example:
+ * Harvester instances can be used in multiple threads by creating a harvester
+ * in one thread and running it in another, as in the following simple example:
  * </p>
+ *
  * <pre>
  *   // This is the main thread.
  *
@@ -62,7 +61,10 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * <p>
  * If desired, one can call {@code t.interrupt()} or {@code har.stop()} to stop
  * the harvest from the main thread. Once either of these steps are taken, the
- * harvest will stop after the current response has been fully processed.
+ * harvest will stop after the current response has been fully processed. To
+ * stop the harvest more quickly, one could instead call {@code har.cancel()},
+ * which will tell {@code har} to stop the next time it looks for more XML to
+ * read from the current response.
  * </p>
  * <p>
  * In this simple example, the response handler is not shared between threads,
@@ -468,7 +470,7 @@ public final class Harvester extends Observable {
     }
 
     /**
-     * Extract the entity from a response.
+     * Get the entity from a response.
      *
      * @param response
      *            the response from which the entity is to be extracted.
