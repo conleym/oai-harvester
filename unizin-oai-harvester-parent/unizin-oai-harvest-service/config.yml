@@ -30,8 +30,8 @@ httpClient:
 
 dynamoDB:
   endpoint: http://localhost:8000
-  awsSecretKey: ""
-  awsSecretKeyID: ""
+  awsSecretKey: key
+  awsSecretKeyID: asdf
   recordMapper:
     tableNameOverride: AppTestingTable
 

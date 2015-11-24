@@ -20,11 +20,13 @@ import javax.ws.rs.core.MediaType;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.unizin.cmp.harvester.job.HarvestJob;
+import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
 import org.unizin.cmp.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 
 @Path("/job")
 @Produces(MediaType.APPLICATION_JSON)
@@ -46,6 +48,12 @@ public final class JobResource {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.executor = executor;
+    }
+
+    @Path("/dynamoCount")
+    @GET
+    public int countRecords() {
+        return mapper.count(HarvestedOAIRecord.class, new DynamoDBScanExpression());
     }
 
     @Path("/listRecords")
