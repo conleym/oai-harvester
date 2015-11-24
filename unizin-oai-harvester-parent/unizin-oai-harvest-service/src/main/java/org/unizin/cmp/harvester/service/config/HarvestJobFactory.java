@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service;
+package org.unizin.cmp.harvester.service.config;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;

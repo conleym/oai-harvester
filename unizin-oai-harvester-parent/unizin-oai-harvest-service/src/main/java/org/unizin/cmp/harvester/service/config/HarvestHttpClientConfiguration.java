@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service;
+package org.unizin.cmp.harvester.service.config;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +18,6 @@ public final class HarvestHttpClientConfiguration extends HttpClientConfiguratio
     @JsonProperty("defaultHeaders")
     private Collection<? extends Header> defaultHeaders;
 
-    @JsonProperty("defaultHeaders")
     public void setDefaultHeaders(final Map<String, String> map) {
         final List<BasicHeader> headers = map.entrySet().stream()
             .map((e) -> new BasicHeader(e.getKey(), e.getValue()))

@@ -20,6 +20,9 @@ job:
 httpClient:
   maxConnections: 2048
   maxConnectionsPerRoute: 256
+  connectionRequestTimeout: 100ms
+  connectionTimeout: 100ms
+  timeout: 100ms
   defaultHeaders:
     from: dev@unizin.org
 

@@ -4,6 +4,8 @@ import javax.sql.DataSource;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
+import org.unizin.cmp.harvester.service.config.HarvestHttpClientBuilder;
+import org.unizin.cmp.harvester.service.config.HarvestServiceConfiguration;
 
 import com.codahale.metrics.MetricRegistry;
 

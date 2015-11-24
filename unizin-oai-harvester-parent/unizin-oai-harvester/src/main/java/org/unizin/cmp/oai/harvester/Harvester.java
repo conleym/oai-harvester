@@ -17,7 +17,10 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +79,59 @@ public final class Harvester extends Observable {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Harvester.class);
 
+    /**
+     * Default socket timeout (the amount of time {@code HttpClient} will wait
+     * between packets) used when building a default {@code HttpClient}, in
+     * milliseconds.
+     *
+     * @see RequestConfig#getSocketTimeout()
+     * @see SocketConfig#getSoTimeout()
+     */
+    private static final int DEFAULT_SO_TIMEOUT = 100;
+
+    /**
+     * Connection request timeout (the amount of time {@code HttpClient} will
+     * wait for a connection from the pool) used when building a default
+     * {@code HttpClient}, in milliseconds.
+     *
+     * @see RequestConfig#getConnectionRequestTimeout()
+     */
+    private static final int DEFAULT_CONN_REQ_TIMEOUT = 100;
+
+    /**
+     * Connection timeout (the amount of time {@code HttpClient} will wait for a
+     * connection to be established) used when building a default
+     * {@code HttpClient}, in milliseconds.
+     *
+     * @see RequestConfig#getConnectTimeout()
+     */
+    private static final int DEFAULT_CONNECT_TIMEOUT = 100;
+
+    /**
+     * Create an HTTP client builder instance.
+     *
+     * @return a builder with configured socket, connect, and connection request
+     *         timeouts.
+     */
+    public static HttpClientBuilder defaultHttpClient() {
+        /*
+         * Socket timeout is set in both places where we can set it. It looks
+         * like RequestConfig's value takes priority, but it's hard to be sure.
+         */
+        final SocketConfig config = SocketConfig.custom()
+                .setSoTimeout(DEFAULT_SO_TIMEOUT)
+                .build();
+        final RequestConfig rc = RequestConfig.custom()
+                .setConnectionRequestTimeout(DEFAULT_CONN_REQ_TIMEOUT)
+                .setConnectTimeout(DEFAULT_CONNECT_TIMEOUT)
+                .setSocketTimeout(DEFAULT_SO_TIMEOUT)
+                .build();
+        // TODO add 503 handling when httpclient changes to respect the retry-after header.
+        return HttpClients.custom()
+                .setDefaultSocketConfig(config)
+                .setDefaultRequestConfig(rc);
+    }
+
 
     public static final class Builder {
         private HttpClient httpClient;
@@ -86,11 +142,18 @@ public final class Harvester extends Observable {
         /**
          * Set the {@code HttpClient} to use.
          * <p>
+         * It is <em>strongly</em> recommended that this client have reasonable
+         * timeouts set. Note that the default configuration (created by e.g.,
+         * {@code HttpClients.createDefault()}) has no timeout.
+         * </p>
+         * <p>
          * If this method is not called, the resulting harvester will use a
-         * default provided by {@link HttpClients#createDefault()}.
+         * default like that provided by {@link HttpClients#createDefault()},
+         * but with default timeouts configured.
+         * </p>
          *
          * @param httpClient
-         *            the http client instance the resulting harvester will use
+         *            the HTTP client instance the resulting harvester will use
          *            to execute all its requests.
          * @return this builder.
          */
@@ -137,7 +200,7 @@ public final class Harvester extends Observable {
 
         public Harvester build() {
             if (httpClient == null) {
-                httpClient = HttpClients.createDefault();
+                httpClient = defaultHttpClient().build();
             }
             if (inputFactory == null) {
                 inputFactory = OAIXMLUtils.newInputFactory();
@@ -193,7 +256,10 @@ public final class Harvester extends Observable {
      * Create a new instance.
      *
      * @param httpClient
-     *            the HTTP client to use.
+     *            the HTTP client to use. It is <em>strongly</em>
+     *            recommended that this client have reasonable timeouts set.
+     *            Note that the default configuration (created by e.g.,
+     *            {@code HttpClients#createDefault()}) has no timeouts.
      * @param requestFactory
      *            the request factory to use.
      * @param inputFactory
@@ -276,7 +342,7 @@ public final class Harvester extends Observable {
      * Depending upon guarantees made by response handlers, the results might
      * not be valid.
      * </p>
-      * <p>
+     * <p>
      * Note that the current harvest might not stop immediately. Clients
      * wishing to take action when a harvest ends should add observers to be
      * notified of events.

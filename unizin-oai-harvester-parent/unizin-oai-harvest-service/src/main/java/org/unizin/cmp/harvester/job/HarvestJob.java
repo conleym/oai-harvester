@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Observer;
@@ -44,19 +45,30 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
 public final class HarvestJob {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HarvestJob.class);
-
     public static final String DIGEST_ALGORITHM = "MD5";
-    public static final int DEFAULT_BATCH_SIZE = 20;
-    public static final Timeout DEFAULT_TIMEOUT = new Timeout(100,
-            TimeUnit.MILLISECONDS);
-    public static final int DEFAULT_QUEUE_CAPACITY = 10 * 1000;
-
     public static final Collection<? extends Header> DEFAULT_HEADERS =
             Collections.unmodifiableCollection(Arrays.asList(
                     new BasicHeader("from", "dev@unizin.org")));
 
 
+    private static void validateBatchSize(final int batchSize) {
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException(
+                    "batchSize must be positive.");
+        }
+    }
+
+
     public static final class Builder {
+        /**
+         * Default batch size is the maximum the DynamoDB mapper will try to
+         * send in one API request.
+         */
+        private static final int DEFAULT_BATCH_SIZE = 25;
+        private static final Timeout DEFAULT_TIMEOUT = new Timeout(100,
+                TimeUnit.MILLISECONDS);
+        private static final int DEFAULT_QUEUE_CAPACITY = 10 * 1000;
+
         private final DynamoDBMapper mapper;
 
         private int batchSize = DEFAULT_BATCH_SIZE;
@@ -74,6 +86,20 @@ public final class HarvestJob {
             this.mapper = mapper;
         }
 
+        /**
+         * Set the {@code HttpClient} to use for this job.
+         * <p>
+         * It is <em>strongly</em> recommended that this client have reasonable
+         * timeouts set. Note that the default configuration (created by e.g.,
+         * {@link HttpClients#createDefault()}) has no timeouts.
+         * </p>
+         * <p>
+         * The default HTTP client created by this builder if this method is not
+         * called is the same as that provided by {@link Harvester.Builder}.
+         * </p>
+         *
+         * @see Harvester.Builder#withHttpClient(HttpClient)
+         */
         public Builder withHttpClient(final HttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
@@ -102,10 +128,7 @@ public final class HarvestJob {
         }
 
         public Builder withBatchSize(final int batchSize) {
-            if (batchSize <= 0) {
-                throw new IllegalArgumentException(
-                        "batchSize must be positive.");
-            }
+            validateBatchSize(batchSize);
             this.batchSize = batchSize;
             return this;
         }
@@ -122,12 +145,13 @@ public final class HarvestJob {
 
         public HarvestJob build() throws NoSuchAlgorithmException {
             if (httpClient == null) {
-                httpClient = HttpClients.custom()
+                httpClient = Harvester.defaultHttpClient()
                         .setDefaultHeaders(DEFAULT_HEADERS)
                         .build();
             }
             if (harvestedRecordQueue == null) {
-                harvestedRecordQueue = new ArrayBlockingQueue<>(DEFAULT_QUEUE_CAPACITY);
+                harvestedRecordQueue = new ArrayBlockingQueue<>(
+                        DEFAULT_QUEUE_CAPACITY);
             }
             if (executorService == null) {
                 executorService = Executors.newCachedThreadPool();
@@ -164,6 +188,48 @@ public final class HarvestJob {
     private volatile boolean running;
 
 
+    /**
+     * Create a new instance.
+     *
+     * @param httpClient
+     *            the HTTP client to use for harvesting. It is <em>strongly</em>
+     *            recommended that this client have reasonable timeouts set.
+     *            Note that the default configuration (created by e.g.,
+     *            {@link HttpClients#createDefault()}) has no timeouts.
+     * @param mapper
+     *            the DynamoDB mapper to use to write records received from the
+     *            harvest.
+     * @param harvestedRecordQueue
+     *            a blocking queue used to transfer records from producer
+     *            threads to the consumer thread. It should have a reasonable
+     *            size limit to limit memory use.
+     * @param executorService
+     *            the executor service that will run each harvest in a separate
+     *            producer thread.
+     * @param offerTimeout
+     *            the maximum time producers should wait before giving up when
+     *            putting a record onto the queue.
+     * @param pollTimeout
+     *            the maximum time the consumer should wait before giving up
+     *            when reading a record from the queue.
+     * @param batchSize
+     *            the number of records to write at a time to DynamoDB. Note
+     *            that the DynamoDB mapper may split batches up into smaller
+     *            chunks for its own purposes, so this number does not
+     *            necessarily reflect the number of records updated per DynamoDB
+     *            API request.
+     * @param harvestParams
+     *            list of harvest parameters. A new producer thread will be
+     *            created and started for each of these when {@link #start()} is
+     *            invoked.
+     * @param harvestObservers
+     *            list of observers. Each observer will observe each producing
+     *            harvester.
+     *
+     * @throws NoSuchAlgorithmException
+     *             in the extraordinary event that the JVM in which this is
+     *             executed does not support the <tt>MD5</tt> digest algorithm.
+     */
     public HarvestJob(final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
@@ -173,6 +239,15 @@ public final class HarvestJob {
             final int batchSize,
             final List<HarvestParams> harvestParams,
             final List<Observer> harvestObservers) throws NoSuchAlgorithmException {
+        Objects.requireNonNull(httpClient, "httpClient");
+        Objects.requireNonNull(mapper, "mapper");
+        Objects.requireNonNull(harvestedRecordQueue, "harvestedRecordQueue");
+        Objects.requireNonNull(executorService, "executorService");
+        Objects.requireNonNull(offerTimeout, "offerTimeout");
+        Objects.requireNonNull(pollTimeout, "pollTimeout");
+        Objects.requireNonNull(harvestParams, "harvestParams");
+        Objects.requireNonNull(harvestObservers, "harvestObservers");
+        validateBatchSize(batchSize);
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.harvestedRecordQueue = harvestedRecordQueue;
@@ -187,6 +262,13 @@ public final class HarvestJob {
         }
     }
 
+    /**
+     * Create a new {@code MessageDigest} instance using the MD5 algorithm.
+     *
+     * @return a new MD5 message digest instance.
+     * @throws NoSuchAlgorithmException
+     *             if this JVM doesn't support the MD5 algorithm.
+     */
     public static MessageDigest digest()
             throws NoSuchAlgorithmException {
         return MessageDigest.getInstance(DIGEST_ALGORITHM);
@@ -218,7 +300,15 @@ public final class HarvestJob {
         }
         running = true;
         tasks.forEach(executorService::submit);
+        /*
+         * No reason to hold onto these. Let them get collected when they're
+         * done rather than when this thread is done.
+         */
         tasks.clear();
+        runLoop();
+    }
+
+    private void runLoop() {
         final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
         while (!shouldStop()) {
             try {
@@ -236,9 +326,9 @@ public final class HarvestJob {
             } catch (final InterruptedException e) {
                 LOGGER.warn("Consumer interrupted. Stopping.", e);
                 Thread.interrupted();
-                stop();
             }
         }
+        stop();
         if (!batch.isEmpty()) {
             // Write any leftovers from the last batch.
             LOGGER.info("Writing final batch of {} records to database.",
@@ -248,7 +338,8 @@ public final class HarvestJob {
     }
 
     private boolean shouldStop() {
-        return !running || runningHarvesters.isEmpty();
+        return !running || runningHarvesters.isEmpty() ||
+                Thread.currentThread().isInterrupted();
     }
 
     private HarvestedOAIRecord tryPoll() throws InterruptedException {
@@ -256,19 +347,43 @@ public final class HarvestJob {
                 pollTimeout.getUnit());
     }
 
+    /**
+     * Stop this job.
+     * <p>
+     * All running harvests are cancelled, and the consumer thread is notified
+     * that it should stop.
+     * </p>
+     * <p>
+     * Note that running harvests and the consumer might not stop immediately.
+     * Registered harvest observers will be notified when each harvest stops,
+     * and job observers will be notified when the consumer thread stops.
+     * </p>
+     */
     public void stop() {
         LOGGER.info("Shutting down.");
         runningHarvesters.cancelAll();
         running = false;
     }
 
+    /**
+     * Write the given records to DynamoDB in a batch operation.
+     * <p>
+     * Failures and exceptions are logged, but they do not stop the harvest.
+     * </p>
+     *
+     * @param batch
+     *            the records to write.
+     */
     private void writeBatch(final List<HarvestedOAIRecord> batch) {
         try {
-            final List<FailedBatch> failed = mapper.batchWrite(batch,
-                    Collections.emptyList());
+            // Add the current timestamp to each record before writing.
+            final Date batchWritten = new Date();
+            batch.forEach((r) -> r.setHarvestedTimestamp(batchWritten));
+
+            final List<FailedBatch> failed = mapper.batchSave(batch);
             if (!failed.isEmpty() && LOGGER.isErrorEnabled()) {
-                final StringBuilder sb = new StringBuilder("Batch failed: " +
-                        batch + "\t[");
+                final StringBuilder sb = new StringBuilder("Batch failed: "
+                        + batch + "\t[");
                 failed.forEach((fb) -> {
                     sb.append(fb.getClass().getName())
                     .append("[unprocessedItems=")
@@ -281,6 +396,12 @@ public final class HarvestJob {
                 LOGGER.error(sb.toString());
             }
         } catch (final AmazonClientException e) {
+            /*
+             * Looking at the code, I _think_ this only happens when the mapper
+             * is interrupted while sleeping when backing off, but I can't be
+             * sure. It's also not clear which records have been written and
+             * which haven't, making accurate statistics impossible.
+             */
             if (LOGGER.isErrorEnabled()) {
                 final String msg = "Error writing batch: " + batch;
                 LOGGER.error(msg, e);

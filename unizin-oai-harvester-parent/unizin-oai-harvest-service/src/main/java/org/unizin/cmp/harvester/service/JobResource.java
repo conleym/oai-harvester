@@ -12,6 +12,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.http.client.HttpClient;
+import org.unizin.cmp.harvester.service.config.HarvestJobFactory;
 
 @Path("/job")
 @Produces(MediaType.APPLICATION_JSON)

@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service;
+package org.unizin.cmp.harvester.service.config;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.httpclient.InstrumentedHttpClientConnectionManager;
