@@ -23,9 +23,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.unizin.cmp.harvester.job.JobOAIEventHandler;
-import org.unizin.cmp.harvester.job.HarvestJob;
-import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
@@ -116,7 +113,16 @@ public final class TestHarvestJob {
             map.put(expectedRecord.getIdentifier(), expectedRecord);
         }
         for (final HarvestedOAIRecord actualRecord : actualRecords) {
-            Assert.assertEquals(map.get(actualRecord.getIdentifier()),
+            final HarvestedOAIRecord expectedRecord = map.get(
+                    actualRecord.getIdentifier());
+            /*
+             * Because the harvested timestamp is set on the record when it's
+             * created, we have no idea what the actual value should be. So
+             * we'll just accept whatever comes out as correct.
+             */
+            expectedRecord.setHarvestedTimestamp(
+                    actualRecord.getHarvestedTimestamp());
+            Assert.assertEquals(expectedRecord,
                     actualRecord);
         }
     }

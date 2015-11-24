@@ -2,6 +2,7 @@ package org.unizin.cmp.harvester.service;
 
 import javax.sql.DataSource;
 
+import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 
 import com.codahale.metrics.MetricRegistry;
@@ -17,6 +18,8 @@ public final class HarvestServiceApplication
 extends Application<HarvestServiceConfiguration> {
     private static final String CONNECTION_POOL_NAME =
             "HarvestService Database Connection Pool";
+    private static final String HTTP_CLIENT_NAME =
+            "HarvestService HTTP Client";
 
     private Bootstrap<HarvestServiceConfiguration> bootstrap;
 
@@ -42,7 +45,11 @@ extends Application<HarvestServiceConfiguration> {
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
         final DataSource ds = createConnectionPool(conf, env);
-        env.jersey().register(new JobResource(ds));
+        final HttpClient httpClient = new HarvestHttpClientBuilder(env)
+                .using(conf.getHttpClientConfiguration())
+                .build(HTTP_CLIENT_NAME);
+        env.jersey().register(new JobResource(ds, conf.getJobFactory(),
+                httpClient));
     }
 
     public static void main(final String[] args) throws Exception {

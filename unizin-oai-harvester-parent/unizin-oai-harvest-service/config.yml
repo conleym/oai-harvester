@@ -14,6 +14,15 @@ database:
   checkConnectionOnReturn: true
   autoCommentsEnabled: false
 
+job:
+  batchSize: 25
+
+httpClient:
+  maxConnections: 2048
+  maxConnectionsPerRoute: 256
+  defaultHeaders:
+    from: dev@unizin.org
+
 server:
     applicationConnectors:
       - type: http
