@@ -120,10 +120,11 @@ implements OAIEventHandler {
         }
     }
 
-    protected abstract void onDatestamp(T currentRecord, String datestamp);
-    protected abstract void onIdentifier(T currentRecord, String identifier);
-    protected abstract void onSet(T currentRecord, String set);
-    protected abstract void onStatus(T currentRecord, String status);
+    // following are left empty for handlers that don't care
+    protected void onDatestamp(T currentRecord, String datestamp) {}
+    protected void onIdentifier(T currentRecord, String identifier) {}
+    protected void onSet(T currentRecord, String set) {}
+    protected void onStatus(T currentRecord, String status) {}
 
     /**
      * Called when &lt;/record&gt; is seen to finalize the current record
@@ -141,8 +142,7 @@ implements OAIEventHandler {
      *            a list containing all events since the last &lt;record&gt;,
      *            including the matching end element.
      */
-    protected abstract void onRecordEnd(T currentRecord,
-            List<XMLEvent> recordEvents);
+    protected abstract void onRecordEnd(T currentRecord, List<XMLEvent> recordEvents);
 
     /**
      * Implementations must create and return a new instance of the record object.
