@@ -198,7 +198,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-dynamodb</artifactId>
-      <version>1.10.30</version>
+      <version>1.10.35</version>
       <exclusions>
         <exclusion>
           <groupId>commons-logging</groupId>
