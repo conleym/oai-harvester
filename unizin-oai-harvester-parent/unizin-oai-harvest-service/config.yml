@@ -4,11 +4,11 @@ database:
   user: ab
   password: b
   validationQuery: SELECT 1
-  validationQueryTimeout: 5ms
+  validationQueryTimeout: 1s
   logValidationErrors: true
   minSize: 2
   maxSize: 32
-  maxWaitForConnection: 10ms
+  maxWaitForConnection: 1s
   checkConnectionOnBorrow: true
   checkConnectionOnConnect: true
   checkConnectionOnReturn: true
@@ -16,15 +16,24 @@ database:
 
 job:
   batchSize: 25
+  minThreads: 2
+  maxThreads: 1000
 
 httpClient:
   maxConnections: 2048
   maxConnectionsPerRoute: 256
-  connectionRequestTimeout: 100ms
-  connectionTimeout: 100ms
-  timeout: 100ms
+  connectionRequestTimeout: 5s
+  connectionTimeout: 5s
+  timeout: 30s
   defaultHeaders:
     from: dev@unizin.org
+
+dynamoDB:
+  endpoint: http://localhost:8000
+  awsSecretKey: ""
+  awsSecretKeyID: ""
+  recordMapper:
+    tableNameOverride: AppTestingTable
 
 server:
     applicationConnectors:
@@ -37,5 +46,5 @@ server:
 logging:
   appenders:
     - type: console
-      threshold: DEBUG
+      threshold: TRACE
       target: stdout
