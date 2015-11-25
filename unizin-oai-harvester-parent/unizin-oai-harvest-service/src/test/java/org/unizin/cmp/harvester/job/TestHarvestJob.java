@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -36,7 +36,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
 
 
-public final class TestHarvestAgent {
+public final class TestHarvestJob {
     @Rule
     public final WireMockRule wireMockRule = Tests.newWireMockRule();
 
@@ -47,7 +47,7 @@ public final class TestHarvestAgent {
             this.getClass().getSimpleName());
 
 
-    public TestHarvestAgent() throws URISyntaxException {
+    public TestHarvestJob() throws URISyntaxException {
         testURI = new URI(Tests.MOCK_OAI_BASE_URI);
     }
 
@@ -66,14 +66,14 @@ public final class TestHarvestAgent {
                 dynamoDBTestClient.countItems(HarvestedOAIRecord.class));
     }
 
-    private HarvestAgent.Builder newAgentBuilder() {
-        return new HarvestAgent.Builder(dynamoDBTestClient.mapper);
+    private HarvestJob.Builder newJobBuilder() {
+        return new HarvestJob.Builder(dynamoDBTestClient.mapper);
     }
 
     private List<HarvestedOAIRecord> expectedRecords(final String response)
             throws Exception {
         final List<HarvestedOAIRecord> list = new ArrayList<>();
-        final AgentOAIEventHandler handler = new AgentOAIEventHandler(testURI,
+        final JobOAIEventHandler handler = new JobOAIEventHandler(testURI,
                 (arg) -> list.add(arg));
         final OAIResponseHandler h = new AbstractOAIResponseHandler() {
             @Override
@@ -95,16 +95,15 @@ public final class TestHarvestAgent {
     private void doRun(final String serverResponseBody) throws Exception {
         final List<HarvestedOAIRecord> expectedRecords = expectedRecords(
                 serverResponseBody);
-        final HarvestAgent agent = newAgentBuilder().build();
-        final HarvestParams[] params = {
-                new HarvestParams(testURI, OAIVerb.LIST_RECORDS)
-        };
+        final HarvestJob job = newJobBuilder()
+                .withHarvestParams(new HarvestParams.Builder(testURI,
+                        OAIVerb.LIST_RECORDS).build())
+                .build();
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
                         .withBody(serverResponseBody)));
-        agent.addHarvests(params);
-        agent.start();
+        job.start();
         final List<HarvestedOAIRecord> actualRecords =
                 dynamoDBTestClient.scan(HarvestedOAIRecord.class);
         Assert.assertEquals(expectedRecords.size(), actualRecords.size());
@@ -114,13 +113,22 @@ public final class TestHarvestAgent {
             map.put(expectedRecord.getIdentifier(), expectedRecord);
         }
         for (final HarvestedOAIRecord actualRecord : actualRecords) {
-            Assert.assertEquals(map.get(actualRecord.getIdentifier()),
+            final HarvestedOAIRecord expectedRecord = map.get(
+                    actualRecord.getIdentifier());
+            /*
+             * Because the harvested timestamp is set on the record when it's
+             * created, we have no idea what the actual value should be. So
+             * we'll just accept whatever comes out as correct.
+             */
+            expectedRecord.setHarvestedTimestamp(
+                    actualRecord.getHarvestedTimestamp());
+            Assert.assertEquals(expectedRecord,
                     actualRecord);
         }
     }
 
     @Test
-    public void testAgentRun() throws Exception {
+    public void testJobRun() throws Exception {
         doRun(Tests.OAI_LIST_RECORDS_RESPONSE);
 
         final List<String> updatedRecords = new ArrayList<String>(

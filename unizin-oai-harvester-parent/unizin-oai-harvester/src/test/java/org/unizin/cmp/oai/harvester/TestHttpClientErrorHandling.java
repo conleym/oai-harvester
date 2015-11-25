@@ -58,7 +58,7 @@ public final class TestHttpClientErrorHandling {
         exception.expect(NullPointerException.class);
         exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
         try {
-            newHarvester().start(defaultTestParams(), h);
+            newHarvester().start(defaultTestParams().build(), h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
             throw e;
@@ -76,7 +76,7 @@ public final class TestHttpClientErrorHandling {
         final OAIResponseHandler h = Mocks.newResponseHandler();
         exception.expect(UncheckedIOException.class);
         try {
-            newHarvester().start(defaultTestParams(), h);
+            newHarvester().start(defaultTestParams().build(), h);
         } catch (final UncheckedIOException e) {
             final Throwable cause = e.getCause();
             Mocks.assertTestException(cause, IOException.class);
@@ -99,7 +99,7 @@ public final class TestHttpClientErrorHandling {
                         HttpStatus.SC_BAD_GATEWAY)));
         final OAIResponseHandler h = Mocks.newResponseHandler();
         try {
-            newHarvester().start(defaultTestParams(), h);
+            newHarvester().start(defaultTestParams().build(), h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
             throw e;
@@ -125,7 +125,7 @@ public final class TestHttpClientErrorHandling {
         exception.expect(RuntimeException.class);
         exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
         try {
-            harvester.start(defaultTestParams(), h);
+            harvester.start(defaultTestParams().build(), h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
             throw e;

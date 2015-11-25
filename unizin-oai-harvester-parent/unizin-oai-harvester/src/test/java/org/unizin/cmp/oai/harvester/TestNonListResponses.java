@@ -91,9 +91,10 @@ public final class TestNonListResponses {
         final Harvester harvester = new Harvester.Builder()
                 .withOAIRequestFactory(PostOAIRequestFactory.getInstance())
                 .build();
-        final HarvestParams params = new HarvestParams(MOCK_OAI_BASE_URI,
-                OAIVerb.GET_RECORD)
-                .withIdentifier(expectedIdentifier);
+        final HarvestParams params = new HarvestParams.Builder(
+                MOCK_OAI_BASE_URI, OAIVerb.GET_RECORD)
+                .withIdentifier(expectedIdentifier)
+                .build();
         Assert.assertTrue(params.areValid());
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         harvester.start(params, new MergingOAIResponseHandler(out));
@@ -118,14 +119,14 @@ public final class TestNonListResponses {
 
         final String coverage = evaluateAsString(
                 getRecordXPath("oai:metadata/odc:dc/dc:coverage/text()"),
-                    xpath, doc);
+                xpath, doc);
 
         /*
          * In Xerces and the JDK, &#13; (carriage return) becomes "\n".
          */
         final String chr13 = (STAX == STAX_LIB.WOODSTOX) ?
                 new String(Character.toChars(13)) : "\n";
-        Assert.assertEquals("This should have a " + chr13 + " newline.",
-                coverage);
+                Assert.assertEquals("This should have a " + chr13 + " newline.",
+                        coverage);
     }
 }

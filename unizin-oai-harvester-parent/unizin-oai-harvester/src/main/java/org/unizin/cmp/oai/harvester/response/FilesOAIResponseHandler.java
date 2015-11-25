@@ -13,6 +13,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 
 /**
@@ -58,7 +59,7 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
     public void onResponseReceived(final HarvestNotification notification) {
         try {
             final long fileCount = notification.getStats()
-                    .get(HarvestNotification.Statistics.RESPONSE_COUNT);
+                    .get(HarvestStatistic.RESPONSE_COUNT);
             final URI dest = directory.toURI().resolve(fileCount + ".xml");
             final File destFile = new File(dest);
             outputStream = new FileOutputStream(destFile);

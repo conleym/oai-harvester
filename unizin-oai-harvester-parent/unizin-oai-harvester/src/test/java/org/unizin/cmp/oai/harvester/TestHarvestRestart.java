@@ -35,7 +35,7 @@ public final class TestHarvestRestart {
         Tests.createWiremockStubForGetResponse(
                 HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "Look. Something went wrong.");
-        final HarvestParams params = defaultTestParams();
+        final HarvestParams params = defaultTestParams().build();
         final Harvester harvester = new Harvester.Builder().build();
         try {
             harvester.start(params, Mocks.newResponseHandler());
@@ -61,7 +61,7 @@ public final class TestHarvestRestart {
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(HarvesterException.class);
         try {
-            harvester.start(defaultTestParams(), Mocks.newResponseHandler());
+            harvester.start(defaultTestParams().build(), Mocks.newResponseHandler());
         } catch (final HarvesterException e) {
             /*
              * Not getting the expected results? Check for unexpected
@@ -69,7 +69,8 @@ public final class TestHarvestRestart {
              */
 
             final HarvestParams expected = defaultTestParams()
-                    .withResumptionToken(expectedToken);
+                    .withResumptionToken(expectedToken)
+                    .build();
             Assert.assertEquals(expected, harvester.getRetryParams());
             throw e;
         }

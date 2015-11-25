@@ -30,6 +30,6 @@ public final class OAIProtocolException extends HarvesterException {
     }
 
     public List<OAIError> getOAIErrors() {
-        return Collections.unmodifiableList(errors);
+        return errors;
     }
 }

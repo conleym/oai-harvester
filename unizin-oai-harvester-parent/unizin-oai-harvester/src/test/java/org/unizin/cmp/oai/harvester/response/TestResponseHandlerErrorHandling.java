@@ -49,7 +49,7 @@ public final class TestResponseHandlerErrorHandling {
             .when(mockEventHandler).onEvent(any());
         exception.expect(HarvesterException.class);
         try {
-            harvester.start(defaultTestParams(), mockHandler);
+            harvester.start(defaultTestParams().build(), mockHandler);
         } catch (final HarvesterXMLParsingException e) {
             Assert.fail("No parsing exception expected here.");
         } catch (final HarvesterException e) {
@@ -72,6 +72,6 @@ public final class TestResponseHandlerErrorHandling {
             .when(mockEventHandler).onEvent(any());
         exception.expect(HarvesterXMLParsingException.class);
         exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
-        harvester.start(defaultTestParams(), mockHandler);
+        harvester.start(defaultTestParams().build(), mockHandler);
     }
 }

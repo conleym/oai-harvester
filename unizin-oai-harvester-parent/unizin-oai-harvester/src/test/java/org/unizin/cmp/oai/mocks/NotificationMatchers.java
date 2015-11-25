@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
-import org.unizin.cmp.oai.harvester.HarvestNotification.Statistics;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 
 public final class NotificationMatchers {
     public static final Predicate<HarvestNotification> RUNNING = (hn) -> {
@@ -88,8 +88,8 @@ public final class NotificationMatchers {
     public static final HarvestNotification withStats(final long requestCount,
             final long responseCount) {
         return Mocks.matcherFromPredicate((hn) -> {
-            return hn.getStat(Statistics.REQUEST_COUNT) == requestCount &&
-                    hn.getStat(Statistics.RESPONSE_COUNT) == responseCount;
+            return hn.getStat(HarvestStatistic.REQUEST_COUNT) == requestCount &&
+                    hn.getStat(HarvestStatistic.RESPONSE_COUNT) == responseCount;
         },
                 HarvestNotification.class);
     }

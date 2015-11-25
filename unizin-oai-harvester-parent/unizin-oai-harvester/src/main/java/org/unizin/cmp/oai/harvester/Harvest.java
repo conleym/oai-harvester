@@ -11,6 +11,7 @@ import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
@@ -43,6 +44,7 @@ final class Harvest {
     private Instant lastResponseDate;
     private long requestCount;
     private long responseCount;
+    private long xmlEventCount;
 
 
     Harvest() {
@@ -57,10 +59,10 @@ final class Harvest {
 
     HarvestNotification createNotification(
             final HarvestNotificationType type) {
-        final Map<String, Long> stats = new HashMap<>(2);
-        stats.put(HarvestNotification.Statistics.REQUEST_COUNT, requestCount);
-        stats.put(HarvestNotification.Statistics.RESPONSE_COUNT,
-                responseCount);
+        final Map<HarvestStatistic, Long> stats = new HashMap<>(2);
+        stats.put(HarvestStatistic.REQUEST_COUNT, requestCount);
+        stats.put(HarvestStatistic.RESPONSE_COUNT, responseCount);
+        stats.put(HarvestStatistic.XML_EVENT_COUNT, xmlEventCount);
         return new HarvestNotification(type, state, exception,
                 resumptionToken, lastResponseDate, params, stats);
     }
@@ -138,6 +140,10 @@ final class Harvest {
 
     void responseReceived() {
         responseCount++;
+    }
+
+    void xmlEventReceived() {
+        xmlEventCount++;
     }
 
     boolean hasNext() {

@@ -60,11 +60,15 @@ public interface OAIRequestFactory {
      * Note particularly that any query string in the base {@code URI} is
      * preserved and the supplied parameters appended.
      *
-     * @param baseURI the {@code URI}.
-     * @param parameters the parameters to add to the {@code baseURI}'s
-     *  query string.
+     * @param baseURI
+     *            the {@code URI}.
+     * @param parameters
+     *            the parameters to add to the {@code baseURI}'s query string.
      * @return an HTTP GET request for the given {@code URI} with the given
-     * parameters appended to the query string.
+     *         parameters appended to the query string.
+     * @throws HarvesterException
+     *             if the URI generated from the base and parameters is somehow
+     *             invalid.
      */
     public static HttpUriRequest get(final URI baseURI,
             final Map<String, String> parameters) {

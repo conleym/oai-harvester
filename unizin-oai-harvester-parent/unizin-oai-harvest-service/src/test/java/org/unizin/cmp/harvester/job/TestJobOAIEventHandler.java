@@ -1,14 +1,14 @@
-package org.unizin.cmp.harvester.agent;
+package org.unizin.cmp.harvester.job;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.CHECKSUM_ATTRIB;
-import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.DATESTAMP_ATTRIB;
-import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.SETS_ATTRIB;
-import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.STATUS_ATTRIB;
-import static org.unizin.cmp.harvester.agent.HarvestedOAIRecord.XML_ATTRIB;
+import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.CHECKSUM_ATTRIB;
+import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.DATESTAMP_ATTRIB;
+import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.SETS_ATTRIB;
+import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.STATUS_ATTRIB;
+import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.XML_ATTRIB;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -29,6 +29,10 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.unizin.cmp.harvester.job.JobOAIResponseHandler;
+import org.unizin.cmp.harvester.job.HarvestJob;
+import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.harvester.job.Timeout;
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
@@ -37,7 +41,7 @@ import org.unizin.cmp.oai.harvester.Harvester;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 
-public final class TestAgentOAIEventHandler {
+public final class TestJobOAIEventHandler {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
     @Rule
@@ -45,8 +49,8 @@ public final class TestAgentOAIEventHandler {
 
     private final List<byte[]> checksums = new ArrayList<>();
 
-    public TestAgentOAIEventHandler() throws Exception {
-        final MessageDigest digest = HarvestAgent.digest();
+    public TestJobOAIEventHandler() throws Exception {
+        final MessageDigest digest = HarvestJob.digest();
         for (final String record : Tests.TEST_RECORDS) {
             digest.update(record.getBytes(StandardCharsets.UTF_8));
             checksums.add(digest.digest());
@@ -89,10 +93,11 @@ public final class TestAgentOAIEventHandler {
                         .withBody(Tests.OAI_LIST_RECORDS_RESPONSE)));
         final Harvester harvester = new Harvester.Builder().build();
         final URI uri = new URI(Tests.MOCK_OAI_BASE_URI);
-        final HarvestParams p = new HarvestParams(uri, OAIVerb.LIST_RECORDS);
+        final HarvestParams p = new HarvestParams.Builder(uri,
+                OAIVerb.LIST_RECORDS).build();
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
                 new ArrayBlockingQueue<>(Tests.TEST_RECORDS.size());
-        harvester.start(p, new AgentOAIResponseHandler(uri,
+        harvester.start(p, new JobOAIResponseHandler(uri,
                 harvestedRecordQueue, new Timeout(0, TimeUnit.SECONDS)));
 
         Assert.assertEquals(Tests.TEST_RECORDS.size(),

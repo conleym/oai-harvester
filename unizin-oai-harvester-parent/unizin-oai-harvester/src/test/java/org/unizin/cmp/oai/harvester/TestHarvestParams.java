@@ -38,16 +38,21 @@ public final class TestHarvestParams {
     @Test
     public void testValidation() {
         assertValid("Default parameters for testing should be valid.",
-                defaultTestParams());
+                defaultTestParams().build());
         assertInvalid("Identifier is not valid with ListRecords.",
                 defaultTestParams(OAIVerb.LIST_RECORDS)
-                    .withIdentifier("not valid"));
+                    .withIdentifier("not valid")
+                    .build());
         assertInvalid("Identifier is required with GetRecord.",
-                defaultTestParams(OAIVerb.GET_RECORD));
-        assertValid("Nonstandard parameters are assumed to be valid.",
-                defaultTestParams().withNonstandardParameter("FOO", "bar"));
-        assertInvalid("Nonstandard parameters don't make invalid standard parameters valid.",
                 defaultTestParams(OAIVerb.GET_RECORD)
-                    .withNonstandardParameter("FOO", "bar"));
+                .build());
+        assertValid("Nonstandard parameters are assumed to be valid.",
+                defaultTestParams().withNonstandardParameter("FOO", "bar")
+                .build());
+        assertInvalid("Nonstandard parameters don't make invalid standard "
+                + "parameters valid.",
+                defaultTestParams(OAIVerb.GET_RECORD)
+                    .withNonstandardParameter("FOO", "bar")
+                    .build());
     }
 }

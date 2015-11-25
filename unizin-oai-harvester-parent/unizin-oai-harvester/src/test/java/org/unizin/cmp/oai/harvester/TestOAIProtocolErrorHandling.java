@@ -10,7 +10,9 @@ import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observer;
 
@@ -33,6 +35,7 @@ import org.unizin.cmp.oai.mocks.NotificationMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.google.common.io.ByteStreams;
 
 import freemarker.template.TemplateException;
 
@@ -67,7 +70,7 @@ public final class TestOAIProtocolErrorHandling {
         setupWithError(errorResponse);
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams(),
+            new Harvester.Builder().build().start(defaultTestParams().build(),
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(errors, e.getOAIErrors());
@@ -127,7 +130,7 @@ public final class TestOAIProtocolErrorHandling {
         setupWithError(errorResponse);
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams(),
+            new Harvester.Builder().build().start(defaultTestParams().build(),
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
@@ -165,7 +168,7 @@ public final class TestOAIProtocolErrorHandling {
                 .build();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(defaultTestParams(), Mocks.newResponseHandler());
+            harvester.start(defaultTestParams().build(), Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
                     e.getOAIErrors());
@@ -205,7 +208,8 @@ public final class TestOAIProtocolErrorHandling {
             .when(h).onHarvestEnd(any());
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams(), h);
+            new Harvester.Builder().build().start(defaultTestParams().build(),
+                    h);
         } catch (final OAIProtocolException e) {
             final Throwable suppressed = checkSingleSuppressedException(e);
             Mocks.assertTestException(suppressed,
@@ -220,7 +224,8 @@ public final class TestOAIProtocolErrorHandling {
         final OAIResponseHandler h = Mocks.newResponseHandler();
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams(), h);
+            new Harvester.Builder().build().start(defaultTestParams().build(),
+                    h);
         } catch (final OAIProtocolException e) {
             /*
              * Each of these should be called _exactly_ once, and in precisely
@@ -248,7 +253,8 @@ public final class TestOAIProtocolErrorHandling {
         harvester.addObserver(observer);
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(defaultTestParams(), Mocks.newResponseHandler());
+            harvester.start(defaultTestParams().build(),
+                    Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             inOrderVerify(observer).update(eq(harvester),
                     NotificationMatchers.harvestStarted());
@@ -260,5 +266,20 @@ public final class TestOAIProtocolErrorHandling {
                     NotificationMatchers.harvestEndedWithError());
             throw e;
         }
+    }
+
+    private void serialize(final OAIProtocolException ope) throws Exception {
+        ObjectOutputStream oos = new ObjectOutputStream(
+                ByteStreams.nullOutputStream());
+        oos.writeObject(ope);
+    }
+
+    @Test
+    public void testSerialization() throws Exception {
+        serialize(new OAIProtocolException(Collections.emptyList()));
+        List<OAIError> errors = Arrays.asList(
+                new OAIError("nonstandardErrorCode"),
+                new OAIError(OAIErrorCode.BAD_ARGUMENT.code(), "Hi!"));
+        serialize(new OAIProtocolException(errors));
     }
 }
