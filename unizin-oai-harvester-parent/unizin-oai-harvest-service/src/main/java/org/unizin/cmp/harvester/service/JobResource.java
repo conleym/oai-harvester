@@ -85,7 +85,7 @@ public final class JobResource {
         final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
                 Collections.singletonList(builder.build()),
                 Collections.emptyList());
-        executor.submit(() -> job.start());
+        executor.submit(job::start);
         return Collections.emptyMap();
     }
 

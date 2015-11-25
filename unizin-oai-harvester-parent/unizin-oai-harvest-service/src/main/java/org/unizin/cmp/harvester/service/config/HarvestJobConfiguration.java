@@ -56,7 +56,7 @@ public final class HarvestJobConfiguration {
 
     @JsonProperty
     @NotEmpty
-    private String nameFormat = "something-%s";
+    private String nameFormat = "harvest-job-%s";
 
     public ExecutorService buildExecutorService(final Environment env) {
         final ExecutorServiceBuilder b = env.lifecycle()

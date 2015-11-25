@@ -43,33 +43,32 @@ public class DynamoDBConfiguration {
         }
     }
 
-
     @JsonProperty
     private URI endpoint;
 
     @JsonProperty
-    private String awsSecretKey;
+    private String awsAccessKey;
 
     @JsonProperty
-    private String awsSecretKeyID;
+    private String awsAccessKeyID;
 
     @JsonProperty
     @Valid
     private DynamoDBMapperConfiguration recordMapper;
 
     public AmazonDynamoDB build() {
-        if (awsSecretKeyID == null || awsSecretKey == null) {
+        if (awsAccessKeyID == null || awsAccessKey == null) {
             LOGGER.info("Secret keys not defined in configuration. Trying" +
                     " default provider chain.");
             // Set up defaults.
             final DefaultAWSCredentialsProviderChain chain
                 = new DefaultAWSCredentialsProviderChain();
             final AWSCredentials defaultCreds = chain.getCredentials();
-            awsSecretKey = defaultCreds.getAWSSecretKey();
-            awsSecretKeyID = defaultCreds.getAWSAccessKeyId();
+            awsAccessKey = defaultCreds.getAWSSecretKey();
+            awsAccessKeyID = defaultCreds.getAWSAccessKeyId();
         }
-        final AWSCredentials credentials = new BasicAWSCredentials(awsSecretKeyID,
-                awsSecretKey);
+        final AWSCredentials credentials = new BasicAWSCredentials(awsAccessKeyID,
+                awsAccessKey);
         final AmazonDynamoDB db = new AmazonDynamoDBClient(credentials);
         db.setEndpoint(endpoint.toString());
         return db;
