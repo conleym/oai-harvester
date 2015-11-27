@@ -65,10 +65,9 @@ extends Application<HarvestServiceConfiguration> {
                 dynamoDBClient);
     }
 
-    private void createDynamoDBTable() {
+    private void createDynamoDBTable(final DynamoDBConfiguration config) {
         // Throughput: ignored by local, but still required.
-        final ProvisionedThroughput throughput = new ProvisionedThroughput(1L,
-                1L);
+        final ProvisionedThroughput throughput = config.buildThroughput();
         final CreateTableRequest req = dynamoDBMapper
                 .generateCreateTableRequest(HarvestedOAIRecord.class)
                 .withProvisionedThroughput(throughput);
@@ -89,8 +88,9 @@ extends Application<HarvestServiceConfiguration> {
                 .build(HTTP_CLIENT_NAME);
         final ExecutorService executor = conf.getJobConfiguration()
                 .buildExecutorService(env);
-        createMapper(conf.getDynamoDBConfiguration());
-        createDynamoDBTable();
+        final DynamoDBConfiguration dynamo = conf.getDynamoDBConfiguration();
+        createMapper(dynamo);
+        createDynamoDBTable(dynamo);
         final JobResource jr = new JobResource(ds, conf.getJobConfiguration(),
                 httpClient, dynamoDBMapper, executor);
         env.jersey().register(jr);

@@ -3,6 +3,7 @@ package org.unizin.cmp.harvester.service.config;
 import java.net.URI;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
@@ -17,6 +18,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.ConsistentReads;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class DynamoDBConfiguration {
@@ -53,6 +55,14 @@ public class DynamoDBConfiguration {
     private String awsAccessKeyID;
 
     @JsonProperty
+    @Min(1)
+    private long provisionedReadCapacity = 1;
+
+    @JsonProperty
+    @Min(1)
+    private long provisionedWriteCapacity = 1;
+
+    @JsonProperty
     @Valid
     private DynamoDBMapperConfiguration recordMapper;
 
@@ -76,5 +86,10 @@ public class DynamoDBConfiguration {
 
     public DynamoDBMapperConfiguration getRecordMapperConfiguration() {
         return recordMapper;
+    }
+
+    public ProvisionedThroughput buildThroughput() {
+        return new ProvisionedThroughput(provisionedReadCapacity,
+                provisionedWriteCapacity);
     }
 }

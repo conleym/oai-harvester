@@ -32,6 +32,8 @@ dynamoDB:
   endpoint: http://localhost:8000
   awsAccessKey: key
   awsAccessKeyID: asdf
+  provisionedReadCapacity: 1
+  provisionedWriteCapacity: 1
   recordMapper:
     tableNameOverride: AppTestingTable
 

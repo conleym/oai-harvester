@@ -7,8 +7,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -23,6 +26,8 @@ import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.unizin.cmp.harvester.job.JobNotification.JobNotificationType;
+import org.unizin.cmp.harvester.job.JobNotification.JobStatistic;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
@@ -42,7 +47,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
  * Instances are safe for use in multiple threads.
  * </p>
  */
-public final class HarvestJob {
+public final class HarvestJob extends Observable {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HarvestJob.class);
     public static final String DIGEST_ALGORITHM = "MD5";
@@ -175,6 +180,15 @@ public final class HarvestJob {
     }
 
 
+    private static final class State {
+        private volatile boolean running;
+        private boolean interrupted;
+        private long batchesAttempted;
+        private long recordsReceived;
+        private Exception exception;
+    }
+
+
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
@@ -185,7 +199,7 @@ public final class HarvestJob {
     private final int batchSize;
     private final RunningHarvesters runningHarvesters =
             new RunningHarvesters();
-    private volatile boolean running;
+    private final State state = new State();
 
 
     /**
@@ -296,28 +310,53 @@ public final class HarvestJob {
         return runningHarvesters.wrappedRunnable(harvester, harvest);
     }
 
+    private void sendNotification(
+            final JobNotificationType type) {
+        final Map<JobStatistic, Long> stats = new HashMap<>(
+                JobStatistic.values().length);
+        stats.put(JobStatistic.RECORDS_RECEIVED, state.recordsReceived);
+        stats.put(JobStatistic.QUEUE_SIZE, (long)harvestedRecordQueue.size());
+        stats.put(JobStatistic.BATCHES_ATTEMPTED, state.batchesAttempted);
+        final JobNotification notification = new JobNotification(type,
+                state.running, stats, state.exception);
+        setChanged();
+        try {
+            notifyObservers(notification);
+        } catch (final Exception e) {
+            LOGGER.error("Caught an exception while notifying observers.", e);
+        }
+    }
+
     public void start() {
-        if (running || tasks.isEmpty()) {
+        if (state.running || tasks.isEmpty()) {
             return;
         }
-        running = true;
         tasks.forEach(executorService::submit);
+        state.running = true;
+        sendNotification(JobNotificationType.STARTED);
         /*
          * No reason to hold onto these. Let them get collected when they're
          * done rather than when this thread is done.
          */
         tasks.clear();
-        runLoop();
+        try {
+            runLoop();
+        } catch (final Exception e) {
+            state.exception = e;
+        } finally {
+            sendNotification(JobNotificationType.STOPPED);
+        }
     }
 
     private void runLoop() {
         final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
         while (!shouldStop()) {
             try {
-                final HarvestedOAIRecord record = tryPoll();
+                final HarvestedOAIRecord record = poll();
                 if (record == null) {
                     continue;
                 }
+                state.recordsReceived++;
                 batch.add(record);
                 if (batch.size() % batchSize == 0) {
                     LOGGER.info("Writing {} records to database.",
@@ -326,6 +365,8 @@ public final class HarvestJob {
                     batch.clear();
                 }
             } catch (final InterruptedException e) {
+                state.interrupted = true;
+                state.exception = e;
                 LOGGER.warn("Consumer interrupted. Stopping.", e);
                 Thread.interrupted();
             }
@@ -340,11 +381,14 @@ public final class HarvestJob {
     }
 
     private boolean shouldStop() {
-        return !running || runningHarvesters.isEmpty() ||
-                Thread.currentThread().isInterrupted();
+        if (Thread.currentThread().isInterrupted()) {
+            state.interrupted = true;
+        }
+        return !state.running || state.interrupted ||
+                runningHarvesters.isEmpty();
     }
 
-    private HarvestedOAIRecord tryPoll() throws InterruptedException {
+    private HarvestedOAIRecord poll() throws InterruptedException {
         return harvestedRecordQueue.poll(pollTimeout.getTime(),
                 pollTimeout.getUnit());
     }
@@ -364,7 +408,7 @@ public final class HarvestJob {
     public void stop() {
         LOGGER.info("Shutting down.");
         runningHarvesters.cancelAll();
-        running = false;
+        state.running = false;
     }
 
     /**
@@ -377,6 +421,8 @@ public final class HarvestJob {
      *            the records to write.
      */
     private void writeBatch(final List<HarvestedOAIRecord> batch) {
+        state.batchesAttempted++;
+        sendNotification(JobNotificationType.BATCH_STARTED);
         try {
             // Add the current timestamp to each record before writing.
             final Date batchWritten = new Date();
@@ -398,6 +444,7 @@ public final class HarvestJob {
                 LOGGER.error(sb.toString());
             }
         } catch (final AmazonClientException e) {
+            state.exception = e;
             /*
              * Looking at the code, I _think_ this only happens when the mapper
              * is interrupted while sleeping when backing off, but I can't be
@@ -408,6 +455,8 @@ public final class HarvestJob {
                 final String msg = "Error writing batch: " + batch;
                 LOGGER.error(msg, e);
             }
+        } finally {
+            sendNotification(JobNotificationType.BATCH_FINISHED);
         }
     }
 }
