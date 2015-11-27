@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.TestListResponses;
+import org.unizin.cmp.oai.harvester.ListResponses;
 import org.unizin.cmp.oai.harvester.Tests;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.mocks.MockHttpClient;
@@ -71,7 +71,7 @@ public final class TestFilesHandler {
 
     @Test
     public void testList() throws Exception {
-        TestListResponses.setupWithDefaultListRecordsResponse(true,
+        ListResponses.setupWithDefaultListRecordsResponse(true,
                 mockHttpClient);
         FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
