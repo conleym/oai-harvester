@@ -67,7 +67,6 @@ public final class TestHarvestRestart {
              * Not getting the expected results? Check for unexpected
              * HarvesterExceptions, i.e., XML parsing errors.
              */
-
             final HarvestParams expected = defaultTestParams()
                     .withResumptionToken(expectedToken)
                     .build();
