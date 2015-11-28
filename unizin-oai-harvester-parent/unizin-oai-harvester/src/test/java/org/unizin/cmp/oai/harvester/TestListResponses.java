@@ -180,8 +180,8 @@ public final class TestListResponses {
 
         exception.expect(OAIProtocolException.class);
         try {
-            final HarvestParams params = defaultTestParams(OAIVerb.LIST_RECORDS)
-                    .build();
+            final HarvestParams params = defaultTestParams(
+                    OAIVerb.LIST_RECORDS).build();
             new Harvester.Builder().build().start(params,
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {

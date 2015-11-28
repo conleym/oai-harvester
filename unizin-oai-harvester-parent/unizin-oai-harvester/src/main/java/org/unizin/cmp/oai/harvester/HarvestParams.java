@@ -19,6 +19,7 @@ import org.unizin.cmp.oai.ResumptionToken;
  * request parameters.
  * <p>
  * Instances are immutable.
+ * </p>
  */
 public final class HarvestParams {
 

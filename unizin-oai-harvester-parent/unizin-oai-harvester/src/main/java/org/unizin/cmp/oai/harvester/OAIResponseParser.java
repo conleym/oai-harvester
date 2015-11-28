@@ -188,10 +188,12 @@ final class OAIResponseParser {
      * This is used in preference to {@link XMLEventReader#getElementText()},
      * because we want to pass all events from the input to the
      * {@code OAIEventHandler}, and that method eats the text events.
+     * </p>
      * <p>
      * There is also no mixed content in any of the nodes we care about, so this
      * doesn't handle such cases, instead simply stopping at the first non-text
      * node.
+     * </p>
      *
      * @param reader
      *            the event reader from which to read events.

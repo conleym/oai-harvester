@@ -8,8 +8,9 @@ import org.apache.http.client.methods.HttpUriRequest;
 /**
  * A factory that produces HTTP POST requests.
  * <p>
- * This factory generates HTTP GET requests using
- * {@link OAIRequestFactory#get(URI, Map)}.
+ * This factory generates HTTP POST requests using
+ * {@link OAIRequestFactory#post(URI, Map)}.
+ * </p>
  */
 public final class PostOAIRequestFactory implements OAIRequestFactory {
     private static final PostOAIRequestFactory INSTANCE =

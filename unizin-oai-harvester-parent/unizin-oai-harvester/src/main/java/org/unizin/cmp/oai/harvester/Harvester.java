@@ -360,6 +360,7 @@ public final class Harvester extends Observable {
      * {@link #start(HarvestParams, OAIResponseHandler)} to start a new harvest.
      * Note that this is a <em>new</em> harvest. In particular, statistics about
      * the current harvest will be lost.
+     * </p>
      *
      * @return the parameters needed to retry the most recent request.
      * @throws IllegalStateException
@@ -377,6 +378,7 @@ public final class Harvester extends Observable {
      * need to run some code in the corresponding {@code finally} block that may
      * <em>also</em> throw an exception, {@code F}, but we don't want to lose
      * {@code E}.
+     * </p>
      * <p>
      * There are four possibilities to consider:
      * <ol>
@@ -387,6 +389,7 @@ public final class Harvester extends Observable {
      * <li>Only {@code E} is thrown. This method will throw {@code E}.
      * <li>Only {@code F} is thrown. This method will throw {@code F}.
      * </ol>
+     * </p>
      *
      * @param tryCall
      *            the code to run inside a {@code try} block.
@@ -569,6 +572,7 @@ public final class Harvester extends Observable {
      * attempting to notify observers being logged and <em>not</em> thrown.
      * </li>
      * </ol>
+     * </p>
      *
      * @param notification
      *            the notification to send.

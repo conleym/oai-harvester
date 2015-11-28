@@ -10,10 +10,11 @@ import org.apache.http.client.methods.HttpUriRequest;
  * <p>
  * This is default {@link OAIRequestFactory} implementation used by the
  * {@link Harvester} if none is specified.
+ * </p>
  * <p>
  * This factory generates HTTP GET requests using
  * {@link OAIRequestFactory#get(URI, Map)}.
- *
+ * </p>
  */
 public final class GetOAIRequestFactory implements OAIRequestFactory {
     private static final GetOAIRequestFactory INSTANCE =
