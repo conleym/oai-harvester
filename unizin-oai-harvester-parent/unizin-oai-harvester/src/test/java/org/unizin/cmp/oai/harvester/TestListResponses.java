@@ -1,8 +1,6 @@
 package org.unizin.cmp.oai.harvester;
 
 import static org.mockito.Matchers.eq;
-import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.HARVEST_ENDED;
-import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.RESPONSE_PROCESSED;
 import static org.unizin.cmp.oai.harvester.ListResponses.DEFAULT_RESPONSE_COUNT;
 import static org.unizin.cmp.oai.harvester.ListResponses.FIRST_TOKEN;
 import static org.unizin.cmp.oai.harvester.ListResponses.RESUMPTION_TOKENS;
@@ -33,7 +31,6 @@ import org.unizin.cmp.oai.OAIError;
 import org.unizin.cmp.oai.OAIErrorCode;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
-import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
@@ -46,6 +43,9 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 import freemarker.template.TemplateException;
 
+/**
+ * Test list responses and associated resumptionToken and error handling.
+ */
 public final class TestListResponses {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TestListResponses.class);
@@ -188,62 +188,6 @@ public final class TestListResponses {
             Assert.assertEquals(errors, e.getOAIErrors());
             throw e;
         }
-    }
-
-
-    /**
-     * Tests that {@code Observers} can stop the harvest via
-     * {@link Harvester#stop()}.
-     */
-    @Test
-    public void testStop() throws Exception {
-        setupWithDefaultListRecordsResponse(true);
-        final Observer obs = (o, arg) -> {
-            final Harvester h = (Harvester)o;
-            final HarvestNotification hn = (HarvestNotification)arg;
-            if (hn.getType() == RESPONSE_PROCESSED &&
-                    hn.getStat(HarvestStatistic.REQUEST_COUNT) == 1L) {
-                h.stop();
-            }
-        };
-
-        final OAIResponseHandler rh = Mocks.newResponseHandler();
-        final Harvester harvester = new Harvester.Builder().build();
-        harvester.addObserver(obs);
-        final Observer mockObserver = Mockito.mock(Observer.class);
-        harvester.addObserver(mockObserver);
-        harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS).build(), rh);
-
-        inOrderVerify(rh).onHarvestStart(
-                NotificationMatchers.harvestStarted());
-        inOrderVerify(mockObserver).update(eq(harvester),
-                NotificationMatchers.harvestStarted());
-        inOrderVerify(rh).onResponseReceived(
-                NotificationMatchers.responseReceived());
-        inOrderVerify(mockObserver).update(eq(harvester),
-                NotificationMatchers.responseReceived());
-        inOrderVerify(rh).onResponseProcessed(
-                NotificationMatchers.responseProcessedSuccessfully());
-        inOrderVerify(mockObserver).update(eq(harvester),
-                NotificationMatchers.responseProcessedSuccessfully());
-
-        final Supplier<HarvestNotification> lastNotification = () -> {
-            return AdditionalMatchers.and(
-                    NotificationMatchers.withStats(1, 1),
-                    Mocks.matcherFromPredicate(
-                            (hn) -> {
-                                return hn.getType() == HARVEST_ENDED &&
-                                        !hn.isRunning() &&
-                                        hn.isExplicitlyStopped() &&
-                                        !hn.hasError();
-                            },
-                            HarvestNotification.class));
-        };
-
-        // Harvest ends. Second incomplete list not retrieved.
-        inOrderVerify(rh).onHarvestEnd(lastNotification.get());
-        inOrderVerify(mockObserver).update(eq(harvester),
-                lastNotification.get());
     }
 
     /**

@@ -1,7 +1,6 @@
 package org.unizin.cmp.oai.harvester;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
@@ -17,16 +16,11 @@ import org.apache.http.HttpStatus;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 import freemarker.template.TemplateException;
 
 public class Tests {
-    public static interface FunctionThatThrows {
-        void apply() throws Exception;
-    }
-
     public static final int DEFAULT_WIREMOCK_PORT = 9000;
     public static final int WIREMOCK_PORT = Integer.parseInt(
             System.getProperty("wiremock.port",
@@ -77,7 +71,8 @@ public class Tests {
     public static final String URL_PATTERN_WITHOUT_RESUMPTION_TOKEN =
             "^.*\\?(?:(?!resumptionToken).)*$";
 
-    public static String urlResmptionTokenPattern(final String resumptionToken) {
+    public static String urlResmptionTokenPattern(
+            final String resumptionToken) {
         return "^.*" + LITERAL_QM + ".*resumptionToken=" +
                 Pattern.quote(resumptionToken) + ".*$";
     }
@@ -92,12 +87,6 @@ public class Tests {
 
     public static WireMockRule newWireMockRule() {
         return new WireMockRule(WIREMOCK_PORT);
-    }
-
-    public static WireMockServer newWireMockServer() {
-        final WireMockServer server = new WireMockServer(WIREMOCK_PORT);
-        configureFor(WIREMOCK_PORT);
-        return server;
     }
 
     public static void createWiremockStubForOKGetResponse(
@@ -116,17 +105,6 @@ public class Tests {
                 .willReturn(aResponse()
                         .withStatus(statusCode)
                         .withBody(responseBody)));
-    }
-
-    public static void testWithWiremockServer(final FunctionThatThrows test)
-            throws Exception {
-        final WireMockServer server = newWireMockServer();
-        try {
-            server.start();
-            test.apply();
-        } finally {
-            server.stop();
-        }
     }
 
     public static String setupWithDefaultError()

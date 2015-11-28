@@ -134,8 +134,10 @@ public final class HarvestParams {
 
         this.baseURI = baseURI;
         this.verb = verb;
-        this.standardParameters = Collections.unmodifiableMap(standardParameters);
-        this.nonstandardParameters = Collections.unmodifiableMap(nonstandardParameters);
+        this.standardParameters = Collections.unmodifiableMap(
+                standardParameters);
+        this.nonstandardParameters = Collections.unmodifiableMap(
+                nonstandardParameters);
 
         final Map<String, String> p = new HashMap<>(standardParameters);
         p.putAll(nonstandardParameters);
@@ -172,12 +174,15 @@ public final class HarvestParams {
         return parameters.get(param);
     }
 
-    public HarvestParams getRetryParameters(final ResumptionToken resumptionToken) {
+    public HarvestParams getRetryParameters(
+            final ResumptionToken resumptionToken) {
         if (resumptionToken != null) {
-            final Map<String, String> standard = new HashMap<>(standardParameters);
+            final Map<String, String> standard = new HashMap<>(
+                    standardParameters);
             standard.put(OAIRequestParameter.RESUMPTION_TOKEN.paramName(),
                     resumptionToken.getToken());
-            return new HarvestParams(baseURI, verb, standard, nonstandardParameters);
+            return new HarvestParams(baseURI, verb, standard,
+                    nonstandardParameters);
         }
         return this;
     }
