@@ -14,11 +14,14 @@ import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.IOUtils;
-import org.unizin.cmp.oai.harvester.TestListResponses;
+import org.unizin.cmp.oai.harvester.ListResponses;
 import org.unizin.cmp.oai.harvester.Tests;
-import org.unizin.cmp.oai.mocks.MockHttpClient;
+
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestMergingHandler {
+    @Rule
+    public final WireMockRule wireMock = Tests.newWireMockRule();
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -42,20 +45,14 @@ public final class TestMergingHandler {
 
     @Test
     public void testSingleResponse() throws Exception {
-        Tests.testWithWiremockServer(() -> {
-            Tests.createWiremockStubForOKGetResponse(expected);
-            test(new Harvester.Builder().build(), defaultTestParams().build());
-        });
+        Tests.createWiremockStubForOKGetResponse(expected);
+        test(new Harvester.Builder().build(), defaultTestParams().build());
     }
 
     @Test
     public void testMultipleResponses() throws Exception {
-        final MockHttpClient mockHttpClient = new MockHttpClient();
-        TestListResponses.setupWithDefaultListRecordsResponse(true,
-                mockHttpClient);
-        final Harvester harvester = new Harvester.Builder()
-                .withHttpClient(mockHttpClient)
-                .build();
+        ListResponses.setupWithDefaultListRecordsResponse(true);
+        final Harvester harvester = new Harvester.Builder().build();
         test(harvester, defaultTestParams().build());
     }
 }

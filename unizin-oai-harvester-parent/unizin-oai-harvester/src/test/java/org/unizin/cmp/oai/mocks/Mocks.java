@@ -52,21 +52,26 @@ public final class Mocks {
     }
 
     /**
-    * Shortcut for the commonly-needed {@code inOrder(mock).verify(mock)}.
-    * @param mock a mock object.
-    */
+     * Shortcut for the commonly-needed {@code inOrder(mock).verify(mock)}.
+     *
+     * @param mock
+     *            a mock object.
+     */
     public static <T> T inOrderVerify(final T mock) {
         return inOrder(mock).verify(mock);
     }
 
     /**
-    * Create an argument matcher from a {@link Predicate}.
-    * <p>
-    * The type of the argument will be checked.
-    *
-    * @param predicate the predicate to use for matching.
-    * @param clazz the type of the argument.
-    */
+     * Create an argument matcher from a {@link Predicate}.
+     * <p>
+     * The type of the argument will be checked.
+     * </p>
+     *
+     * @param predicate
+     *            the predicate to use for matching.
+     * @param clazz
+     *            the type of the argument.
+     */
     public static <T> T matcherFromPredicate(
             final Predicate<T> predicate, Class<T> clazz) {
         return Matchers.argThat(new ArgumentMatcher<T>() {

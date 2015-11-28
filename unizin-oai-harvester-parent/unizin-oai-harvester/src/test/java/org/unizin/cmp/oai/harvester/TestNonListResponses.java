@@ -40,7 +40,6 @@ public final class TestNonListResponses {
     public final WireMockRule wireMock = Tests.newWireMockRule();
 
     private static final NamespaceContext OAI_CONTEXT = new NamespaceContext(){
-
         @Override
         public String getNamespaceURI(final String prefix) {
             switch (prefix) {

@@ -4,6 +4,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.unizin.cmp.oai.harvester.Tests.STAX;
 import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
@@ -18,7 +19,13 @@ import java.util.Observer;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.HttpVersion;
+import org.apache.http.StatusLine;
+import org.apache.http.client.HttpClient;
+import org.apache.http.message.BasicStatusLine;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +36,6 @@ import org.unizin.cmp.oai.harvester.Tests.STAX_LIB;
 import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
-import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
@@ -121,6 +127,7 @@ public final class TestOAIProtocolErrorHandling {
      * <p>
      * Somewhat obviously, only errors that are processed before the XML parse
      * error occurred can be reported.
+     * </p>
      */
     @Test
     public void testPriorityOverParseErrors() throws Exception {
@@ -154,17 +161,26 @@ public final class TestOAIProtocolErrorHandling {
      * Tests that, if a stream containing an error response from the server
      * throws an {@link IOException} when closed, that this exception is added
      * as a suppressed exception to the {@code OAIProtocolException}.
+     * <p>
+     * Does not use WireMock.
+     * </p>
      */
     @Test
     public void testPriorityOverStreamClosingErrors() throws Exception {
         final String arbitraryValidOAIResponse = ErrorsTemplate.process();
-        final InputStream stream = IOUtils.streamFromString(
-                arbitraryValidOAIResponse);
-        final MockHttpClient mockHttpClient = new MockHttpClient();
-        mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "",
-                Mocks.throwsWhenClosed(stream));
+        InputStream stream = Mocks.throwsWhenClosed(IOUtils.streamFromString(
+                arbitraryValidOAIResponse));
+        final HttpClient httpClient = mock(HttpClient.class);
+        final HttpResponse response = mock(HttpResponse.class);
+        final HttpEntity entity = mock(HttpEntity.class);
+        final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
+                HttpStatus.SC_OK, "");
+        when(response.getStatusLine()).thenReturn(sl);
+        when(response.getEntity()).thenReturn(entity);
+        when(entity.getContent()).thenReturn(stream);
+        when(httpClient.execute(any())).thenReturn(response);
         final Harvester harvester = new Harvester.Builder()
-                .withHttpClient(mockHttpClient)
+                .withHttpClient(httpClient)
                 .build();
         exception.expect(OAIProtocolException.class);
         try {
