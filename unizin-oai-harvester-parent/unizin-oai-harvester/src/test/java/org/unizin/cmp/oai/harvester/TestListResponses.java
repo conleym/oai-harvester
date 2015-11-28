@@ -21,9 +21,7 @@ import java.util.Observer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.apache.http.HttpStatus;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,34 +36,24 @@ import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
-import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 import org.unizin.cmp.oai.templates.ListRecordsTemplate;
 import org.unizin.cmp.oai.templates.RecordMetadataTemplate;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
 import freemarker.template.TemplateException;
 
 public final class TestListResponses {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TestListResponses.class);
+    @Rule
+    public final WireMockRule wireMock = Tests.newWireMockRule();
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
-
-    private MockHttpClient mockHttpClient;
-
-    @Before
-    public void initMockHttpClient() {
-        mockHttpClient = new MockHttpClient();
-    }
-
-    private Harvester newHarvester() {
-        return new Harvester.Builder()
-                .withHttpClient(mockHttpClient)
-                .build();
-    }
 
     private void listRecordsTest(final Harvester harvester,
             final long totalResponses,
@@ -76,6 +64,7 @@ public final class TestListResponses {
         harvester.addObserver(obs);
         harvester.start(defaultTestParams().build(), h);
 
+        // Observer and response handler... get harvest started event.
         final Supplier<HarvestNotification> hrvStarted = () -> {
             return AdditionalMatchers.and(
                     NotificationMatchers.harvestStarted(),
@@ -83,6 +72,9 @@ public final class TestListResponses {
         };
         inOrderVerify(h).onHarvestStart(hrvStarted.get());
         inOrderVerify(obs).update(eq(harvester), hrvStarted.get());
+
+        /* ... get each response received & processed notifications w/ the
+         * right stats and tokens for all but the last response. */
         ResumptionToken previousToken = null;
         final Iterator<ResumptionToken> tokenIterator =
                 resumptionTokens.iterator();
@@ -111,6 +103,7 @@ public final class TestListResponses {
             inOrderVerify(obs).update(eq(harvester), respProcd.apply(request));
             inOrderVerify(h).onResponseProcessed(respProcd.apply(request));
         }
+        // ... get appropriate last response received/processed notifications.
         final ResumptionToken tok = tokenIterator.next();
         final Supplier<HarvestNotification> lastRespRcvd = () -> {
             return AdditionalMatchers.and(
@@ -123,6 +116,7 @@ public final class TestListResponses {
         inOrderVerify(h).onResponseProcessed(lastRespRcvd.get());
         inOrderVerify(obs).update(eq(harvester), lastRespRcvd.get());
 
+        // ... get harvest ended event.
         final Supplier<HarvestNotification> hrvEnded = () -> {
             return AdditionalMatchers.and(
                     NotificationMatchers.harvestEndedSuccessfully(),
@@ -141,9 +135,9 @@ public final class TestListResponses {
      */
     @Test
     public void testListRecords() throws Exception {
-        setupWithDefaultListRecordsResponse(true, mockHttpClient);
-        listRecordsTest(newHarvester(), DEFAULT_RESPONSE_COUNT,
-                RESUMPTION_TOKENS);
+        setupWithDefaultListRecordsResponse(true);
+        listRecordsTest(new Harvester.Builder().build(),
+                DEFAULT_RESPONSE_COUNT, RESUMPTION_TOKENS);
     }
 
     /**
@@ -152,9 +146,10 @@ public final class TestListResponses {
      */
     @Test
     public void testListRecordsWithNoFinalResumptionToken() throws Exception {
-        setupWithDefaultListRecordsResponse(false, mockHttpClient);
-        listRecordsTest(newHarvester(), DEFAULT_RESPONSE_COUNT,
-                Arrays.asList(FIRST_TOKEN, new ResumptionToken("")));
+        setupWithDefaultListRecordsResponse(false);
+        listRecordsTest(new Harvester.Builder().build(),
+                DEFAULT_RESPONSE_COUNT, Arrays.asList(FIRST_TOKEN,
+                        new ResumptionToken("")));
     }
 
     /**
@@ -163,24 +158,31 @@ public final class TestListResponses {
      */
     @Test
     public void testListRecordsWithBadResumptionToken() throws Exception {
+        // Build first response. No errors, just a record.
         final ListRecordsTemplate lrt = new ListRecordsTemplate()
                 .withResumptionToken(toMap(FIRST_TOKEN));
         final Map<String, Object> record = new HashMap<>();
         record.put("metadata", new RecordMetadataTemplate().process());
         lrt.addRecord(record);
-        final String firstResp = lrt.process();
-        LOGGER.debug("First response: {}", firstResp);
-        mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", firstResp);
+        final String firstResponse = lrt.process();
+        LOGGER.debug("First response: {}", firstResponse);
+
+        // Build second response w/ bad resumption token OAI protocol error.
         final List<OAIError> errors = Arrays.asList(new OAIError(
                 OAIErrorCode.BAD_RESUMPTION_TOKEN.code(),
                 "A helpful message."));
-        final String secondResp = ErrorsTemplate.process(errors);
-        LOGGER.debug("Second response: {}", secondResp);
-        mockHttpClient.addResponseFrom(HttpStatus.SC_OK, "", secondResp);
+        final String secondResponse = ErrorsTemplate.process(errors);
+        LOGGER.debug("Second response: {}", secondResponse);
+        final Map<String, String> subsequentResponses = new HashMap<>(1);
+        subsequentResponses.put(FIRST_TOKEN.getToken(), secondResponse);
+        // WireMock setup with the given responses....
+        ListResponses.setupResponses(firstResponse, subsequentResponses);
+
         exception.expect(OAIProtocolException.class);
         try {
-            newHarvester().start(defaultTestParams(OAIVerb.LIST_RECORDS)
-                    .build(),
+            final HarvestParams params = defaultTestParams(OAIVerb.LIST_RECORDS)
+                    .build();
+            new Harvester.Builder().build().start(params,
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(errors, e.getOAIErrors());
@@ -195,7 +197,7 @@ public final class TestListResponses {
      */
     @Test
     public void testStop() throws Exception {
-        setupWithDefaultListRecordsResponse(true, mockHttpClient);
+        setupWithDefaultListRecordsResponse(true);
         final Observer obs = (o, arg) -> {
             final Harvester h = (Harvester)o;
             final HarvestNotification hn = (HarvestNotification)arg;
@@ -206,13 +208,14 @@ public final class TestListResponses {
         };
 
         final OAIResponseHandler rh = Mocks.newResponseHandler();
-        final Harvester harvester = newHarvester();
+        final Harvester harvester = new Harvester.Builder().build();
         harvester.addObserver(obs);
         final Observer mockObserver = Mockito.mock(Observer.class);
         harvester.addObserver(mockObserver);
         harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS).build(), rh);
 
-        inOrderVerify(rh).onHarvestStart(NotificationMatchers.harvestStarted());
+        inOrderVerify(rh).onHarvestStart(
+                NotificationMatchers.harvestStarted());
         inOrderVerify(mockObserver).update(eq(harvester),
                 NotificationMatchers.harvestStarted());
         inOrderVerify(rh).onResponseReceived(
@@ -230,7 +233,8 @@ public final class TestListResponses {
                     Mocks.matcherFromPredicate(
                             (hn) -> {
                                 return hn.getType() == HARVEST_ENDED &&
-                                        !hn.isRunning() && hn.isExplicitlyStopped() &&
+                                        !hn.isRunning() &&
+                                        hn.isExplicitlyStopped() &&
                                         !hn.hasError();
                             },
                             HarvestNotification.class));
@@ -246,10 +250,11 @@ public final class TestListResponses {
      * Tests that the harvest continues even if an observer throws.
      * <p>
      * Observers really shouldn't throw, but we can't be too careful.
+     * </p>
      */
     public void testObserverException() throws Exception {
-        setupWithDefaultListRecordsResponse(true, mockHttpClient);
-        final Harvester harvester = newHarvester();
+        setupWithDefaultListRecordsResponse(true);
+        final Harvester harvester = new Harvester.Builder().build();
         // Add a badly-behaved observer.
         harvester.addObserver((o, arg) -> {
             throw new RuntimeException(Mocks.TEST_EXCEPTION_MESSAGE);

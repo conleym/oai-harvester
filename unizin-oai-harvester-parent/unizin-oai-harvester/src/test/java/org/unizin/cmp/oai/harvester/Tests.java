@@ -15,7 +15,6 @@ import javax.xml.stream.XMLEventFactory;
 
 import org.apache.http.HttpStatus;
 import org.unizin.cmp.oai.OAIVerb;
-import org.unizin.cmp.oai.mocks.MockHttpClient;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
@@ -73,11 +72,14 @@ public class Tests {
 
     public static final OAIVerb DEFAULT_VERB = OAIVerb.LIST_RECORDS;
 
-    public static String URL_PATTERN_WITHOUT_RESUMPTION_TOKEN =
+    private static final String LITERAL_QM = Pattern.quote("?");
+
+    public static final String URL_PATTERN_WITHOUT_RESUMPTION_TOKEN =
             "^.*\\?(?:(?!resumptionToken).)*$";
 
     public static String urlResmptionTokenPattern(final String resumptionToken) {
-        return "\\?.*resumptionToken=" + Pattern.quote(resumptionToken);
+        return "^.*" + LITERAL_QM + ".*resumptionToken=" +
+                Pattern.quote(resumptionToken) + ".*$";
     }
 
     public static HarvestParams.Builder defaultTestParams() {
@@ -127,11 +129,11 @@ public class Tests {
         }
     }
 
-    public static void setupWithDefaultError(final MockHttpClient mockClient)
+    public static String setupWithDefaultError()
             throws TemplateException, IOException {
-        final String arbitraryValidOAIResponse = ErrorsTemplate.process();
-        mockClient.addResponseFrom(HttpStatus.SC_OK, "",
-                arbitraryValidOAIResponse);
+        final String defaultError = ErrorsTemplate.process();
+        createWiremockStubForOKGetResponse(defaultError);
+        return defaultError;
     }
 
 
