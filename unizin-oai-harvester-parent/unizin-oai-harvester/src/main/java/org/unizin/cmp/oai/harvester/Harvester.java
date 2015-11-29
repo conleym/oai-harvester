@@ -43,8 +43,10 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * </p>
  * <h2>Use in Multiple Threads</h2>
  * <p>
- * Harvester instances can be used in multiple threads by creating a harvester
- * in one thread and running it in another, as in the following simple example:
+ * The harvester itself does not start or manage threads, leaving this up to the
+ * client. Harvester instances can be used in multiple threads by creating a
+ * harvester in one thread and running it in another, as in the following simple
+ * example:
  * </p>
  *
  * <pre>
@@ -54,7 +56,7 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  *   final Harvester har = new Harvester.Builder().build();
  *   // Define your parameters....
  *   final HarvesterParams params = ...;
- *   Thread t = new Thread(() -> {
+ *   Thread t = new Thread(() -&gt; {
  *      // Harvest runs in this thread.
  *      OAIResponseHandler handler = ...;
  *      har.start(params, handler);

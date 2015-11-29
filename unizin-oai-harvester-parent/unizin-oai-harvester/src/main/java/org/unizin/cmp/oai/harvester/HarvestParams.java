@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIDateGranularity;
@@ -27,7 +29,8 @@ public final class HarvestParams {
         private final URI baseURI;
         private final OAIVerb verb;
         private final Map<String, String> standardParameters = new HashMap<>();
-        private final Map<String, String> nonstandardParameters = new HashMap<>();
+        private final Map<String, String> nonstandardParameters =
+                new HashMap<>();
 
         public Builder(final URI baseURI, final OAIVerb verb) {
             this.baseURI = baseURI;
@@ -39,9 +42,32 @@ public final class HarvestParams {
             }
         }
 
+        public Builder withMap(final Map<String, String> parameterMap) {
+            parameterMap.entrySet().forEach((e) -> {
+                if (e.getKey() == OAI2Constants.VERB_PARAM_NAME) {
+                    if (OAIVerb.valueOf(e.getValue()) != verb) {
+                        throw new IllegalArgumentException(String.format(
+                                "Inconsistent verbs. Expected %s (or none),"
+                                + " but got %s.",
+                                verb, e.getValue()));
+                    }
+                    /* Don't bother adding the verb. */
+                    return;
+                }
+                try {
+                    OAIRequestParameter.valueOf(e.getKey());
+                    standardParameters.put(e.getKey(), e.getValue());
+                } catch (final IllegalArgumentException iae) {
+                    nonstandardParameters.put(e.getKey(), e.getValue());
+                }
+            });
+            return this;
+        }
+
         private void put(final OAIRequestParameter param, final String value) {
-            Objects.requireNonNull(value);
-            standardParameters.put(param.paramName(), value);
+            if (param != null && value != null) {
+                standardParameters.put(param.paramName(), value);
+            }
         }
 
         public Builder withFrom(final TemporalAccessor from,
@@ -121,7 +147,7 @@ public final class HarvestParams {
     private final OAIVerb verb;
     private final Map<String, String> standardParameters;
     private final Map<String, String> nonstandardParameters;
-    private final Map<String, String> parameters;
+    private final SortedMap<String, String> parameters;
 
 
     private HarvestParams(final URI baseURI, final OAIVerb verb,
@@ -138,11 +164,14 @@ public final class HarvestParams {
                 standardParameters);
         this.nonstandardParameters = Collections.unmodifiableMap(
                 nonstandardParameters);
-
-        final Map<String, String> p = new HashMap<>(standardParameters);
+        /*
+         * Sorted to get predictable, reproducible ordering. This will make
+         * debugging easier.
+         */
+        final SortedMap<String, String> p = new TreeMap<>(standardParameters);
         p.putAll(nonstandardParameters);
         p.put(OAI2Constants.VERB_PARAM_NAME, verb.localPart());
-        this.parameters = Collections.unmodifiableMap(p);
+        this.parameters = Collections.unmodifiableSortedMap(p);
     }
 
     public URI getBaseURI() {
@@ -160,9 +189,10 @@ public final class HarvestParams {
      */
     public boolean areValid() {
         return verb.areValidParameters(standardParameters);
+
     }
 
-    public Map<String, String> getParameters() {
+    public SortedMap<String, String> getParameters() {
         return parameters;
     }
 

@@ -66,13 +66,15 @@ public final class HarvestNotification {
     private final Instant lastResponseDate;
     private final HarvestParams params;
     private final Map<HarvestStatistic, Long> stats;
+    private final URI lastRequestURI;
 
     HarvestNotification(final HarvestNotificationType type,
             final State state, final Exception exception,
             final ResumptionToken resumptionToken,
             final Instant lastResponseDate,
             final HarvestParams params,
-            final Map<HarvestStatistic, Long> stats) {
+            final Map<HarvestStatistic, Long> stats,
+            final URI lastRequestURI) {
         this.type = type;
         this.running = state.running;
         this.explicitlyStopped = state.explicitlyStopped;
@@ -83,6 +85,7 @@ public final class HarvestNotification {
         this.lastResponseDate = lastResponseDate;
         this.params = params;
         this.stats = Collections.unmodifiableMap(stats);
+        this.lastRequestURI = lastRequestURI;
     }
 
     /**
@@ -143,6 +146,10 @@ public final class HarvestNotification {
         return params;
     }
 
+    public URI getLastRequestURI() {
+        return lastRequestURI;
+    }
+
     @Override
     public String toString() {
         return new StringBuilder(this.getClass().getName())
@@ -154,6 +161,7 @@ public final class HarvestNotification {
                 .append(", exception=").append(exception)
                 .append(", resumptionToken=").append(resumptionToken)
                 .append(", lastResponseDate=").append(lastResponseDate)
+                .append(", lastRequestURI=").append(lastRequestURI)
                 .append(", stats=").append(stats).append("]")
                 .toString();
     }

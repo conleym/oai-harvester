@@ -64,7 +64,8 @@ final class Harvest {
         stats.put(HarvestStatistic.RESPONSE_COUNT, responseCount);
         stats.put(HarvestStatistic.XML_EVENT_COUNT, xmlEventCount);
         return new HarvestNotification(type, state, exception,
-                resumptionToken, lastResponseDate, params, stats);
+                resumptionToken, lastResponseDate, params, stats,
+                request.getURI());
     }
 
     void setLastResponseDate(final Instant lastResponseDate) {
