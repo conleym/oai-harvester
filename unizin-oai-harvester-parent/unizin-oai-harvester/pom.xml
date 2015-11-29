@@ -13,7 +13,7 @@
   <packaging>jar</packaging>
 
   <name>Unizin OAI Harvester Library</name>
-  <description>OAI-PMH code to harvest metadata from OAI-PMH-compliant repositories.</description>
+  <description>Library for harvesting metadata from OAI-PMH-compliant repositories.</description>
 
   <build>
     <plugins>

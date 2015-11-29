@@ -8,6 +8,7 @@
   </parent>
   <artifactId>unizin-oai-harvest-service</artifactId>
   <name>Unizin OAI Harvester Service</name>
+  <description>Dropwizard web service for harvesting metadata</description>
 
   <properties>
     <dropwizard.version>0.9.1</dropwizard.version>

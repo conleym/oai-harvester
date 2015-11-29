@@ -238,7 +238,8 @@ public final class HarvestJob {
             final Timeout pollTimeout,
             final int batchSize,
             final List<HarvestParams> harvestParams,
-            final List<Observer> harvestObservers) throws NoSuchAlgorithmException {
+            final List<Observer> harvestObservers)
+                    throws NoSuchAlgorithmException {
         Objects.requireNonNull(httpClient, "httpClient");
         Objects.requireNonNull(mapper, "mapper");
         Objects.requireNonNull(harvestedRecordQueue, "harvestedRecordQueue");
@@ -275,7 +276,8 @@ public final class HarvestJob {
     }
 
     private Runnable createHarvestRunnable(final HarvestParams params,
-            final Iterable<Observer> observers) throws NoSuchAlgorithmException {
+            final Iterable<Observer> observers)
+                    throws NoSuchAlgorithmException {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(httpClient)
                 .build();
