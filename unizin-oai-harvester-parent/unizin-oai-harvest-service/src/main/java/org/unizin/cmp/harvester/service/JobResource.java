@@ -58,6 +58,8 @@ public final class JobResource {
     private final ExecutorService executor;
     private final ConcurrentMap<String, JobStatus> jobStatus =
             new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, HarvestJob> jobs =
+            new ConcurrentHashMap<>();
 
 
     public JobResource(final DataSource ds,
@@ -122,13 +124,14 @@ public final class JobResource {
                     .entity(m).build();
         }
         final String jobName = nextJobName();
-        jobStatus.put(jobName, new JobStatus());
         final Observer observeHarvests = (o, arg) -> {
             harvestUpdate(jobName, o, arg);
         };
         final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
                 jobName, h.valid, Collections.singletonList(observeHarvests));
         job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
+        jobStatus.put(jobName, new JobStatus());
+        jobs.put(jobName, job);
         try {
             executor.submit(() -> {
                 MDC.put("jobName", jobName);
@@ -156,14 +159,13 @@ public final class JobResource {
     }
 
     @PUT
-    @Path("{jobID}/cancel")
-    public Response cancel(final @PathParam("jobID") String jobID) {
-        return Response.ok().build();
-    }
-
-    @PUT
     @Path("{jobID}/stop")
     public Response stop(final @PathParam("jobID") String jobID) {
+        final HarvestJob job = jobs.get(jobID);
+        if (job == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        job.stop();
         return Response.ok().build();
     }
 
