@@ -1,5 +1,6 @@
 package org.unizin.cmp.harvester.service;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.sql.DataSource;
@@ -43,7 +44,8 @@ extends Application<HarvestServiceConfiguration> {
     private DynamoDBMapper dynamoDBMapper;
 
     @Override
-    public void initialize(final Bootstrap<HarvestServiceConfiguration> bootstrap) {
+    public void initialize(
+            final Bootstrap<HarvestServiceConfiguration> bootstrap) {
         super.initialize(bootstrap);
         this.bootstrap = bootstrap;
     }
@@ -68,7 +70,6 @@ extends Application<HarvestServiceConfiguration> {
     }
 
     private void createDynamoDBTable(final DynamoDBConfiguration config) {
-        // Throughput: ignored by local, but still required.
         final ProvisionedThroughput throughput = config.buildThroughput();
         final StreamSpecification streamSpec = new StreamSpecification()
                 .withStreamEnabled(true)
@@ -85,6 +86,16 @@ extends Application<HarvestServiceConfiguration> {
         }
     }
 
+    private void startH2Servers(final HarvestServiceConfiguration conf,
+            final Environment env) throws Exception {
+        final List<ManagedH2Server> managed = conf
+                .getH2ServerConfiguration()
+                .build();
+        for (final ManagedH2Server server : managed) {
+            env.lifecycle().manage(server);
+        }
+    }
+
     @Override
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
@@ -97,6 +108,7 @@ extends Application<HarvestServiceConfiguration> {
         final DynamoDBConfiguration dynamo = conf.getDynamoDBConfiguration();
         createMapper(dynamo);
         createDynamoDBTable(dynamo);
+        startH2Servers(conf, env);
         final JobResource jr = new JobResource(ds, conf.getJobConfiguration(),
                 httpClient, dynamoDBMapper, executor);
         env.jersey().register(jr);

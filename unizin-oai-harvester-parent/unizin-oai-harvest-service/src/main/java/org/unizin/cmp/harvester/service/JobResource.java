@@ -144,7 +144,8 @@ public final class JobResource {
     }
 
     @GET
-    public Response allJobs() {
+    @Path("running")
+    public Response runningJobs() {
         return Response.ok(jobStatus).build();
     }
 

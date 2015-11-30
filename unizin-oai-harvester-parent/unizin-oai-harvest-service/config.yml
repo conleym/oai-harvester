@@ -1,8 +1,8 @@
 database:
   driverClass: org.h2.Driver
-  url: jdbc:h2:/tmp/oai-harvester-database
-  user: ab
-  password: b
+  url: jdbc:h2:/tmp/oai-harvester-database;JMX=true
+  user: user
+  password: password
   validationQuery: SELECT 1
   validationQueryTimeout: 1s
   logValidationErrors: true
@@ -13,6 +13,10 @@ database:
   checkConnectionOnConnect: true
   checkConnectionOnReturn: true
   autoCommentsEnabled: false
+
+h2Server:
+  jdbcPort: 6767
+  webPort: 6969
 
 job:
   batchSize: 25
