@@ -18,6 +18,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
+import com.amazonaws.services.dynamodbv2.model.StreamSpecification;
+import com.amazonaws.services.dynamodbv2.model.StreamViewType;
 import com.codahale.metrics.MetricRegistry;
 
 import io.dropwizard.Application;
@@ -68,9 +70,13 @@ extends Application<HarvestServiceConfiguration> {
     private void createDynamoDBTable(final DynamoDBConfiguration config) {
         // Throughput: ignored by local, but still required.
         final ProvisionedThroughput throughput = config.buildThroughput();
+        final StreamSpecification streamSpec = new StreamSpecification()
+                .withStreamEnabled(true)
+                .withStreamViewType(StreamViewType.NEW_IMAGE);
         final CreateTableRequest req = dynamoDBMapper
                 .generateCreateTableRequest(HarvestedOAIRecord.class)
-                .withProvisionedThroughput(throughput);
+                .withProvisionedThroughput(throughput)
+                .withStreamSpecification(streamSpec);
         try {
             dynamoDBClient.createTable(req);
         } catch (final ResourceInUseException e) {
