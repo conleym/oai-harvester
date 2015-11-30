@@ -16,8 +16,10 @@ database:
 
 job:
   batchSize: 25
-  minThreads: 2
+  minThreads: 100
   maxThreads: 1000
+  recordQueueCapacity: 100
+  workQueueCapacity: 1
 
 httpClient:
   maxConnections: 2048
@@ -50,3 +52,4 @@ logging:
     - type: console
       threshold: TRACE
       target: stdout
+      logFormat: "%level [%date][%thread][%mdc] %logger: %message %n%rEx"

@@ -1,42 +1,64 @@
 package org.unizin.cmp.harvester.service;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Observer;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.sql.DataSource;
-import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
+import org.jboss.logging.MDC;
 import org.unizin.cmp.harvester.job.HarvestJob;
-import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.harvester.job.JobNotification;
 import org.unizin.cmp.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.OAIVerb;
+import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestParams;
+import org.unizin.cmp.oai.harvester.Harvester;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBScanExpression;
 
-@Path("/job")
+@Path(JobResource.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 public final class JobResource {
+
+    private static final class Harvests {
+        List<Map<String, String>> invalid = new ArrayList<>();
+        List<HarvestParams> valid = new ArrayList<>();
+    }
+
+    public static final String PATH = "/job/";
+
 
     private final DataSource ds;
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
     private final ExecutorService executor;
+    private final ConcurrentMap<String, JobStatus> jobStatus =
+            new ConcurrentHashMap<>();
+
 
     public JobResource(final DataSource ds,
             final HarvestJobConfiguration jobConfig,
@@ -50,50 +72,117 @@ public final class JobResource {
         this.executor = executor;
     }
 
-    @Path("/dynamoCount")
-    @GET
-    public int countRecords() {
-        return mapper.count(HarvestedOAIRecord.class, new DynamoDBScanExpression());
+
+    private String nextJobName() {
+        return UUID.randomUUID().toString();
     }
 
-    @Path("/listRecords")
+    private OAIVerb verbOf(final String string) {
+        switch(string) {
+        case "ListRecords": return OAIVerb.LIST_RECORDS;
+        case "GetRecord": return OAIVerb.GET_RECORD;
+        default: return null;
+        }
+    }
+
+    private Harvests params(final List<Map<String, String>> harvests) {
+        final Harvests h = new Harvests();
+        for (final Map<String, String> harvest : harvests) {
+            final OAIVerb verb = verbOf(harvest.remove("verb"));
+            if (verb == null) {
+                h.invalid.add(harvest);
+                continue;
+            }
+            try {
+                final URI baseURI = new URI(harvest.remove("baseURI"));
+                final HarvestParams params = new HarvestParams.Builder(baseURI,
+                        verb).withMap(harvest).build();
+                if (! params.areValid()) {
+                    h.invalid.add(harvest);
+                } else {
+                    h.valid.add(params);
+                }
+            } catch (final URISyntaxException e) {
+                h.invalid.add(harvest);
+                continue;
+            }
+        }
+        return h;
+    }
+
     @POST
-    public Map<String, Object> createJob(
-            @NotNull @QueryParam("baseURI") final URI uri,
-            @QueryParam("metadataPrefix") final String metadataPrefix,
-            @QueryParam("set") final String set,
-            @QueryParam("from") final String from,
-            @QueryParam("until") final String until)
-                    throws NoSuchAlgorithmException {
-        final HarvestParams.Builder builder = new HarvestParams.Builder(uri,
-                OAIVerb.LIST_RECORDS);
-        if (metadataPrefix != null) {
-            builder.withMetadataPrefix(metadataPrefix);
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response newJob(final List<Map<String, String>> request)
+            throws NoSuchAlgorithmException, URISyntaxException {
+        final Harvests h = params(request);
+        if (!h.invalid.isEmpty()) {
+            final Map<String, Object> m = new HashMap<>(1);
+            m.put("invalidHarvests", h.invalid);
+            return Response.status(Status.BAD_REQUEST)
+                    .entity(m).build();
         }
-        if (from != null) {
-            builder.withFrom(from);
-        }
-        if (until != null) {
-            builder.withUntil(until);
-        }
-        if (set != null) {
-            builder.withSet(set);
-        }
-        if (!builder.isValid()) {
-            throw new WebApplicationException(HttpStatus.SC_BAD_REQUEST);
-        }
+        final String jobName = nextJobName();
+        jobStatus.put(jobName, new JobStatus());
+        final Observer observeHarvests = (o, arg) -> {
+            harvestUpdate(jobName, o, arg);
+        };
         final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
-                Collections.singletonList(builder.build()),
-                Collections.emptyList());
-        executor.submit(job::start);
-        return Collections.emptyMap();
+                jobName, h.valid, Collections.singletonList(observeHarvests));
+        job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
+        try {
+            executor.submit(() -> {
+                MDC.put("jobName", jobName);
+                job.start();
+            });
+        } catch (RejectedExecutionException e) {
+            return Response.status(Status.SERVICE_UNAVAILABLE).build();
+        }
+        return Response.created(new URI(PATH + jobName)).build();
     }
 
+    @GET
+    public Response allJobs() {
+        return Response.ok(jobStatus).build();
+    }
 
     @GET
-    public Map<String, Object> status() {
-        return new HashMap<String, Object>(){{
-            put("HELLO", 27);
-        }};
+    @Path("{jobID}")
+    public Response status(final @PathParam("jobID") String jobID) {
+        final Object status = jobStatus.get(jobID);
+        if (status == null) {
+            return Response.status(Status.NOT_FOUND).build();
+        }
+        return Response.ok(status).build();
+    }
+
+    @PUT
+    @Path("{jobID}/cancel")
+    public Response cancel(final @PathParam("jobID") String jobID) {
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("{jobID}/stop")
+    public Response stop(final @PathParam("jobID") String jobID) {
+        return Response.ok().build();
+    }
+
+    private void jobUpdate(final String jobName, final Object o,
+            final Object arg) {
+        if (o instanceof HarvestJob && arg instanceof JobNotification) {
+            final JobNotification notification = (JobNotification)arg;
+            final JobStatus status = jobStatus.get(jobName);
+            status.jobUpdate((HarvestJob)o, notification);
+            jobStatus.put(jobName, status);
+        }
+    }
+
+    private void harvestUpdate(final String jobName, final Object o,
+            final Object arg) {
+        if (o instanceof Harvester && arg instanceof HarvestNotification) {
+            final JobStatus status = jobStatus.get(jobName);
+            status.harvestUpdate((Harvester)o, (HarvestNotification)arg);
+            jobStatus.put(jobName, status);
+        }
     }
 }

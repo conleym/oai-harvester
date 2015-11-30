@@ -1,5 +1,6 @@
 package org.unizin.cmp.harvester.job;
 
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import org.unizin.cmp.harvester.job.JobNotification.JobNotificationType;
 import org.unizin.cmp.harvester.job.JobNotification.JobStatistic;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
+import org.unizin.cmp.oai.harvester.OAIRequestFactory;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 import com.amazonaws.AmazonClientException;
@@ -63,7 +65,6 @@ public final class HarvestJob extends Observable {
         }
     }
 
-
     public static final class Builder {
         /**
          * Default batch size is the maximum the DynamoDB mapper will try to
@@ -82,6 +83,7 @@ public final class HarvestJob extends Observable {
         private HttpClient httpClient;
         private BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
         private ExecutorService executorService;
+        private String name;
         private List<HarvestParams> harvestParams;
         private List<Observer> harvestObservers;
 
@@ -138,6 +140,11 @@ public final class HarvestJob extends Observable {
             return this;
         }
 
+        public Builder withName(final String name) {
+            this.name = name;
+            return this;
+        }
+
         public Builder withHarvestObservers(final Observer...observers) {
             harvestObservers = Arrays.asList(observers);
             return this;
@@ -148,7 +155,8 @@ public final class HarvestJob extends Observable {
             return this;
         }
 
-        public HarvestJob build() throws NoSuchAlgorithmException {
+        public HarvestJob build() throws NoSuchAlgorithmException,
+            URISyntaxException {
             if (httpClient == null) {
                 httpClient = Harvester.defaultHttpClient()
                         .setDefaultHeaders(DEFAULT_HEADERS)
@@ -175,7 +183,7 @@ public final class HarvestJob extends Observable {
             }
             return new HarvestJob(httpClient, mapper, harvestedRecordQueue,
                     executorService, offerTimeout, pollTimeout, batchSize,
-                    harvestParams, harvestObservers);
+                    name, harvestParams, harvestObservers);
         }
     }
 
@@ -197,6 +205,7 @@ public final class HarvestJob extends Observable {
     private final Timeout offerTimeout;
     private final Timeout pollTimeout;
     private final int batchSize;
+    private final String name;
     private final RunningHarvesters runningHarvesters =
             new RunningHarvesters();
     private final State state = new State();
@@ -232,6 +241,10 @@ public final class HarvestJob extends Observable {
      *            chunks for its own purposes, so this number does not
      *            necessarily reflect the number of records updated per DynamoDB
      *            API request.
+     * @param name
+     *            the name of this job. The name will be reported in job
+     *            notifications and will be placed in the {@link MDC} of each
+     *            harvest's thread for tracking purposes.
      * @param harvestParams
      *            list of harvest parameters. A new producer thread will be
      *            created and started for each of these when {@link #start()} is
@@ -243,6 +256,9 @@ public final class HarvestJob extends Observable {
      * @throws NoSuchAlgorithmException
      *             in the extraordinary event that the JVM in which this is
      *             executed does not support the <tt>MD5</tt> digest algorithm.
+     * @throws URISyntaxException
+     *             if a harvest in this batch has parameters that would produce
+     *             an invalid URI.
      */
     public HarvestJob(final HttpClient httpClient,
             final DynamoDBMapper mapper,
@@ -251,9 +267,10 @@ public final class HarvestJob extends Observable {
             final Timeout offerTimeout,
             final Timeout pollTimeout,
             final int batchSize,
+            final String name,
             final List<HarvestParams> harvestParams,
             final List<Observer> harvestObservers)
-                    throws NoSuchAlgorithmException {
+                    throws NoSuchAlgorithmException, URISyntaxException {
         Objects.requireNonNull(httpClient, "httpClient");
         Objects.requireNonNull(mapper, "mapper");
         Objects.requireNonNull(harvestedRecordQueue, "harvestedRecordQueue");
@@ -270,6 +287,7 @@ public final class HarvestJob extends Observable {
         this.offerTimeout = offerTimeout;
         this.pollTimeout = pollTimeout;
         this.batchSize = batchSize;
+        this.name = name;
 
         for (final HarvestParams hp: harvestParams) {
             final Runnable r = createHarvestRunnable(hp, harvestObservers);
@@ -291,18 +309,23 @@ public final class HarvestJob extends Observable {
 
     private Runnable createHarvestRunnable(final HarvestParams params,
             final Iterable<Observer> observers)
-                    throws NoSuchAlgorithmException {
+                    throws NoSuchAlgorithmException, URISyntaxException {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(httpClient)
                 .build();
         observers.forEach(harvester::addObserver);
         final OAIResponseHandler handler = new JobOAIResponseHandler(
                 params.getBaseURI(), harvestedRecordQueue, offerTimeout);
+        final String harvestName = OAIRequestFactory.buildURI(
+                params.getBaseURI(), params.getParameters()).toString();
         final Runnable harvest = () -> {
+            final Map<String, String> tags = new HashMap<>(2);
+            tags.put("jobName", name);
+            tags.put("harvestName", harvestName);
             MDC.put("baseURI", params.getBaseURI().toString());
-            MDC.put("parameters", params.getParameters().toString());
+            tags.forEach((k, v) -> MDC.put(k, v));
             try {
-                harvester.start(params, handler);
+                harvester.start(params, handler, tags);
             } catch (final Exception e) {
                 LOGGER.error("Error in harvester thread.", e);
             }
@@ -318,7 +341,7 @@ public final class HarvestJob extends Observable {
         stats.put(JobStatistic.QUEUE_SIZE, (long)harvestedRecordQueue.size());
         stats.put(JobStatistic.BATCHES_ATTEMPTED, state.batchesAttempted);
         final JobNotification notification = new JobNotification(type,
-                state.running, stats, state.exception);
+                name, state.running, stats, state.exception);
         setChanged();
         try {
             notifyObservers(notification);

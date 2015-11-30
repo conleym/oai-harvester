@@ -57,6 +57,7 @@ public final class HarvestNotification {
 
 
     private final HarvestNotificationType type;
+    private final Map<String, String> tags;
     private final boolean running;
     private final boolean explicitlyStopped;
     private final boolean cancelled;
@@ -69,13 +70,12 @@ public final class HarvestNotification {
     private final URI lastRequestURI;
 
     HarvestNotification(final HarvestNotificationType type,
-            final State state, final Exception exception,
-            final ResumptionToken resumptionToken,
-            final Instant lastResponseDate,
-            final HarvestParams params,
-            final Map<HarvestStatistic, Long> stats,
-            final URI lastRequestURI) {
+            final Map<String, String> tags, final State state,
+            final Exception exception, final ResumptionToken resumptionToken,
+            final Instant lastResponseDate, final HarvestParams params,
+            final Map<HarvestStatistic, Long> stats, final URI lastRequestURI) {
         this.type = type;
+        this.tags = tags;
         this.running = state.running;
         this.explicitlyStopped = state.explicitlyStopped;
         this.cancelled = state.cancelled;
@@ -112,6 +112,10 @@ public final class HarvestNotification {
 
     public HarvestNotificationType getType() {
         return type;
+    }
+
+    public Map<String, String> getTags() {
+        return tags;
     }
 
     public ResumptionToken getResumptionToken() {
