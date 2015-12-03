@@ -31,6 +31,7 @@ import org.apache.http.client.HttpClient;
 import org.jboss.logging.MDC;
 import org.unizin.cmp.harvester.job.HarvestJob;
 import org.unizin.cmp.harvester.job.JobNotification;
+import org.unizin.cmp.harvester.job.JobNotification.JobNotificationType;
 import org.unizin.cmp.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
@@ -154,6 +155,7 @@ public final class JobResource {
     public Response status(final @PathParam("jobID") String jobID) {
         final Object status = jobStatus.get(jobID);
         if (status == null) {
+            // TODO check database.
             return Response.status(Status.NOT_FOUND).build();
         }
         return Response.ok(status).build();
@@ -174,9 +176,13 @@ public final class JobResource {
             final Object arg) {
         if (o instanceof HarvestJob && arg instanceof JobNotification) {
             final JobNotification notification = (JobNotification)arg;
-            final JobStatus status = jobStatus.get(jobName);
-            status.jobUpdate((HarvestJob)o, notification);
-            jobStatus.put(jobName, status);
+            if (notification.getType() == JobNotificationType.STOPPED) {
+                jobStatus.remove(jobName);
+            } else {
+                final JobStatus status = jobStatus.get(jobName);
+                status.jobUpdate((HarvestJob)o, notification);
+                jobStatus.put(jobName, status);
+            }
         }
     }
 

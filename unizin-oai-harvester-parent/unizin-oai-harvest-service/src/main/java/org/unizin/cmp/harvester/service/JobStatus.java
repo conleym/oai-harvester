@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class JobStatus {
     // TODO be less lazy. Grab what we want from the notifications.
+    // TODO put what we want into the database, logging but not throwing exceptions.
     @JsonProperty
     private volatile JobNotification lastJobNotification;
     @JsonProperty
