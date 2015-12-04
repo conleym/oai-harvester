@@ -75,44 +75,6 @@ public final class JobResource {
         this.executor = executor;
     }
 
-
-    private String nextJobName() {
-        return UUID.randomUUID().toString();
-    }
-
-    private OAIVerb verbOf(final String string) {
-        switch(string) {
-        case "ListRecords": return OAIVerb.LIST_RECORDS;
-        case "GetRecord": return OAIVerb.GET_RECORD;
-        default: return null;
-        }
-    }
-
-    private Harvests params(final List<Map<String, String>> harvests) {
-        final Harvests h = new Harvests();
-        for (final Map<String, String> harvest : harvests) {
-            final OAIVerb verb = verbOf(harvest.remove("verb"));
-            if (verb == null) {
-                h.invalid.add(harvest);
-                continue;
-            }
-            try {
-                final URI baseURI = new URI(harvest.remove("baseURI"));
-                final HarvestParams params = new HarvestParams.Builder(baseURI,
-                        verb).withMap(harvest).build();
-                if (! params.areValid()) {
-                    h.invalid.add(harvest);
-                } else {
-                    h.valid.add(params);
-                }
-            } catch (final URISyntaxException e) {
-                h.invalid.add(harvest);
-                continue;
-            }
-        }
-        return h;
-    }
-
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response newJob(final List<Map<String, String>> request)
@@ -144,6 +106,66 @@ public final class JobResource {
         return Response.created(new URI(PATH + jobName)).build();
     }
 
+    private static String nextJobName() {
+        return UUID.randomUUID().toString();
+    }
+
+    private static Harvests params(final List<Map<String, String>> harvests) {
+        final Harvests h = new Harvests();
+        for (final Map<String, String> harvest : harvests) {
+            final OAIVerb verb = verbOf(harvest.remove("verb"));
+            if (verb == null) {
+                h.invalid.add(harvest);
+                continue;
+            }
+            try {
+                final URI baseURI = new URI(harvest.remove("baseURI"));
+                final HarvestParams params = new HarvestParams.Builder(baseURI,
+                        verb).withMap(harvest).build();
+                if (! params.areValid()) {
+                    h.invalid.add(harvest);
+                } else {
+                    h.valid.add(params);
+                }
+            } catch (final URISyntaxException e) {
+                h.invalid.add(harvest);
+                continue;
+            }
+        }
+        return h;
+    }
+
+    private static OAIVerb verbOf(final String string) {
+        switch(string) {
+        case "ListRecords": return OAIVerb.LIST_RECORDS;
+        case "GetRecord": return OAIVerb.GET_RECORD;
+        default: return null;
+        }
+    }
+
+    private void jobUpdate(final String jobName, final Object o,
+            final Object arg) {
+        if (o instanceof HarvestJob && arg instanceof JobNotification) {
+            final JobNotification notification = (JobNotification)arg;
+            if (notification.getType() == JobNotificationType.STOPPED) {
+                jobStatus.remove(jobName);
+            } else {
+                final JobStatus status = jobStatus.get(jobName);
+                status.jobUpdate((HarvestJob)o, notification);
+                jobStatus.put(jobName, status);
+            }
+        }
+    }
+
+    private void harvestUpdate(final String jobName, final Object o,
+            final Object arg) {
+        if (o instanceof Harvester && arg instanceof HarvestNotification) {
+            final JobStatus status = jobStatus.get(jobName);
+            status.harvestUpdate((Harvester)o, (HarvestNotification)arg);
+            jobStatus.put(jobName, status);
+        }
+    }
+
     @GET
     @Path("running")
     public Response runningJobs() {
@@ -170,28 +192,5 @@ public final class JobResource {
         }
         job.stop();
         return Response.ok().build();
-    }
-
-    private void jobUpdate(final String jobName, final Object o,
-            final Object arg) {
-        if (o instanceof HarvestJob && arg instanceof JobNotification) {
-            final JobNotification notification = (JobNotification)arg;
-            if (notification.getType() == JobNotificationType.STOPPED) {
-                jobStatus.remove(jobName);
-            } else {
-                final JobStatus status = jobStatus.get(jobName);
-                status.jobUpdate((HarvestJob)o, notification);
-                jobStatus.put(jobName, status);
-            }
-        }
-    }
-
-    private void harvestUpdate(final String jobName, final Object o,
-            final Object arg) {
-        if (o instanceof Harvester && arg instanceof HarvestNotification) {
-            final JobStatus status = jobStatus.get(jobName);
-            status.harvestUpdate((Harvester)o, (HarvestNotification)arg);
-            jobStatus.put(jobName, status);
-        }
     }
 }
