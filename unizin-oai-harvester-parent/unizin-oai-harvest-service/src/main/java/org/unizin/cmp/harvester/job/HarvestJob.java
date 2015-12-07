@@ -3,6 +3,7 @@ package org.unizin.cmp.harvester.job;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -156,7 +157,7 @@ public final class HarvestJob extends Observable {
         }
 
         public HarvestJob build() throws NoSuchAlgorithmException,
-            URISyntaxException {
+        URISyntaxException {
             if (httpClient == null) {
                 httpClient = Harvester.defaultHttpClient()
                         .setDefaultHeaders(DEFAULT_HEADERS)
@@ -194,6 +195,8 @@ public final class HarvestJob extends Observable {
         private long batchesAttempted;
         private long recordsReceived;
         private Exception exception;
+        private Instant start;
+        private Instant end;
     }
 
 
@@ -335,13 +338,22 @@ public final class HarvestJob extends Observable {
 
     private void sendNotification(
             final JobNotificationType type) {
+        switch(type) {
+        case STARTED:
+            state.start = Instant.now();
+            break;
+        case STOPPED:
+            state.end = Instant.now();
+            break;
+        default:
+        }
         final Map<JobStatistic, Long> stats = new HashMap<>(
                 JobStatistic.values().length);
         stats.put(JobStatistic.RECORDS_RECEIVED, state.recordsReceived);
         stats.put(JobStatistic.QUEUE_SIZE, (long)harvestedRecordQueue.size());
         stats.put(JobStatistic.BATCHES_ATTEMPTED, state.batchesAttempted);
-        final JobNotification notification = new JobNotification(type,
-                name, state.running, stats, state.exception);
+        final JobNotification notification = new JobNotification(type, name,
+                state.running, stats, state.exception, state.start, state.end);
         setChanged();
         try {
             notifyObservers(notification);
@@ -449,13 +461,13 @@ public final class HarvestJob extends Observable {
         try {
             // Add the current timestamp to each record before writing.
             final Date batchWritten = new Date();
-            batch.forEach((r) -> r.setHarvestedTimestamp(batchWritten));
+            batch.forEach(r -> r.setHarvestedTimestamp(batchWritten));
 
             final List<FailedBatch> failed = mapper.batchSave(batch);
             if (!failed.isEmpty() && LOGGER.isErrorEnabled()) {
                 final StringBuilder sb = new StringBuilder("Batch failed: "
                         + batch + "\t[");
-                failed.forEach((fb) -> {
+                failed.forEach(fb -> {
                     sb.append(fb.getClass().getName())
                     .append("[unprocessedItems=")
                     .append(fb.getUnprocessedItems())

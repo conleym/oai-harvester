@@ -40,15 +40,6 @@ final class RunningHarvesters {
     }
 
     /**
-     * Stop all running harvests.
-     */
-    void stopAll() {
-        synchronized(lock) {
-            harvesters.forEach(Harvester::stop);
-        }
-    }
-
-    /**
      * Cancel all running harvests.
      */
     void cancelAll() {
@@ -71,7 +62,8 @@ final class RunningHarvesters {
      *            harvest, but clients can do anything.
      * @return a {@code Runnable} as described above.
      */
-    Runnable wrappedRunnable(final Harvester harvester, final Runnable runnable) {
+    Runnable wrappedRunnable(final Harvester harvester,
+            final Runnable runnable) {
         add(harvester);
         return () -> {
             try {
