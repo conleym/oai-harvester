@@ -1,0 +1,54 @@
+database:
+  driverClass: org.h2.Driver
+  url: jdbc:h2:/var/db/oai-harvester-database;JMX=true
+  user: user
+  password: password
+  validationQuery: SELECT 1
+  validationQueryTimeout: 1s
+  logValidationErrors: true
+  minSize: 2
+  maxSize: 32
+  maxWaitForConnection: 1s
+  checkConnectionOnBorrow: true
+  checkConnectionOnConnect: true
+  checkConnectionOnReturn: true
+  autoCommentsEnabled: false
+
+h2Server:
+  jdbcPort: 6767
+
+job:
+  batchSize: 25
+  minThreads: 100
+  maxThreads: 1000
+  recordQueueCapacity: 100
+  workQueueCapacity: 1
+
+httpClient:
+  maxConnections: 2048
+  maxConnectionsPerRoute: 256
+  connectionRequestTimeout: 5s
+  connectionTimeout: 5s
+  timeout: 30s
+  defaultHeaders:
+    from: dev@unizin.org
+
+dynamoDB:
+  region: us-west-2
+  provisionedReadCapacity: 20
+  provisionedWriteCapacity: 20
+
+server:
+    applicationConnectors:
+      - type: http
+        port: 80
+    adminConnectors:
+      - type: http
+        port: 9081
+
+logging:
+  appenders:
+    - type: console
+      threshold: TRACE
+      target: stdout
+      logFormat: "%level [%date][%thread][%mdc] %logger: %message %n%rEx"
