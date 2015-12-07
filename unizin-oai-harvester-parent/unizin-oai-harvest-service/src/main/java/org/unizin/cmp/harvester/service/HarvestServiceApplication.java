@@ -73,7 +73,7 @@ extends Application<HarvestServiceConfiguration> {
         final ProvisionedThroughput throughput = config.buildThroughput();
         final StreamSpecification streamSpec = new StreamSpecification()
                 .withStreamEnabled(true)
-                .withStreamViewType(StreamViewType.NEW_IMAGE);
+                .withStreamViewType(StreamViewType.NEW_AND_OLD_IMAGES);
         final CreateTableRequest req = dynamoDBMapper
                 .generateCreateTableRequest(HarvestedOAIRecord.class)
                 .withProvisionedThroughput(throughput)
