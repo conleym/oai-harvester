@@ -9,10 +9,10 @@ function nullOrUndef(thing) {
 
 function verifyQueues(queues, context) {
   if (nullOrUndef(queues)) {
-    context.fail('`queues` is ', queues);
+    context.fail('`queues` is null or undefined.');
   }
   if (! Array.isArray(queues)) {
-    context.fail('`queues` is not an array: ', queues);
+    context.fail('`queues` is not an array.');
     return false;
   }
   if (queues.length === 0) {
@@ -25,11 +25,11 @@ function verifyQueues(queues, context) {
 
 function verifyEvent(event, context) {
   if (nullOrUndef(event)) {
-    context.fail('`event` is ', event);
+    context.fail('`event` is null or undefined.');
     return false;
   }
   if (! Array.isArray(event.Records)) {
-    context.fail('`event.Records` is not an array: ', event.Records);
+    context.fail('`event.Records` is not an array.');
     return false;
   }
   if (event.Records.length === 0) {
