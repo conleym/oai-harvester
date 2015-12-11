@@ -171,7 +171,7 @@
 
   <modules>
     <module>unizin-oai-harvester</module>
-    <module>simple-importer</module>
+    
     <module>unizin-oai-harvest-service</module>
     <module>dynamodb-trigger-handler</module>
   </modules>
