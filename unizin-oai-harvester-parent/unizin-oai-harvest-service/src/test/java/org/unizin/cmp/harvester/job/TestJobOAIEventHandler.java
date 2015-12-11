@@ -134,10 +134,10 @@ public final class TestJobOAIEventHandler {
                     record.getStatus());
             Assert.assertEquals(expectedValue.get(DATESTAMP_ATTRIB),
                     record.getDatestamp());
-            equals((byte[])expectedValue.get(CHECKSUM_ATTRIB),
-                    record.getChecksum());
             Assert.assertEquals(expectedValue.get(XML_ATTRIB),
                     Tests.decompress(record.getXml()));
+            equals((byte[])expectedValue.get(CHECKSUM_ATTRIB),
+                    record.getChecksum());
         }
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -51,10 +52,15 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         return messageDigest.digest();
     }
 
-    private byte[] createXML(final List<XMLEvent> events)
+    private byte[] createXML(final List<XMLEvent> events,
+            final NamespaceContext enclosingContext)
             throws XMLStreamException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final XMLEventWriter writer = outputFactory.createXMLEventWriter(baos);
+        // Ensure all enclosing namespaces and prefix mappings are present.
+        writer.setNamespaceContext(enclosingContext);
+        // Ensure elements w/o prefixes go in the correct namespace.
+        writer.setDefaultNamespace(enclosingContext.getNamespaceURI(""));
         for (final XMLEvent event : events) {
             writer.add(event);
         }
@@ -97,9 +103,10 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
 
     @Override
     protected void onRecordEnd(final HarvestedOAIRecord currentRecord,
-            final List<XMLEvent> recordEvents) {
+            final List<XMLEvent> recordEvents,
+            final NamespaceContext enclosingContext) {
         try {
-            final byte[] bytes = createXML(recordEvents);
+            final byte[] bytes = createXML(recordEvents, enclosingContext);
             final byte[] checksum = checksum(bytes);
             currentRecord.setXml(compress(bytes));
             currentRecord.setChecksum(checksum);
