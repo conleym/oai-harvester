@@ -63,23 +63,35 @@ function getValue(item, value, type) {
 }
 
 
+function getXML(item) {
+    return getValue(item, 'XML', 'B');
+}
+
+function getChecksum(item) {
+    return getValue(item, 'XMLChecksum', 'B');
+}
+
+
 function verifyNewItem(newItem) {
   console.log('Verifying item: ', newItem);
   var valid = true;
-  if (nullOrUndef(getValue(newItem, 'XML', 'B'))) {
+  if (nullOrUndef(getXML(newItem))) {
+    console.log('Missing XML.');
     valid = false;
   }
   if (nullOrUndef(getValue(newItem, 'BaseUrl'))) {
+    console.log('Missing BaseUrl.');
     valid = false;
   }
   if (nullOrUndef(getValue(newItem, 'Identifier'))) {
+    console.log('Missing Identifier.');
     valid = false;
   }
   return valid;
 }
 
 
-function maybeSendRecord(queues, record, sqsCallback) {
+function maybeSend(queues, record, sqsCallback) {
   console.log('Checking record: ', record);
   if (record.eventSource !== 'aws:dynamodb') {
     console.warn('Not a DynamoDB event -- skipping record.');
@@ -97,43 +109,46 @@ function maybeSendRecord(queues, record, sqsCallback) {
     return;
   }
 
-  var send = true;
-  var oldChecksum = getValue(oldItem, 'XMLChecksum');
-  var newChecksum = getValue(newItem, 'XMLChecksum');
+  var sendThis = true;
+  var oldChecksum = getChecksum(oldItem);
+  var newChecksum = getChecksum(newItem);
   if (nullOrUndef(newChecksum)) {
     console.warn('New item has no checksum -- skipping record.');
-    send = false;
+    sendThis = false;
   }
   if (oldChecksum === newChecksum) {
     console.log('Old and new checksums match -- skipping record.');
-    send = false;
+    sendThis = false;
   }
-  if (send) {
-    sendRecord(queues, record, sqsCallback);
+  if (sendThis) {
+    console.log("Sending record to nuxeo.");
+    send(queues, newItem, sqsCallback);
   }
 }
 
 
-function sendMessage(queues, newItem, sqsCallback) {
-  var xml = getValue(newItem, 'XML', 'B');
+function send(queues, newItem, sqsCallback) {
+  var xml = getXML(newItem);
   var id = getValue(newItem, 'Identifier');
   var url = getValue(newItem, 'BaseUrl');
   for (var i = 0; i < queues.length; i++) {
-    SQS.sendMessage({
+    var msg = {
       QueueUrl: queues[i],
-      MessageBody: new Buffer(xml).toString('base64'),
+      MessageBody: xml,
       DelaySeconds: 0,
       MessageAttributes: {
         Identifier: {
-          Type: "String",
+          DataType: "String",
           StringValue: id
         },
         BaseUrl: {
-          Type: "String",
+          DataType: "String",
           StringValue: url
         }
       }
-    }, sqsCallback);
+    };
+    console.log('Sending message: ', msg);
+    SQS.sendMessage(msg, sqsCallback);
   }
 }
 
@@ -153,7 +168,7 @@ exports.handler = function(arg, context) {
   var status = {'successes': 0, 'failures': 0};
   var sqsCallback = makeSQSCallback(context, status);
   for (var i = 0; i < nevents; i++) {
-    maybeSendRecord(queues, event.Records[i], sqsCallback);
+    maybeSend(queues, event.Records[i], sqsCallback);
   }
   context.succeed('Tried to send ' + nevents + '. Successes: ' +
     status.successes + '. Failures: ' + status.failures + '.');
