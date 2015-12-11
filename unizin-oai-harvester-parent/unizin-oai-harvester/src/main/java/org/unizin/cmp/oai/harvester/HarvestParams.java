@@ -43,8 +43,8 @@ public final class HarvestParams {
         }
 
         public Builder withMap(final Map<String, String> parameterMap) {
-            parameterMap.entrySet().forEach((e) -> {
-                if (e.getKey() == OAI2Constants.VERB_PARAM_NAME) {
+            parameterMap.entrySet().forEach(e -> {
+                if (OAI2Constants.VERB_PARAM_NAME.equals(e.getKey())) {
                     if (OAIVerb.valueOf(e.getValue()) != verb) {
                         throw new IllegalArgumentException(String.format(
                                 "Inconsistent verbs. Expected %s (or none),"
