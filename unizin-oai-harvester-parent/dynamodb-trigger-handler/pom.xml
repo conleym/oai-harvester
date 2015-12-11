@@ -15,7 +15,7 @@
         <version>0.0.26</version>
         <configuration>
           <installDirectory>${project.build.dir}</installDirectory>
-          <nodeVersion>v0.10.18</nodeVersion>
+          <nodeVersion>v0.10.40</nodeVersion>
           <npmVersion>3.5.0</npmVersion>
         </configuration>
         <executions>
