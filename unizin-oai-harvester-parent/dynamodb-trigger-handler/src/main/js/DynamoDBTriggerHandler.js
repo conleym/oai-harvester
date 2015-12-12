@@ -11,7 +11,7 @@ function verifyQueues(queues, context) {
   if (nullOrUndef(queues)) {
     context.fail('`queues` is null or undefined.');
   }
-  if (! Array.isArray(queues)) {
+  if (!Array.isArray(queues)) {
     context.fail('`queues` is not an array.');
     return false;
   }
@@ -28,7 +28,7 @@ function verifyEvent(event, context) {
     context.fail('`event` is null or undefined.');
     return false;
   }
-  if (! Array.isArray(event.Records)) {
+  if (!Array.isArray(event.Records)) {
     context.fail('`event.Records` is not an array.');
     return false;
   }
@@ -43,10 +43,10 @@ function verifyEvent(event, context) {
 function makeSQSCallback(context, status) {
   return function(err, data) {
     if (err) {
-      status['failures']++;
+      status.failures++;
       console.warn(err, err.stack);
     } else {
-      status['successes']++;
+      status.successes++;
       console.log(data);
     }
   };
@@ -154,13 +154,13 @@ function send(queues, newItem, sqsCallback) {
 
 
 exports.handler = function(arg, context) {
-  var queues = arg['queues'];
-  if (! verifyQueues(queues, context)) {
+  var queues = arg.queues;
+  if (!verifyQueues(queues, context)) {
     return;
   }
 
-  var event = arg['event'];
-  if (! verifyEvent(event, context)) {
+  var event = arg.event;
+  if (!verifyEvent(event, context)) {
     return;
   }
 
@@ -168,6 +168,8 @@ exports.handler = function(arg, context) {
   var status = {'successes': 0, 'failures': 0};
   var sqsCallback = makeSQSCallback(context, status);
   for (var i = 0; i < nevents; i++) {
+    // Break multiple-event messages into multiple single-event messages
+    // to avoid creating messages that exceed size limits.
     maybeSend(queues, event.Records[i], sqsCallback);
   }
   context.succeed('Tried to send ' + nevents + '. Successes: ' +
