@@ -155,9 +155,11 @@ implements OAIEventHandler {
             NamespaceContext containingNamespaceContext);
 
     /**
-     * Implementations must create and return a new instance of the record object.
+     * Implementations must create and return a new instance of the record
+     * object.
      *
-     * @param recordStartElement the start element of the next record to process.
+     * @param recordStartElement
+     *            the start element of the next record to process.
      * @return a new instance of the record object.
      */
     protected abstract T createRecord(final StartElement recordStartElement);
