@@ -420,7 +420,7 @@ public final class HarvestJob extends Observable {
             state.interrupted = true;
         }
         return !state.running || state.interrupted ||
-                runningHarvesters.isEmpty();
+                (runningHarvesters.isEmpty() && harvestedRecordQueue.isEmpty());
     }
 
     private HarvestedOAIRecord poll() throws InterruptedException {

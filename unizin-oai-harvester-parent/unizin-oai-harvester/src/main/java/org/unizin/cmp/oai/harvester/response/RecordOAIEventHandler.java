@@ -76,10 +76,10 @@ implements OAIEventHandler {
             if (currentElementIs(OAI2Constants.RECORD)) {
                 inRecord = true;
                 seenRecord = true;
-                currentRecord = createRecord(e.asStartElement());
+                currentRecord = createRecord(se);
             } else if (currentElementIs(OAI2Constants.HEADER)) {
-                final String status = OAIXMLUtils.attributeValue(
-                        e.asStartElement(), OAI2Constants.HEADER_STATUS_ATTR);
+                final String status = OAIXMLUtils.attributeValue(se,
+                        OAI2Constants.HEADER_STATUS_ATTR);
                 onStatus(currentRecord, status);
             } else if (currentElementIs(OAI2Constants.DATESTAMP) ||
                     currentElementIs(OAI2Constants.IDENTIFIER) ||
@@ -115,6 +115,11 @@ implements OAIEventHandler {
             charBuffer.setLength(0);
         } else if (e.isCharacters() && bufferChars) {
             charBuffer.append(e.asCharacters().getData());
+        } else if (e.isStartDocument() || e.isEndDocument()) {
+            seenRecord = false;
+            inRecord = false;
+            bufferChars = false;
+            charBuffer.setLength(0);
         }
         if (inRecord) {
             eventBuffer.add(e);

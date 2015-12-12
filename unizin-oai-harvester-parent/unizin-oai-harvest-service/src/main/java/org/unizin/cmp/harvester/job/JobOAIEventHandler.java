@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
@@ -44,6 +45,8 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         super(recordConsumer);
         this.baseURL = baseURI.toString();
         this.outputFactory = outputFactory;
+        outputFactory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES,
+                true);
         this.messageDigest = messageDigest;
     }
 
@@ -60,7 +63,8 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         // Ensure all enclosing namespaces and prefix mappings are present.
         writer.setNamespaceContext(enclosingContext);
         // Ensure elements w/o prefixes go in the correct namespace.
-        writer.setDefaultNamespace(enclosingContext.getNamespaceURI(""));
+        writer.setDefaultNamespace(enclosingContext.getNamespaceURI(
+                XMLConstants.DEFAULT_NS_PREFIX));
         for (final XMLEvent event : events) {
             writer.add(event);
         }
