@@ -14,13 +14,13 @@ database:
   checkConnectionOnReturn: true
   autoCommentsEnabled: false
 
-h2Server:
-  jdbcPort: 6767
+#h2Server:
+#  jdbcPort: 6767
   # The web server really shouldn't be run in production, but can be useful for testing.
-  webPort: 6969
+#  webPort: 6969
 
 job:
-  batchSize: 25
+  batchSize: 1
   minThreads: 100
   maxThreads: 1000
   recordQueueCapacity: 100

@@ -1,8 +1,6 @@
-# Connection to real DynamoDB (and hence queues an Nuxeo), but running locally.
 database:
   driverClass: org.h2.Driver
-#  url: jdbc:h2:/var/db/oai-harvester-database;JMX=true
-  url: jdbc:h2:/tmp/oai-harvester-database;JMX=true
+  url: jdbc:h2:/var/db/oai-harvester-database;JMX=true
   user: user
   password: password
   validationQuery: SELECT 1
