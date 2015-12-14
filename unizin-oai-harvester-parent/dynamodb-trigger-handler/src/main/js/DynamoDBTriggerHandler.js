@@ -2,14 +2,10 @@ var AWS = require('aws-sdk');
 var SQS = new AWS.SQS();
 
 
-function nullOrUndef(thing) {
-  return thing == null;
-}
-
-
 function verifyQueues(queues, context) {
-  if (nullOrUndef(queues)) {
+  if (queues == null) {
     context.fail('`queues` is null or undefined.');
+    return false;
   }
   if (!Array.isArray(queues)) {
     context.fail('`queues` is not an array.');
@@ -24,7 +20,7 @@ function verifyQueues(queues, context) {
 
 
 function verifyEvent(event, context) {
-  if (nullOrUndef(event)) {
+  if (event == null) {
     context.fail('`event` is null or undefined.');
     return false;
   }
@@ -54,12 +50,12 @@ function makeSQSCallback(context, status) {
 
 
 function getValue(item, value, type) {
-    if (nullOrUndef(item)) {
+    if (item == null) {
         return null;
     }
-    type = type || 'S';
+    type = type = (type == null) ? 'S' : type;
     var first = item[value];
-    return nullOrUndef(first) ? null : first[type];
+    return (first == null) ? null : first[type];
 }
 
 
@@ -75,15 +71,15 @@ function getChecksum(item) {
 function verifyNewItem(newItem) {
   console.log('Verifying item: ', newItem);
   var valid = true;
-  if (nullOrUndef(getXML(newItem))) {
+  if (getXML(newItem) == null) {
     console.log('Missing XML.');
     valid = false;
   }
-  if (nullOrUndef(getValue(newItem, 'BaseUrl'))) {
+  if (getValue(newItem, 'BaseUrl') == null) {
     console.log('Missing BaseUrl.');
     valid = false;
   }
-  if (nullOrUndef(getValue(newItem, 'Identifier'))) {
+  if (getValue(newItem, 'Identifier') == null) {
     console.log('Missing Identifier.');
     valid = false;
   }
@@ -100,7 +96,7 @@ function maybeSend(queues, record, sqsCallback) {
 
   var oldItem = record.dynamodb.OldImage;
   var newItem = record.dynamodb.NewImage;
-  if (nullOrUndef(newItem)) {
+  if (newItem == null) {
     console.warn('No new item -- skipping record.');
     return;
   }
@@ -112,7 +108,7 @@ function maybeSend(queues, record, sqsCallback) {
   var sendThis = true;
   var oldChecksum = getChecksum(oldItem);
   var newChecksum = getChecksum(newItem);
-  if (nullOrUndef(newChecksum)) {
+  if (newChecksum == null) {
     console.warn('New item has no checksum -- skipping record.');
     sendThis = false;
   }
