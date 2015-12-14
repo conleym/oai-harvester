@@ -68,7 +68,7 @@ function getChecksum(item) {
 }
 
 
-function verifyNewItem(newItem) {
+function checkNewItem(newItem) {
   console.log('Verifying item: ', newItem);
   var valid = true;
   if (getXML(newItem) == null) {
@@ -100,7 +100,7 @@ function maybeSend(queues, record, sqsCallback) {
     console.warn('No new item -- skipping record.');
     return;
   }
-  if (!verifyNewItem(newItem)) {
+  if (!checkNewItem(newItem)) {
     console.warn('New item is invalid -- skipping record.');
     return;
   }
