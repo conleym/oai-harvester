@@ -1,5 +1,6 @@
 package org.unizin.cmp.harvester.service;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.sql.DataSource;
@@ -18,6 +19,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
+import com.amazonaws.services.dynamodbv2.model.StreamSpecification;
+import com.amazonaws.services.dynamodbv2.model.StreamViewType;
 import com.codahale.metrics.MetricRegistry;
 
 import io.dropwizard.Application;
@@ -41,7 +44,8 @@ extends Application<HarvestServiceConfiguration> {
     private DynamoDBMapper dynamoDBMapper;
 
     @Override
-    public void initialize(final Bootstrap<HarvestServiceConfiguration> bootstrap) {
+    public void initialize(
+            final Bootstrap<HarvestServiceConfiguration> bootstrap) {
         super.initialize(bootstrap);
         this.bootstrap = bootstrap;
     }
@@ -65,18 +69,30 @@ extends Application<HarvestServiceConfiguration> {
                 dynamoDBClient);
     }
 
-    private void createDynamoDBTable() {
-        // Throughput: ignored by local, but still required.
-        final ProvisionedThroughput throughput = new ProvisionedThroughput(1L,
-                1L);
+    private void createDynamoDBTable(final DynamoDBConfiguration config) {
+        final ProvisionedThroughput throughput = config.buildThroughput();
+        final StreamSpecification streamSpec = new StreamSpecification()
+                .withStreamEnabled(true)
+                .withStreamViewType(StreamViewType.NEW_AND_OLD_IMAGES);
         final CreateTableRequest req = dynamoDBMapper
                 .generateCreateTableRequest(HarvestedOAIRecord.class)
-                .withProvisionedThroughput(throughput);
+                .withProvisionedThroughput(throughput)
+                .withStreamSpecification(streamSpec);
         try {
             dynamoDBClient.createTable(req);
         } catch (final ResourceInUseException e) {
             LOGGER.warn("Exception creating DynamoDB table. It probably "
                     + "already exists.", e);
+        }
+    }
+
+    private void startH2Servers(final HarvestServiceConfiguration conf,
+            final Environment env) throws Exception {
+        final List<ManagedH2Server> managed = conf
+                .getH2ServerConfiguration()
+                .build();
+        for (final ManagedH2Server server : managed) {
+            env.lifecycle().manage(server);
         }
     }
 
@@ -89,8 +105,10 @@ extends Application<HarvestServiceConfiguration> {
                 .build(HTTP_CLIENT_NAME);
         final ExecutorService executor = conf.getJobConfiguration()
                 .buildExecutorService(env);
-        createMapper(conf.getDynamoDBConfiguration());
-        createDynamoDBTable();
+        final DynamoDBConfiguration dynamo = conf.getDynamoDBConfiguration();
+        createMapper(dynamo);
+        createDynamoDBTable(dynamo);
+        startH2Servers(conf, env);
         final JobResource jr = new JobResource(ds, conf.getJobConfiguration(),
                 httpClient, dynamoDBMapper, executor);
         env.jersey().register(jr);

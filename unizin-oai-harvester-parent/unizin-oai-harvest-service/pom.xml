@@ -20,7 +20,6 @@
       <!-- Build fat jar -->
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.3</version>
         <configuration>
           <createDependencyReducedPom>true</createDependencyReducedPom>
           <filters>
@@ -86,7 +85,7 @@
         <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>reserver-dynamodb-port</id>
+            <id>reserve-ports</id>
             <goals>
               <goal>reserve-network-port</goal>
             </goals>
@@ -110,8 +109,8 @@
           <dist>${project.build.directory}/dynamodb-dist</dist>
         </configuration>
         <!-- You'd expect, based on the examples, that a single execution
-          of both start & stop goals during the test phase would work. You'd be wrong:
-          ddb local doesn't even appear to start up. -->
+          of both start & stop goals during the test phase would work. You'd be
+          wrong: ddb local doesn't even appear to start up. -->
         <executions>
           <execution>
             <!-- Start before the test phase. -->
@@ -141,7 +140,6 @@
           </systemPropertyVariables>
         </configuration>
       </plugin>
-
     </plugins>
 
 
@@ -199,7 +197,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-dynamodb</artifactId>
-      <version>1.10.35</version>
+      <version>${aws-sdk.version}</version>
       <exclusions>
         <exclusion>
           <groupId>commons-logging</groupId>

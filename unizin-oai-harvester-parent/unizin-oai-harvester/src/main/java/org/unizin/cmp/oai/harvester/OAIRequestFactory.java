@@ -55,6 +55,13 @@ public interface OAIRequestFactory {
         return post;
     }
 
+    public static URI buildURI(final URI baseURI,
+            final Map<String, String> parameters) throws URISyntaxException {
+        final URIBuilder uriBuilder = new URIBuilder(baseURI);
+        parameters.entrySet().stream().forEach(e ->
+        uriBuilder.addParameter(e.getKey(), e.getValue()));
+        return uriBuilder.build();
+    }
 
     /**
      * Create an HTTP GET request from the given {@code URI} and parameters.
@@ -74,11 +81,8 @@ public interface OAIRequestFactory {
      */
     public static HttpUriRequest get(final URI baseURI,
             final Map<String, String> parameters) {
-        final URIBuilder uriBuilder = new URIBuilder(baseURI);
-        parameters.entrySet().stream().forEach(e ->
-        uriBuilder.addParameter(e.getKey(), e.getValue()));
         try {
-            return new HttpGet(uriBuilder.build());
+            return new HttpGet(buildURI(baseURI, parameters));
         } catch (final URISyntaxException e) {
             throw new HarvesterException("Invalid URI syntax for request.", e);
         }

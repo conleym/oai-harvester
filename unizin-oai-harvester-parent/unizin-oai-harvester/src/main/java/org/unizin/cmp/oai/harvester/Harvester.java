@@ -3,6 +3,7 @@ package org.unizin.cmp.oai.harvester;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -43,10 +44,11 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * </p>
  * <h2>Use in Multiple Threads</h2>
  * <p>
- * Harvester instances can be used in multiple threads by creating a harvester
- * in one thread and running it in another, as in the following simple example:
+ * The harvester itself does not start or manage threads, leaving this up to the
+ * client. Harvester instances can be used in multiple threads by creating a
+ * harvester in one thread and running it in another, as in the following simple
+ * example:
  * </p>
- *
  * <pre>
  *   // This is the main thread.
  *
@@ -54,7 +56,7 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  *   final Harvester har = new Harvester.Builder().build();
  *   // Define your parameters....
  *   final HarvesterParams params = ...;
- *   Thread t = new Thread(() -> {
+ *   Thread t = new Thread(() -&gt; {
  *      // Harvest runs in this thread.
  *      OAIResponseHandler handler = ...;
  *      har.start(params, handler);
@@ -296,12 +298,29 @@ public final class Harvester extends Observable {
     }
 
     /**
+     * Start a new harvest with no tags.
+     * <p>
+     * Equivalent to {@code start(params, responseHandler,
+     * Collections.emptyMap())}.
+     * </p>
+     * @see #start(HarvestParams, OAIResponseHandler, Map)
+     */
+    public void start(final HarvestParams params,
+            final OAIResponseHandler responseHandler) {
+        start(params, responseHandler, Collections.emptyMap());
+    }
+
+    /**
      * Start a new harvest.
      *
      * @param params
      *            the harvest parameters.
      * @param responseHandler
      *            the handler to use to deal with server responses.
+     * @param tags
+     *            data associated with this harvest. The given map will be
+     *            copied, and that copy attached to each notification produced
+     *            by this harvest.
      *
      * @throws UncheckedIOException
      *             if there's an {@code IOException} while executing an HTTP
@@ -313,12 +332,13 @@ public final class Harvester extends Observable {
      *             progress.
      */
     public void start(final HarvestParams params,
-            final OAIResponseHandler responseHandler) {
+            final OAIResponseHandler responseHandler,
+            final Map<String, String> tags) {
         if (this.harvest.hasNext()) {
             throw new IllegalStateException(
                     "Cannot start a new harvest while one is in progress.");
         }
-        this.harvest = new Harvest(params, responseHandler);
+        this.harvest = new Harvest(params, responseHandler, tags);
         harvest();
     }
 

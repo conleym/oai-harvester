@@ -1,14 +1,19 @@
 package org.unizin.cmp.harvester.job;
 
+import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -23,8 +28,11 @@ import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.unizin.cmp.harvester.job.JobNotification.JobNotificationType;
+import org.unizin.cmp.harvester.job.JobNotification.JobStatistic;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
+import org.unizin.cmp.oai.harvester.OAIRequestFactory;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 import com.amazonaws.AmazonClientException;
@@ -42,7 +50,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper.FailedBatch
  * Instances are safe for use in multiple threads.
  * </p>
  */
-public final class HarvestJob {
+public final class HarvestJob extends Observable {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HarvestJob.class);
     public static final String DIGEST_ALGORITHM = "MD5";
@@ -57,7 +65,6 @@ public final class HarvestJob {
                     "batchSize must be positive.");
         }
     }
-
 
     public static final class Builder {
         /**
@@ -77,6 +84,7 @@ public final class HarvestJob {
         private HttpClient httpClient;
         private BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
         private ExecutorService executorService;
+        private String name;
         private List<HarvestParams> harvestParams;
         private List<Observer> harvestObservers;
 
@@ -133,6 +141,11 @@ public final class HarvestJob {
             return this;
         }
 
+        public Builder withName(final String name) {
+            this.name = name;
+            return this;
+        }
+
         public Builder withHarvestObservers(final Observer...observers) {
             harvestObservers = Arrays.asList(observers);
             return this;
@@ -143,7 +156,8 @@ public final class HarvestJob {
             return this;
         }
 
-        public HarvestJob build() throws NoSuchAlgorithmException {
+        public HarvestJob build() throws NoSuchAlgorithmException,
+        URISyntaxException {
             if (httpClient == null) {
                 httpClient = Harvester.defaultHttpClient()
                         .setDefaultHeaders(DEFAULT_HEADERS)
@@ -170,8 +184,19 @@ public final class HarvestJob {
             }
             return new HarvestJob(httpClient, mapper, harvestedRecordQueue,
                     executorService, offerTimeout, pollTimeout, batchSize,
-                    harvestParams, harvestObservers);
+                    name, harvestParams, harvestObservers);
         }
+    }
+
+
+    private static final class State {
+        private volatile boolean running;
+        private boolean interrupted;
+        private long batchesAttempted;
+        private long recordsReceived;
+        private Exception exception;
+        private Instant start;
+        private Instant end;
     }
 
 
@@ -183,9 +208,10 @@ public final class HarvestJob {
     private final Timeout offerTimeout;
     private final Timeout pollTimeout;
     private final int batchSize;
+    private final String name;
     private final RunningHarvesters runningHarvesters =
             new RunningHarvesters();
-    private volatile boolean running;
+    private final State state = new State();
 
 
     /**
@@ -218,6 +244,10 @@ public final class HarvestJob {
      *            chunks for its own purposes, so this number does not
      *            necessarily reflect the number of records updated per DynamoDB
      *            API request.
+     * @param name
+     *            the name of this job. The name will be reported in job
+     *            notifications and will be placed in the {@link MDC} of each
+     *            harvest's thread for tracking purposes.
      * @param harvestParams
      *            list of harvest parameters. A new producer thread will be
      *            created and started for each of these when {@link #start()} is
@@ -229,6 +259,9 @@ public final class HarvestJob {
      * @throws NoSuchAlgorithmException
      *             in the extraordinary event that the JVM in which this is
      *             executed does not support the <tt>MD5</tt> digest algorithm.
+     * @throws URISyntaxException
+     *             if a harvest in this batch has parameters that would produce
+     *             an invalid URI.
      */
     public HarvestJob(final HttpClient httpClient,
             final DynamoDBMapper mapper,
@@ -237,9 +270,10 @@ public final class HarvestJob {
             final Timeout offerTimeout,
             final Timeout pollTimeout,
             final int batchSize,
+            final String name,
             final List<HarvestParams> harvestParams,
             final List<Observer> harvestObservers)
-                    throws NoSuchAlgorithmException {
+                    throws NoSuchAlgorithmException, URISyntaxException {
         Objects.requireNonNull(httpClient, "httpClient");
         Objects.requireNonNull(mapper, "mapper");
         Objects.requireNonNull(harvestedRecordQueue, "harvestedRecordQueue");
@@ -256,6 +290,7 @@ public final class HarvestJob {
         this.offerTimeout = offerTimeout;
         this.pollTimeout = pollTimeout;
         this.batchSize = batchSize;
+        this.name = name;
 
         for (final HarvestParams hp: harvestParams) {
             final Runnable r = createHarvestRunnable(hp, harvestObservers);
@@ -277,18 +312,23 @@ public final class HarvestJob {
 
     private Runnable createHarvestRunnable(final HarvestParams params,
             final Iterable<Observer> observers)
-                    throws NoSuchAlgorithmException {
+                    throws NoSuchAlgorithmException, URISyntaxException {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(httpClient)
                 .build();
         observers.forEach(harvester::addObserver);
         final OAIResponseHandler handler = new JobOAIResponseHandler(
                 params.getBaseURI(), harvestedRecordQueue, offerTimeout);
+        final String harvestName = OAIRequestFactory.buildURI(
+                params.getBaseURI(), params.getParameters()).toString();
         final Runnable harvest = () -> {
+            final Map<String, String> tags = new HashMap<>(2);
+            tags.put("jobName", name);
+            tags.put("harvestName", harvestName);
             MDC.put("baseURI", params.getBaseURI().toString());
-            MDC.put("parameters", params.getParameters().toString());
+            tags.forEach((k, v) -> MDC.put(k, v));
             try {
-                harvester.start(params, handler);
+                harvester.start(params, handler, tags);
             } catch (final Exception e) {
                 LOGGER.error("Error in harvester thread.", e);
             }
@@ -296,28 +336,62 @@ public final class HarvestJob {
         return runningHarvesters.wrappedRunnable(harvester, harvest);
     }
 
+    private void sendNotification(
+            final JobNotificationType type) {
+        switch(type) {
+        case STARTED:
+            state.start = Instant.now();
+            break;
+        case STOPPED:
+            state.end = Instant.now();
+            break;
+        default:
+        }
+        final Map<JobStatistic, Long> stats = new HashMap<>(
+                JobStatistic.values().length);
+        stats.put(JobStatistic.RECORDS_RECEIVED, state.recordsReceived);
+        stats.put(JobStatistic.QUEUE_SIZE, (long)harvestedRecordQueue.size());
+        stats.put(JobStatistic.BATCHES_ATTEMPTED, state.batchesAttempted);
+        final JobNotification notification = new JobNotification(type, name,
+                state.running, stats, state.exception, state.start, state.end);
+        setChanged();
+        try {
+            notifyObservers(notification);
+        } catch (final Exception e) {
+            LOGGER.error("Caught an exception while notifying observers.", e);
+        }
+    }
+
     public void start() {
-        if (running || tasks.isEmpty()) {
+        if (state.running || tasks.isEmpty()) {
             return;
         }
-        running = true;
         tasks.forEach(executorService::submit);
+        state.running = true;
+        sendNotification(JobNotificationType.STARTED);
         /*
          * No reason to hold onto these. Let them get collected when they're
          * done rather than when this thread is done.
          */
         tasks.clear();
-        runLoop();
+        try {
+            runLoop();
+        } catch (final Exception e) {
+            state.exception = e;
+        } finally {
+            sendNotification(JobNotificationType.STOPPED);
+        }
     }
 
     private void runLoop() {
         final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
         while (!shouldStop()) {
             try {
-                final HarvestedOAIRecord record = tryPoll();
+                final HarvestedOAIRecord record = poll();
                 if (record == null) {
                     continue;
                 }
+                state.recordsReceived++;
                 batch.add(record);
                 if (batch.size() % batchSize == 0) {
                     LOGGER.info("Writing {} records to database.",
@@ -326,6 +400,8 @@ public final class HarvestJob {
                     batch.clear();
                 }
             } catch (final InterruptedException e) {
+                state.interrupted = true;
+                state.exception = e;
                 LOGGER.warn("Consumer interrupted. Stopping.", e);
                 Thread.interrupted();
             }
@@ -340,11 +416,14 @@ public final class HarvestJob {
     }
 
     private boolean shouldStop() {
-        return !running || runningHarvesters.isEmpty() ||
-                Thread.currentThread().isInterrupted();
+        if (Thread.currentThread().isInterrupted()) {
+            state.interrupted = true;
+        }
+        return !state.running || state.interrupted ||
+                (runningHarvesters.isEmpty() && harvestedRecordQueue.isEmpty());
     }
 
-    private HarvestedOAIRecord tryPoll() throws InterruptedException {
+    private HarvestedOAIRecord poll() throws InterruptedException {
         return harvestedRecordQueue.poll(pollTimeout.getTime(),
                 pollTimeout.getUnit());
     }
@@ -364,7 +443,7 @@ public final class HarvestJob {
     public void stop() {
         LOGGER.info("Shutting down.");
         runningHarvesters.cancelAll();
-        running = false;
+        state.running = false;
     }
 
     /**
@@ -377,16 +456,18 @@ public final class HarvestJob {
      *            the records to write.
      */
     private void writeBatch(final List<HarvestedOAIRecord> batch) {
+        state.batchesAttempted++;
+        sendNotification(JobNotificationType.BATCH_STARTED);
         try {
             // Add the current timestamp to each record before writing.
             final Date batchWritten = new Date();
-            batch.forEach((r) -> r.setHarvestedTimestamp(batchWritten));
+            batch.forEach(r -> r.setHarvestedTimestamp(batchWritten));
 
             final List<FailedBatch> failed = mapper.batchSave(batch);
             if (!failed.isEmpty() && LOGGER.isErrorEnabled()) {
                 final StringBuilder sb = new StringBuilder("Batch failed: "
                         + batch + "\t[");
-                failed.forEach((fb) -> {
+                failed.forEach(fb -> {
                     sb.append(fb.getClass().getName())
                     .append("[unprocessedItems=")
                     .append(fb.getUnprocessedItems())
@@ -398,6 +479,7 @@ public final class HarvestJob {
                 LOGGER.error(sb.toString());
             }
         } catch (final AmazonClientException e) {
+            state.exception = e;
             /*
              * Looking at the code, I _think_ this only happens when the mapper
              * is interrupted while sleeping when backing off, but I can't be
@@ -408,6 +490,8 @@ public final class HarvestJob {
                 final String msg = "Error writing batch: " + batch;
                 LOGGER.error(msg, e);
             }
+        } finally {
+            sendNotification(JobNotificationType.BATCH_FINISHED);
         }
     }
 }

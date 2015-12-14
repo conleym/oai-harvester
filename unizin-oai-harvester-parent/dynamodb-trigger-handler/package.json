@@ -1,0 +1,13 @@
+{
+  "name": "dynamodb-trigger-handler",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AWS Lambda function written in JavaScript. Writes harvested OAI records to one or more SQS queues.",
+  "main": "src/main/js/handler.js",
+  "scripts": {
+    "lint": "eslint src/main/js/*.js"
+  },
+  "devDependencies": {
+    "eslint": "latest"
+  }
+}

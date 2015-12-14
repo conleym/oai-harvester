@@ -40,15 +40,6 @@ final class RunningHarvesters {
     }
 
     /**
-     * Stop all running harvests.
-     */
-    void stopAll() {
-        synchronized(lock) {
-            harvesters.forEach(Harvester::stop);
-        }
-    }
-
-    /**
      * Cancel all running harvests.
      */
     void cancelAll() {
@@ -64,8 +55,6 @@ final class RunningHarvesters {
      * produces a new {@code Runnable} that executes the given {@code Runnable}.
      * When its execution completes, the key-harvester pair will be removed.
      *
-     * @param key
-     *            the key identifying the harvest.
      * @param harvester
      *            the harvester itself.
      * @param runnable
@@ -73,7 +62,8 @@ final class RunningHarvesters {
      *            harvest, but clients can do anything.
      * @return a {@code Runnable} as described above.
      */
-    Runnable wrappedRunnable(final Harvester harvester, final Runnable runnable) {
+    Runnable wrappedRunnable(final Harvester harvester,
+            final Runnable runnable) {
         add(harvester);
         return () -> {
             try {

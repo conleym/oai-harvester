@@ -1,5 +1,6 @@
 package org.unizin.cmp.harvester.service.config;
 
+import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Observer;
@@ -38,7 +39,7 @@ public final class HarvestJobConfiguration {
 
     @JsonProperty
     @Min(1)
-    private Integer queueCapacity;
+    private Integer recordQueueCapacity;
 
     @JsonProperty
     private Duration pollTimeout;
@@ -55,6 +56,10 @@ public final class HarvestJobConfiguration {
     private Integer maxThreads;
 
     @JsonProperty
+    @Min(1)
+    private Integer workQueueCapacity;
+
+    @JsonProperty
     @NotEmpty
     private String nameFormat = "harvest-job-%s";
 
@@ -67,24 +72,28 @@ public final class HarvestJobConfiguration {
         if (maxThreads != null) {
             b.maxThreads(maxThreads);
         }
+        if (workQueueCapacity != null) {
+            b.workQueue(new ArrayBlockingQueue<>(workQueueCapacity));
+        }
         return b.build();
     }
 
     public HarvestJob buildJob(final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final ExecutorService executor,
+            final String name,
             final List<HarvestParams> harvestParams,
             final List<Observer> harvestObservers)
-            throws NoSuchAlgorithmException {
+            throws NoSuchAlgorithmException, URISyntaxException {
         final HarvestJob.Builder builder = new HarvestJob.Builder(mapper)
                 .withHttpClient(httpClient)
                 .withExecutorService(executor)
                 .withHarvestObservers(harvestObservers.toArray(EMPTY_OBS))
                 .withHarvestParams(harvestParams.toArray(EMPTY_PARAMS));
 
-        if (queueCapacity != null) {
+        if (recordQueueCapacity != null) {
             builder.withRecordQueue(new ArrayBlockingQueue<HarvestedOAIRecord>(
-                    queueCapacity));
+                    recordQueueCapacity));
         }
         if (offerTimeout != null) {
             final long millis = offerTimeout.toMilliseconds();
@@ -99,6 +108,6 @@ public final class HarvestJobConfiguration {
         if (batchSize != null) {
             builder.withBatchSize(batchSize);
         }
-        return builder.build();
+        return builder.withName(name).build();
     }
 }

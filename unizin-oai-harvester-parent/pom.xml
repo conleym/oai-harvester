@@ -12,6 +12,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j.version>1.7.12</slf4j.version>
+    <aws-sdk.version>1.10.40</aws-sdk.version>
     <github.project>unizin/oai-harvester</github.project>
     <scm.connection>scm:git:git@github.com:${github.project}.git</scm.connection>
   </properties>
@@ -36,6 +37,10 @@
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
           <version>1.8</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.3</version>
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
@@ -166,8 +171,9 @@
 
   <modules>
     <module>unizin-oai-harvester</module>
-    <module>simple-importer</module>
+    
     <module>unizin-oai-harvest-service</module>
+    <module>dynamodb-trigger-handler</module>
   </modules>
 
 

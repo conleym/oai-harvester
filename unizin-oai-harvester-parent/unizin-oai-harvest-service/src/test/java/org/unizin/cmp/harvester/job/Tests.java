@@ -12,14 +12,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
+import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.XMLEvent;
+
+import org.unizin.cmp.oai.OAI2Constants;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
@@ -90,19 +95,22 @@ public final class Tests {
         }
     }
 
-    private static String testOAIRecord(int i) throws XMLStreamException {
-        final InputStream in = Tests.class.getResourceAsStream(
-                "/oai-records/record-" + i + ".xml");
+    public static String readRecord(final String filename)
+            throws XMLStreamException {
+        final InputStream in = Tests.class.getResourceAsStream(filename);
         if (in == null) {
             throw new IllegalArgumentException(String.format(
-                    "Nonexistant response file requested: %d.", i));
+                    "Nonexistant response file requested: %s.", filename));
         }
         /*
          * Run the expected input through StAX to eliminate any newline
-         * weirdness.
+         * weirdness and to add appropriate namespaces.
          */
+        final XMLEventFactory ef = XMLEventFactory.newFactory();
         final XMLEventReader r = XMLInputFactory.newFactory()
                 .createXMLEventReader(in);
+        final Set<Namespace> ns = Collections.singleton(
+                ef.createNamespace(OAI2Constants.OAI_2_NS_URI));
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final XMLEventWriter w = XMLOutputFactory.newFactory()
                 .createXMLEventWriter(baos);
@@ -111,12 +119,23 @@ public final class Tests {
             if (e.isStartDocument() || e.isEndDocument()) {
                 continue;
             }
-            w.add(e);
+            if (e.isStartElement() && OAI2Constants.RECORD.getLocalPart()
+                    .equals(e.asStartElement().getName().getLocalPart())) {
+                w.add(ef.createStartElement(OAI2Constants.RECORD, null,
+                        ns.iterator()));
+
+            } else {
+                w.add(e);
+            }
         }
         r.close();
         w.close();
         final byte[] bytes = baos.toByteArray();
         return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    private static String testOAIRecord(int i) throws XMLStreamException {
+        return readRecord("/oai-records/record-" + i + ".xml");
     }
 
     public static String decompress(final byte[] bytes) throws IOException {

@@ -2,9 +2,11 @@ package org.unizin.cmp.oai.harvester;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 
 import org.apache.http.client.methods.HttpUriRequest;
 import org.unizin.cmp.oai.OAI2Constants;
@@ -30,6 +32,7 @@ final class Harvest {
 
     private final HarvestParams params;
     private final OAIResponseHandler responseHandler;
+    private final Map<String, String> tags;
     private final State state = new State();
     private HttpUriRequest request;
     private Exception exception;
@@ -48,13 +51,15 @@ final class Harvest {
 
 
     Harvest() {
-        this(null, null);
+        this(null, null, Collections.emptyMap());
     }
 
     Harvest(final HarvestParams params,
-            final OAIResponseHandler responseHandler) {
+            final OAIResponseHandler responseHandler,
+            final Map<String, String> tags) {
         this.params = params;
         this.responseHandler = responseHandler;
+        this.tags = Collections.unmodifiableMap(new TreeMap<>(tags));
     }
 
     HarvestNotification createNotification(
@@ -63,8 +68,10 @@ final class Harvest {
         stats.put(HarvestStatistic.REQUEST_COUNT, requestCount);
         stats.put(HarvestStatistic.RESPONSE_COUNT, responseCount);
         stats.put(HarvestStatistic.XML_EVENT_COUNT, xmlEventCount);
-        return new HarvestNotification(type, state, exception,
-                resumptionToken, lastResponseDate, params, stats);
+        final URI uri = (request == null) ? null : request.getURI();
+        return new HarvestNotification(type, tags, state, exception,
+                resumptionToken, lastResponseDate, params, stats,
+                uri);
     }
 
     void setLastResponseDate(final Instant lastResponseDate) {

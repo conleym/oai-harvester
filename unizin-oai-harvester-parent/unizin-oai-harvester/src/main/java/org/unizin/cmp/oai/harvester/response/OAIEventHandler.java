@@ -13,10 +13,10 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
  * {@link OAIResponseHandler}.
  * <p>
  * Instances are free to write events to an
- * {@link javax.xml.stream.XMLEventWriter} or not. Filtering is best
- * accomplished by adding {@link javax.xml.stream.EventFilter EventFilters} to a
- * custom event handler, as filters are easily composed.
- *
+ * {@link javax.xml.stream.XMLEventWriter} or not. For an implementation that
+ * uses {@link javax.xml.stream.EventFilter EventFilters} to decide which events
+ * to write, see {@link FilteringOAIEventHandler}.
+ * </p>
  */
 public interface OAIEventHandler {
     /**

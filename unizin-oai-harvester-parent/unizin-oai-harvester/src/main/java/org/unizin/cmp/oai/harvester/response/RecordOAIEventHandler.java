@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
@@ -43,8 +44,10 @@ implements OAIEventHandler {
     private final Consumer<T> recordHandler;
     private T currentRecord;
     private boolean inRecord;
+    private boolean seenRecord;
     private boolean bufferChars;
     private QName currentStartElementQName;
+    private NamespaceContext possiblyEnclosingContext;
 
     protected RecordOAIEventHandler(final Consumer<T> recordHandler) {
         this.recordHandler = recordHandler;
@@ -68,25 +71,31 @@ implements OAIEventHandler {
     public void onEvent(final XMLEvent e) throws XMLStreamException {
         LOGGER.trace("Got event {}", e);
         if (e.isStartElement()) {
-            currentStartElementQName = e.asStartElement().getName();
+            final StartElement se = e.asStartElement();
+            currentStartElementQName = se.getName();
             if (currentElementIs(OAI2Constants.RECORD)) {
                 inRecord = true;
-                currentRecord = createRecord(e.asStartElement());
+                seenRecord = true;
+                currentRecord = createRecord(se);
             } else if (currentElementIs(OAI2Constants.HEADER)) {
-                final String status = OAIXMLUtils.attributeValue(
-                        e.asStartElement(), OAI2Constants.HEADER_STATUS_ATTR);
+                final String status = OAIXMLUtils.attributeValue(se,
+                        OAI2Constants.HEADER_STATUS_ATTR);
                 onStatus(currentRecord, status);
             } else if (currentElementIs(OAI2Constants.DATESTAMP) ||
                     currentElementIs(OAI2Constants.IDENTIFIER) ||
                     currentElementIs(OAI2Constants.SET_SPEC)) {
                 bufferChars = true;
             }
+            if (!seenRecord) {
+                possiblyEnclosingContext = se.getNamespaceContext();
+            }
         } else if (e.isEndElement()) {
             final QName name = e.asEndElement().getName();
             if (OAI2Constants.RECORD.equals(name)) {
                 inRecord = false;
                 eventBuffer.add(e);
-                onRecordEnd(currentRecord, copyAndClearBuffer());
+                onRecordEnd(currentRecord, copyAndClearBuffer(),
+                        possiblyEnclosingContext);
                 recordHandler.accept(currentRecord);
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
                 final String identifier = getBufferedChars();
@@ -106,6 +115,11 @@ implements OAIEventHandler {
             charBuffer.setLength(0);
         } else if (e.isCharacters() && bufferChars) {
             charBuffer.append(e.asCharacters().getData());
+        } else if (e.isStartDocument() || e.isEndDocument()) {
+            seenRecord = false;
+            inRecord = false;
+            bufferChars = false;
+            charBuffer.setLength(0);
         }
         if (inRecord) {
             eventBuffer.add(e);
@@ -133,13 +147,19 @@ implements OAIEventHandler {
      * @param recordEvents
      *            a list containing all events since the last &lt;record&gt;,
      *            including the matching end element.
+     * @param containingNamespaceContext
+     *            namespace context of the element enclosing the records.
      */
-    protected abstract void onRecordEnd(T currentRecord, List<XMLEvent> recordEvents);
+    protected abstract void onRecordEnd(T currentRecord,
+            List<XMLEvent> recordEvents,
+            NamespaceContext containingNamespaceContext);
 
     /**
-     * Implementations must create and return a new instance of the record object.
+     * Implementations must create and return a new instance of the record
+     * object.
      *
-     * @param recordStartElement the start element of the next record to process.
+     * @param recordStartElement
+     *            the start element of the next record to process.
      * @return a new instance of the record object.
      */
     protected abstract T createRecord(final StartElement recordStartElement);

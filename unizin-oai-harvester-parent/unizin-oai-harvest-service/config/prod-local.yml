@@ -1,8 +1,10 @@
+# Connection to real DynamoDB (and hence queues an Nuxeo), but running locally.
 database:
   driverClass: org.h2.Driver
-  url: jdbc:h2:/tmp/oai-harvester-database
-  user: ab
-  password: b
+#  url: jdbc:h2:/var/db/oai-harvester-database;JMX=true
+  url: jdbc:h2:/tmp/oai-harvester-database;JMX=true
+  user: user
+  password: password
   validationQuery: SELECT 1
   validationQueryTimeout: 1s
   logValidationErrors: true
@@ -14,10 +16,17 @@ database:
   checkConnectionOnReturn: true
   autoCommentsEnabled: false
 
+h2Server:
+  jdbcPort: 6767
+
 job:
-  batchSize: 25
-  minThreads: 2
+  batchSize: 15
+  minThreads: 100
   maxThreads: 1000
+  recordQueueCapacity: 1000
+  workQueueCapacity: 1
+  offerTimeout: 5s
+  pollTimeout: 5s
 
 httpClient:
   maxConnections: 2048
@@ -29,22 +38,21 @@ httpClient:
     from: dev@unizin.org
 
 dynamoDB:
-  endpoint: http://localhost:8000
-  awsAccessKey: key
-  awsAccessKeyID: asdf
-  recordMapper:
-    tableNameOverride: AppTestingTable
+  region: us-west-2
+  provisionedReadCapacity: 20
+  provisionedWriteCapacity: 20
 
 server:
     applicationConnectors:
       - type: http
-        port: 9080
+        port: 8080
     adminConnectors:
       - type: http
-        port: 9081
+        port: 8081
 
 logging:
   appenders:
     - type: console
       threshold: TRACE
       target: stdout
+      logFormat: "%level [%date][%thread][%mdc] %logger: %message %n%rEx"

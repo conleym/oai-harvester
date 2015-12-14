@@ -116,7 +116,8 @@ public final class TestJobOAIEventHandler {
         expectedValue.put(DATESTAMP_ATTRIB, "2014-01-10");
         expectedValue.put(XML_ATTRIB, Tests.TEST_RECORDS.get(1));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(1));
-        expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set1", "set2")));
+        expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set1",
+                "set2")));
         addExpectedValuesForIdentifier("2", expectedValue, expectedValues);
 
         expectedValue = new HashMap<>();
@@ -134,10 +135,10 @@ public final class TestJobOAIEventHandler {
                     record.getStatus());
             Assert.assertEquals(expectedValue.get(DATESTAMP_ATTRIB),
                     record.getDatestamp());
-            equals((byte[])expectedValue.get(CHECKSUM_ATTRIB),
-                    record.getChecksum());
             Assert.assertEquals(expectedValue.get(XML_ATTRIB),
                     Tests.decompress(record.getXml()));
+            equals((byte[])expectedValue.get(CHECKSUM_ATTRIB),
+                    record.getChecksum());
         }
     }
 }
