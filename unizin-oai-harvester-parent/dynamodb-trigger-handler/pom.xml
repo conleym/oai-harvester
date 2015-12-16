@@ -74,9 +74,19 @@
       </plugin>
       <plugin>
         <artifactId>maven-jar-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
+        <!-- skip doesn't work for some reason. See
+        http://stackoverflow.com/questions/2188746/what-is-the-best-way-to-avoid-maven-jar
+         -->
+        <executions>
+          <execution>
+            <id>default-jar</id>
+            <phase>never</phase>
+            <configuration>
+              <finalName>unwanted</finalName>
+              <classifier>unwanted</classifier>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
