@@ -12,7 +12,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j.version>1.7.12</slf4j.version>
-    <aws-sdk.version>1.10.40</aws-sdk.version>
+    <aws-sdk.version>1.10.41</aws-sdk.version>
     <github.project>unizin/oai-harvester</github.project>
     <scm.connection>scm:git:git@github.com:${github.project}.git</scm.connection>
   </properties>
@@ -40,7 +40,7 @@
         </plugin>
         <plugin>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>2.3</version>
+          <version>2.4.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-release-plugin</artifactId>
@@ -49,6 +49,10 @@
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <tagNameFormat>@{project.version}</tagNameFormat>
           </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-versions-plugin</artifactId>
+          <version>2.2</version>
         </plugin>
         <plugin>
           <artifactId>maven-source-plugin</artifactId>
@@ -171,10 +175,13 @@
 
   <modules>
     <module>unizin-oai-harvester</module>
-    
     <module>unizin-oai-harvest-service</module>
     <module>dynamodb-trigger-handler</module>
   </modules>
+
+  <prerequisites>
+    <maven>3.3.4</maven>
+  </prerequisites>
 
 
   <scm>
