@@ -23,17 +23,17 @@ job:
   batchSize: 15
   minThreads: 100
   maxThreads: 1000
-  recordQueueCapacity: 1000
+  recordQueueCapacity: 10000
   workQueueCapacity: 1
-  offerTimeout: 5s
+  offerTimeout: 1m
   pollTimeout: 5s
 
 httpClient:
   maxConnections: 2048
   maxConnectionsPerRoute: 256
-  connectionRequestTimeout: 5s
-  connectionTimeout: 5s
-  timeout: 30s
+  connectionRequestTimeout: 10s
+  connectionTimeout: 10s
+  timeout: 5m
   defaultHeaders:
     from: dev@unizin.org
 

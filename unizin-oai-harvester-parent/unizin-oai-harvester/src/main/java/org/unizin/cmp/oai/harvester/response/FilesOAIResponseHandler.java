@@ -77,9 +77,6 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
         try (final OutputStream os = outputStream) {
             eventWriter = null;
             outputStream = null;
-            if (os != null) {
-                os.close();
-            }
         } catch (final IOException e) {
             throw new HarvesterException(e);
         }
