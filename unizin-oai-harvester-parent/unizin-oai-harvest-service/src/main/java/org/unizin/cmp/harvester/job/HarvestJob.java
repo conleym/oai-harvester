@@ -384,7 +384,7 @@ public final class HarvestJob extends Observable {
     }
 
     private void runLoop() {
-        final List<HarvestedOAIRecord> batch = new ArrayList<>(batchSize);
+        final Batch batch = new Batch(batchSize);
         while (!shouldStop()) {
             try {
                 final HarvestedOAIRecord record = poll();
@@ -393,7 +393,7 @@ public final class HarvestJob extends Observable {
                 }
                 state.recordsReceived++;
                 batch.add(record);
-                if (batch.size() % batchSize == 0) {
+                if (batch.full()) {
                     LOGGER.info("Writing {} records to database.",
                             batch.size());
                     writeBatch(batch);
@@ -455,15 +455,16 @@ public final class HarvestJob extends Observable {
      * @param batch
      *            the records to write.
      */
-    private void writeBatch(final List<HarvestedOAIRecord> batch) {
+    private void writeBatch(final Batch batch) {
         state.batchesAttempted++;
         sendNotification(JobNotificationType.BATCH_STARTED);
         try {
             // Add the current timestamp to each record before writing.
             final Date batchWritten = new Date();
-            batch.forEach(r -> r.setHarvestedTimestamp(batchWritten));
+            final List<HarvestedOAIRecord> list = batch.toList();
+            list.forEach(r -> r.setHarvestedTimestamp(batchWritten));
 
-            final List<FailedBatch> failed = mapper.batchSave(batch);
+            final List<FailedBatch> failed = mapper.batchSave(list);
             if (!failed.isEmpty() && LOGGER.isErrorEnabled()) {
                 final StringBuilder sb = new StringBuilder("Batch failed: "
                         + batch + "\t[");
