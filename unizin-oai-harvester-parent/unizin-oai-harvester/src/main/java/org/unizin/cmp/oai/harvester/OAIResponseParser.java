@@ -40,19 +40,26 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
  * harvest if no token or an empty token is found in the response. Exceptions
  * caused by XML parsing errors are wrapped in
  * {@link HarvesterXMLParsingException}.
+ * </p>
+ * <p>
+ * This class is responsible for counting the number of XML events received and
+ * recording that information in the harvest state.
+ * </p>
  * <p>
  * OAI protocol errors are also parsed, and {@link OAIProtocolException
  * OAIProtocolExceptions} thrown. If an OAI protocol error occurs, that
  * exception will be thrown, regardless of other errors that may have occurred
  * (other exceptions will be added to the protocol exception's list of
  * suppressed exceptions).
+ * </p>
  * <p>
  * Instances take no part in the notification or state management of the
- * harvester beyond what is mentioned above. In particular, no notifications
- * are sent from methods in this class.
+ * harvester beyond what is mentioned above. In particular, no notifications are
+ * sent from methods in this class.
+ * </p>
  * <p>
  * Instances can be reused for multiple harvests.
- *
+ * </p>
  */
 final class OAIResponseParser {
     private static final ResumptionToken DEFAULT_FINAL_TOKEN =
@@ -160,7 +167,8 @@ final class OAIResponseParser {
         }
     }
 
-    private boolean hasNext(final XMLEventReader reader, final Harvest harvest) {
+    private boolean hasNext(final XMLEventReader reader,
+            final Harvest harvest) {
         return reader.hasNext() && !harvest.isCancelled();
     }
 

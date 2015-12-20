@@ -136,7 +136,8 @@ public final class MergingOAIResponseHandler extends AbstractOAIResponseHandler 
     }
 
     @Override
-    public OAIEventHandler getEventHandler(final HarvestNotification notification) {
+    public OAIEventHandler getEventHandler(
+            final HarvestNotification notification) {
         return eventHandler;
     }
 

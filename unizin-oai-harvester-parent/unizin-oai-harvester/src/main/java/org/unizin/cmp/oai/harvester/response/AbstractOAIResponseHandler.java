@@ -8,11 +8,12 @@ import org.unizin.cmp.oai.harvester.HarvestNotification;
  * <p>
  * Subclasses must implement
  * {@link OAIResponseHandler#getEventHandler(HarvestNotification)}.
+ * </p>
  * <p>
  * This class should be considered an implementation detail of its subclasses.
  * There should be no {@code instanceof AbstractOAIResponseHandler} checks in
  * any code, it should not be used as the type of method parameters, etc.
- *
+ * </p>
  */
 public abstract class AbstractOAIResponseHandler implements OAIResponseHandler {
     @Override

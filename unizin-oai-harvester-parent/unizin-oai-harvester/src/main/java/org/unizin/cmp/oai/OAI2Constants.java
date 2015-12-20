@@ -10,6 +10,7 @@ import javax.xml.namespace.QName;
  * already available in {@link javax.xml.XMLConstants} are not duplicated here.
  * In particular {@link javax.xml.XMLConstants#W3C_XML_SCHEMA_INSTANCE_NS_URI}
  * may be of interest to clients of this library.
+ * </p>
  */
 public final class OAI2Constants {
 

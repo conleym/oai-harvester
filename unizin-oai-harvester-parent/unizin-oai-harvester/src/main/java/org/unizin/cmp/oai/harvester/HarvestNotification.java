@@ -30,6 +30,7 @@ public final class HarvestNotification {
          * In particular, this notification is <em>not</em> sent when the
          * server sends an HTTP status code indicating an error of some kind.
          * In that case, the harvest simply ends with an error.
+         * </p>
          */
         RESPONSE_RECEIVED,
         /**

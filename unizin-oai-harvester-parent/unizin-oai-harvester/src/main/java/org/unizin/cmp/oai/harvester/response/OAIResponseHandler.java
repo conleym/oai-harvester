@@ -12,6 +12,7 @@ import org.unizin.cmp.oai.harvester.HarvestNotification;
  * handler for each response by creating a new instance in the
  * {@link #onResponseReceived(HarvestNotification)} method and returning that
  * instance from {@link #getEventHandler(HarvestNotification)}.
+ * </p>
  *
  */
 public interface OAIResponseHandler {
@@ -22,6 +23,7 @@ public interface OAIResponseHandler {
      * Called with a
      * {@link org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType#RESPONSE_RECEIVED}
      * notification just after the response is received from the server.
+     * </p>
      *
      * @param notification
      *            the current state of the harvest.
@@ -35,6 +37,7 @@ public interface OAIResponseHandler {
      * Called with a
      * {@link org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType#HARVEST_STARTED}
      * notification just after the harvest starts.
+     * </p>
      *
      * @param notification
      *            the current state of the harvest.
@@ -48,6 +51,7 @@ public interface OAIResponseHandler {
      * error of some kind with a
      * {@link org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType#HARVEST_ENDED}
      * notification.
+     * </p>
      *
      * @param notification
      *            the current state of the harvest.
@@ -62,9 +66,11 @@ public interface OAIResponseHandler {
      * server, with a
      * {@link org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType#RESPONSE_RECEIVED}
      * notification.
+     * </p>
      * <p>
      * For list requests, this will be called just before each incomplete list
      * received from the server is processed.
+     * </p>
      *
      * @param notification
      *            the current state of the harvest.
@@ -78,9 +84,11 @@ public interface OAIResponseHandler {
      * Called whether processing succeeded or failed with a
      * {@link org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType#RESPONSE_PROCESSED}
      * notification. Check the notification object for more information.
+     * </p>
      * <p>
      * For list requests, this will be called just after each incomplete list
      * received from the server is processed.
+     * </p>
      *
      * @param notification
      *            the current state of the harvest.

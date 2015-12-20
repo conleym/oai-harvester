@@ -12,6 +12,7 @@ import java.time.temporal.TemporalAccessor;
  * <p>
  * All compliant repositories must support the {@link #DAY} granularity.
  * {@link #SECOND} is optional.
+ * </p>
  */
 public enum OAIDateGranularity {
     DAY(DateTimeFormatter.ISO_LOCAL_DATE),

@@ -22,6 +22,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterException;
  * <p>
  * Each file's name is the current number of responses received so far for the
  * harvest with a '.xml' extension.
+ * </p>
  *
  */
 public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {

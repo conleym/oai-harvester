@@ -28,13 +28,16 @@ public final class OAIXMLUtils {
      * <p>
      * The new instance will be coalescing, namespace aware, and will not
      * support DTDs (see below).
+     * </p>
      *
      * <h2>Security Considerations</h2>
      *
+     * <p>
      * The new instance will <em>not</em> support DTDs (meaning it also doesn't
      * support external entities). See <a href=
      * "https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Processing">
      * here</a> for info about external entity and DTD-based attacks.
+     * </p>
      *
      * @return a new input factory instance with the settings as described
      *         above.

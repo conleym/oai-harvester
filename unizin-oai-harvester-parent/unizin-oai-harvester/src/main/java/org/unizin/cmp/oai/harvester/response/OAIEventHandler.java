@@ -11,6 +11,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
  * <p>
  * Instances are created or dispensed per-response by a corresponding
  * {@link OAIResponseHandler}.
+ * </p>
  * <p>
  * Instances are free to write events to an
  * {@link javax.xml.stream.XMLEventWriter} or not. For an implementation that
