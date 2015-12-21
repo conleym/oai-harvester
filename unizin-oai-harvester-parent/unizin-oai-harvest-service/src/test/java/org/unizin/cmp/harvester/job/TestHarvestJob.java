@@ -12,8 +12,10 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.stream.XMLEventReader;
 
@@ -70,11 +72,11 @@ public final class TestHarvestJob {
         return new HarvestJob.Builder(dynamoDBTestClient.mapper);
     }
 
-    private List<HarvestedOAIRecord> expectedRecords(final String response)
+    private Set<HarvestedOAIRecord> expectedRecords(final String response)
             throws Exception {
-        final List<HarvestedOAIRecord> list = new ArrayList<>();
+        final Set<HarvestedOAIRecord> set = new HashSet<>();
         final JobOAIEventHandler handler = new JobOAIEventHandler(testURI,
-                (arg) -> list.add(arg));
+                (arg) -> set.add(arg));
         final OAIResponseHandler h = new AbstractOAIResponseHandler() {
             @Override
             public OAIEventHandler getEventHandler(
@@ -89,11 +91,11 @@ public final class TestHarvestJob {
         while (reader.hasNext()) {
             h.getEventHandler(null).onEvent(reader.nextEvent());
         }
-        return list;
+        return set;
     }
 
     private void doRun(final String serverResponseBody) throws Exception {
-        final List<HarvestedOAIRecord> expectedRecords = expectedRecords(
+        final Set<HarvestedOAIRecord> expectedRecords = expectedRecords(
                 serverResponseBody);
         final HarvestJob job = newJobBuilder()
                 .withHarvestParams(new HarvestParams.Builder(testURI,
@@ -141,5 +143,15 @@ public final class TestHarvestJob {
         updatedRecords.add(updatedRecord3);
         final String updatedResponse = Tests.listRecordsResponse(updatedRecords);
         doRun(updatedResponse);
+    }
+
+    @Test
+    public void testDuplicates() throws Exception {
+        final List<String> listWithDuplicates = new ArrayList<String>(2);
+        final String test0 = Tests.TEST_RECORDS.get(0);
+        listWithDuplicates.add(test0);
+        listWithDuplicates.add(test0);
+        final String response = Tests.listRecordsResponse(listWithDuplicates);
+        doRun(response);
     }
 }
