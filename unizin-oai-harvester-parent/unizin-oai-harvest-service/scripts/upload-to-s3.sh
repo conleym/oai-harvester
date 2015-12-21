@@ -9,8 +9,8 @@ KEY="oai-harvester"
 # the current directory.
 PWD=$(pwd)
 PROJ=$(basename "${PWD}")
-TGZ=$(find target -name "${PROJ}-*.tar.gz")
-TGZ="${PWD}/${TGZ}"
+JAR=$(find target -name "${PROJ}-*.jar")
+JAR="${PWD}/${JAR}"
 DEST="${BUCKET}/${KEY}"
-echo "Uploading ${TGZ} to ${DEST}."
-aws s3 cp "${TGZ}" "s3://${DEST}/"
+echo "Uploading ${JAR} to ${DEST}."
+aws s3 cp "${JAR}" "s3://${DEST}/"
