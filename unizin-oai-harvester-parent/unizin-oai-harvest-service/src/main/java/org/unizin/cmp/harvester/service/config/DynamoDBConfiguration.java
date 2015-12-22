@@ -9,9 +9,10 @@ import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.internal.StaticCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
@@ -37,7 +38,7 @@ public class DynamoDBConfiguration {
         public DynamoDBMapper build(final AmazonDynamoDB client) {
             final DynamoDBMapperConfig.Builder config =
                     new DynamoDBMapperConfig.Builder()
-                        .withConsistentReads(consistentReads);
+                    .withConsistentReads(consistentReads);
             if (tableNameOverride != null) {
                 config.withTableNameOverride(new TableNameOverride(
                         tableNameOverride));
@@ -70,24 +71,22 @@ public class DynamoDBConfiguration {
     @Valid
     @NotNull
     private DynamoDBMapperConfiguration recordMapper =
-        new DynamoDBMapperConfiguration();
+    new DynamoDBMapperConfiguration();
 
     public AmazonDynamoDB build() {
+        AWSCredentialsProvider provider = null;
         if (awsAccessKeyID == null || awsAccessKey == null) {
             LOGGER.info("Secret keys not defined in configuration. Trying" +
                     " default provider chain.");
             // Set up defaults.
-            final DefaultAWSCredentialsProviderChain chain
-                = new DefaultAWSCredentialsProviderChain();
-            final AWSCredentials defaultCreds = chain.getCredentials();
-            awsAccessKey = defaultCreds.getAWSSecretKey();
-            awsAccessKeyID = defaultCreds.getAWSAccessKeyId();
+            provider = new DefaultAWSCredentialsProviderChain();
+        } else {
+            provider = new StaticCredentialsProvider(
+                        new BasicAWSCredentials(awsAccessKeyID, awsAccessKey));
         }
-        final AWSCredentials credentials = new BasicAWSCredentials(
-                awsAccessKeyID, awsAccessKey);
-        final AmazonDynamoDBClient db = new AmazonDynamoDBClient(credentials);
+        final AmazonDynamoDBClient db = new AmazonDynamoDBClient(provider);
         if (region != null) {
-                db.withRegion(Regions.fromName(region));
+            db.withRegion(Regions.fromName(region));
         }
         if (endpoint != null) {
             db.setEndpoint(endpoint.toString());
