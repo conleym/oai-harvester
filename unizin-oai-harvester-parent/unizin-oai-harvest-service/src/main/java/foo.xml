@@ -1,0 +1,34 @@
+<record xmlns="http://www.openarchives.org/OAI/2.0/">
+  <header>
+    <identifier>oai:minds.wisconsin.edu:1793/5004</identifier>
+    <datestamp>2008-02-05T19:53:45Z</datestamp>
+    <setSpec>hdl_1793_301</setSpec>
+  </header>
+  <metadata>
+    <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
+      xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
+      <dc:creator>Miles, Lawrence D.</dc:creator>
+      <dc:creator>Hicks, Tyler G.</dc:creator>
+      <dc:date>2006-01-27T18:25:08Z</dc:date>
+      <dc:date>2006-01-27T18:25:08Z</dc:date>
+      <dc:date>1974-05-10</dc:date>
+      <dc:identifier>UW-Madison Wendt Library: Miles Collection I --  Folder 74-3</dc:identifier>
+      <dc:identifier>http://digital.library.wisc.edu/1793/5004</dc:identifier>
+      <dc:description>Letter to Tyler Hicks, following up on [phone call?]:  expressing concern that construction market is not being exploited for selling second edition.  Mentions "rationale" for not doing so--in particular, Al Dell'Isola's book, devoted to using VE techniqu</dc:description>
+      <dc:format>274419 bytes</dc:format>
+      <dc:format>application/pdf</dc:format>
+      <dc:language>English</dc:language>
+      <dc:language>en_US</dc:language>
+      <dc:subject>Value Analysis (Cost Control)</dc:subject>
+      <dc:subject>Economic Engineering</dc:subject>
+      <dc:subject>Publishing</dc:subject>
+      <dc:subject>Promotion</dc:subject>
+      <dc:subject>Construction</dc:subject>
+      <dc:subject>Correspondence</dc:subject>
+      <dc:subject>Mcgraw-Hill Book Company, Engineering, Science, And Management</dc:subject>
+      <dc:title>Letter to Tyler Hicks, following up on [phone call?]:  expressing concern that construction market is not being exploited for selling second edition.--Correspondence</dc:title>
+      <dc:type>Other</dc:type>
+    </oai_dc:dc>
+  </metadata>
+</record>

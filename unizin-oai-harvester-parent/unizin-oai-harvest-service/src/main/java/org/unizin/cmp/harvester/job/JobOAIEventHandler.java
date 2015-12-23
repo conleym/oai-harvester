@@ -45,8 +45,6 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         super(recordConsumer);
         this.baseURL = baseURI.toString();
         this.outputFactory = outputFactory;
-        outputFactory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES,
-                true);
         this.messageDigest = messageDigest;
     }
 
@@ -68,6 +66,8 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         for (final XMLEvent event : events) {
             writer.add(event);
         }
+        writer.flush();
+        writer.close();
         return baos.toByteArray();
     }
 
