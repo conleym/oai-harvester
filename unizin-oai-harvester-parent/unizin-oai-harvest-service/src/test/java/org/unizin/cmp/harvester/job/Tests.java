@@ -61,24 +61,38 @@ public final class Tests {
         }
     }
 
-    public static final List<String> TEST_RECORDS;
+    public static final int TEST_RECORD_COUNT = 3;
+
+    public static final List<String> EXPECTED_TEST_RECORDS;
     static {
-        final int count = 3;
-        final List<String> responses = new ArrayList<>(count);
+        final List<String> records = new ArrayList<>(TEST_RECORD_COUNT);
         try {
-            for (int i = 1; i <= count; i++) {
-                responses.add(testOAIRecord(i));
+            for (int i = 1; i <= TEST_RECORD_COUNT; i++) {
+                records.add(testOAIRecord(i));
             }
-            TEST_RECORDS = Collections.unmodifiableList(
-                    responses);
+            EXPECTED_TEST_RECORDS = Collections.unmodifiableList(
+                    records);
         } catch (final XMLStreamException e) {
             throw new ExceptionInInitializerError(e);
         }
     }
+    public static final List<String> RAW_TEST_RECORDS;
+    static {
+        try {
+            final List<String> records = new ArrayList<>(TEST_RECORD_COUNT);
+            for (int i = 1; i <= TEST_RECORD_COUNT; i++) {
+                records.add(rawOAIRecord(i));
+            }
+            RAW_TEST_RECORDS = Collections.unmodifiableList(records);
+        } catch (final IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
 
     public static final String OAI_LIST_RECORDS_RESPONSE;
     static {
-        OAI_LIST_RECORDS_RESPONSE = listRecordsResponse(TEST_RECORDS);
+        OAI_LIST_RECORDS_RESPONSE = listRecordsResponse(RAW_TEST_RECORDS);
     }
 
     public static String listRecordsResponse(final List<String> records) {
@@ -95,13 +109,8 @@ public final class Tests {
         }
     }
 
-    public static String readRecord(final String filename)
+    public static String readRecord(final InputStream in)
             throws XMLStreamException {
-        final InputStream in = Tests.class.getResourceAsStream(filename);
-        if (in == null) {
-            throw new IllegalArgumentException(String.format(
-                    "Nonexistant response file requested: %s.", filename));
-        }
         /*
          * Run the expected input through StAX to eliminate any newline
          * weirdness and to add appropriate namespaces.
@@ -134,8 +143,27 @@ public final class Tests {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    private static String testOAIRecord(int i) throws XMLStreamException {
-        return readRecord("/oai-records/record-" + i + ".xml");
+    private static String testRecordFilename(final int i) {
+        return "/oai-records/record-" + i + ".xml";
+    }
+
+    private static InputStream testRecordStream(final int i) {
+        final String filename = testRecordFilename(i);
+        final InputStream in = Tests.class.getResourceAsStream(filename);
+        if (in == null) {
+            throw new IllegalArgumentException(String.format(
+                    "Nonexistant response file requested: %s.", filename));
+        }
+        return in;
+    }
+
+    private static String rawOAIRecord(final int i) throws IOException {
+        return new String(ByteStreams.toByteArray(testRecordStream(i)),
+                StandardCharsets.UTF_8);
+    }
+
+    private static String testOAIRecord(final int i) throws XMLStreamException {
+        return readRecord(testRecordStream(i));
     }
 
     public static String decompress(final byte[] bytes) throws IOException {

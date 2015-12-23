@@ -134,7 +134,7 @@ public final class TestHarvestJob {
         doRun(Tests.OAI_LIST_RECORDS_RESPONSE);
 
         final List<String> updatedRecords = new ArrayList<String>(
-                Tests.TEST_RECORDS);
+                Tests.RAW_TEST_RECORDS);
         updatedRecords.remove(2);
         final InputStream in = this.getClass().getResourceAsStream(
                 "/oai-records/record-3a.xml");
@@ -148,7 +148,7 @@ public final class TestHarvestJob {
     @Test
     public void testDuplicates() throws Exception {
         final List<String> listWithDuplicates = new ArrayList<String>(2);
-        final String test0 = Tests.TEST_RECORDS.get(0);
+        final String test0 = Tests.RAW_TEST_RECORDS.get(0);
         listWithDuplicates.add(test0);
         listWithDuplicates.add(test0);
         final String response = Tests.listRecordsResponse(listWithDuplicates);
