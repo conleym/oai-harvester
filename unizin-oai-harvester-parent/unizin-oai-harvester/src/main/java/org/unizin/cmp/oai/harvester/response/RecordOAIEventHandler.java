@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
@@ -44,10 +43,9 @@ implements OAIEventHandler {
     private final Consumer<T> recordHandler;
     private T currentRecord;
     private boolean inRecord;
-    private boolean seenRecord;
     private boolean bufferChars;
     private QName currentStartElementQName;
-    private NamespaceContext possiblyEnclosingContext;
+
 
     protected RecordOAIEventHandler(final Consumer<T> recordHandler) {
         this.recordHandler = recordHandler;
@@ -75,7 +73,6 @@ implements OAIEventHandler {
             currentStartElementQName = se.getName();
             if (currentElementIs(OAI2Constants.RECORD)) {
                 inRecord = true;
-                seenRecord = true;
                 currentRecord = createRecord(se);
             } else if (currentElementIs(OAI2Constants.HEADER)) {
                 final String status = OAIXMLUtils.attributeValue(se,
@@ -86,16 +83,12 @@ implements OAIEventHandler {
                     currentElementIs(OAI2Constants.SET_SPEC)) {
                 bufferChars = true;
             }
-            if (!seenRecord) {
-                possiblyEnclosingContext = se.getNamespaceContext();
-            }
         } else if (e.isEndElement()) {
             final QName name = e.asEndElement().getName();
             if (OAI2Constants.RECORD.equals(name)) {
                 inRecord = false;
                 eventBuffer.add(e);
-                onRecordEnd(currentRecord, copyAndClearBuffer(),
-                        possiblyEnclosingContext);
+                onRecordEnd(currentRecord, copyAndClearBuffer());
                 recordHandler.accept(currentRecord);
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
                 final String identifier = getBufferedChars();
@@ -116,7 +109,6 @@ implements OAIEventHandler {
         } else if (e.isCharacters() && bufferChars) {
             charBuffer.append(e.asCharacters().getData());
         } else if (e.isStartDocument() || e.isEndDocument()) {
-            seenRecord = false;
             inRecord = false;
             bufferChars = false;
             charBuffer.setLength(0);
@@ -147,12 +139,9 @@ implements OAIEventHandler {
      * @param recordEvents
      *            a list containing all events since the last &lt;record&gt;,
      *            including the matching end element.
-     * @param containingNamespaceContext
-     *            namespace context of the element enclosing the records.
      */
     protected abstract void onRecordEnd(T currentRecord,
-            List<XMLEvent> recordEvents,
-            NamespaceContext containingNamespaceContext);
+            List<XMLEvent> recordEvents);
 
     /**
      * Implementations must create and return a new instance of the record

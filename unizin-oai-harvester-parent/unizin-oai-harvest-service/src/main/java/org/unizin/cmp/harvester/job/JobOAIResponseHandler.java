@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 
 import javax.xml.stream.XMLOutputFactory;
 
-import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.response.AbstractOAIResponseHandler;
@@ -33,7 +32,7 @@ implements Consumer<HarvestedOAIRecord> {
             final Timeout offerTimeout)
                     throws NoSuchAlgorithmException {
         this(baseURI, harvestedRecordQueue, offerTimeout,
-                OAIXMLUtils.newOutputFactory(), HarvestJob.digest());
+                JobOAIEventHandler.defaultOutputFactory(), HarvestJob.digest());
     }
 
     public JobOAIResponseHandler(final URI baseURI,

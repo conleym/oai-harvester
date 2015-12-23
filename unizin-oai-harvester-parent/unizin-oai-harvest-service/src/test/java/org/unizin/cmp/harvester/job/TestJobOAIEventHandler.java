@@ -29,10 +29,6 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.unizin.cmp.harvester.job.JobOAIResponseHandler;
-import org.unizin.cmp.harvester.job.HarvestJob;
-import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
-import org.unizin.cmp.harvester.job.Timeout;
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
@@ -51,7 +47,7 @@ public final class TestJobOAIEventHandler {
 
     public TestJobOAIEventHandler() throws Exception {
         final MessageDigest digest = HarvestJob.digest();
-        for (final String record : Tests.TEST_RECORDS) {
+        for (final String record : Tests.EXPECTED_TEST_RECORDS) {
             digest.update(record.getBytes(StandardCharsets.UTF_8));
             checksums.add(digest.digest());
         }
@@ -96,25 +92,25 @@ public final class TestJobOAIEventHandler {
         final HarvestParams p = new HarvestParams.Builder(uri,
                 OAIVerb.LIST_RECORDS).build();
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
-                new ArrayBlockingQueue<>(Tests.TEST_RECORDS.size());
+                new ArrayBlockingQueue<>(Tests.TEST_RECORD_COUNT);
         harvester.start(p, new JobOAIResponseHandler(uri,
                 harvestedRecordQueue, new Timeout(0, TimeUnit.SECONDS)));
 
-        Assert.assertEquals(Tests.TEST_RECORDS.size(),
+        Assert.assertEquals(Tests.TEST_RECORD_COUNT,
                 harvestedRecordQueue.size());
 
         final Map<String, Map<String, Object>> expectedValues = new HashMap<>();
         Map<String, Object> expectedValue = new HashMap<>();
         expectedValue.put(STATUS_ATTRIB, OAI2Constants.DELETED_STATUS);
         expectedValue.put(DATESTAMP_ATTRIB, "2015-11-02");
-        expectedValue.put(XML_ATTRIB, Tests.TEST_RECORDS.get(0));
+        expectedValue.put(XML_ATTRIB, Tests.EXPECTED_TEST_RECORDS.get(0));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(0));
         expectedValue.put(SETS_ATTRIB, Collections.emptySet());
         addExpectedValuesForIdentifier("1", expectedValue, expectedValues);
 
         expectedValue = new HashMap<>();
         expectedValue.put(DATESTAMP_ATTRIB, "2014-01-10");
-        expectedValue.put(XML_ATTRIB, Tests.TEST_RECORDS.get(1));
+        expectedValue.put(XML_ATTRIB, Tests.EXPECTED_TEST_RECORDS.get(1));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(1));
         expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set1",
                 "set2")));
@@ -122,7 +118,7 @@ public final class TestJobOAIEventHandler {
 
         expectedValue = new HashMap<>();
         expectedValue.put(DATESTAMP_ATTRIB, "2010-10-10");
-        expectedValue.put(XML_ATTRIB, Tests.TEST_RECORDS.get(2));
+        expectedValue.put(XML_ATTRIB, Tests.EXPECTED_TEST_RECORDS.get(2));
         expectedValue.put(CHECKSUM_ATTRIB, checksums.get(2));
         expectedValue.put(SETS_ATTRIB, new HashSet<>(Arrays.asList("set3")));
         addExpectedValuesForIdentifier("3", expectedValue, expectedValues);

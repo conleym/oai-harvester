@@ -3,13 +3,13 @@ package org.unizin.cmp.harvester.job;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
@@ -31,10 +31,16 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
     private final XMLOutputFactory outputFactory;
     private final MessageDigest messageDigest;
 
+    static XMLOutputFactory defaultOutputFactory() {
+        final XMLOutputFactory out = OAIXMLUtils.newOutputFactory();
+        out.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+        return out;
+    }
+
     public JobOAIEventHandler(final URI baseURI,
             final Consumer<HarvestedOAIRecord> recordConsumer)
                     throws NoSuchAlgorithmException {
-        this(baseURI, recordConsumer, OAIXMLUtils.newOutputFactory(),
+        this(baseURI, recordConsumer, defaultOutputFactory(),
                 HarvestJob.digest());
     }
 
@@ -45,6 +51,12 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         super(recordConsumer);
         this.baseURL = baseURI.toString();
         this.outputFactory = outputFactory;
+        final Object o = outputFactory.getProperty(
+                XMLOutputFactory.IS_REPAIRING_NAMESPACES);
+        if (! (o instanceof Boolean && (boolean)o)) {
+            throw new IllegalArgumentException(
+                    "Output factory must repair namespaces.");
+        }
         this.messageDigest = messageDigest;
     }
 
@@ -53,21 +65,19 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         return messageDigest.digest();
     }
 
-    private byte[] createXML(final List<XMLEvent> events,
-            final NamespaceContext enclosingContext)
+    private byte[] createXML(final List<XMLEvent> events)
             throws XMLStreamException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final XMLEventWriter writer = outputFactory.createXMLEventWriter(baos);
-        // Ensure all enclosing namespaces and prefix mappings are present.
-        writer.setNamespaceContext(enclosingContext);
-        // Ensure elements w/o prefixes go in the correct namespace.
-        writer.setDefaultNamespace(enclosingContext.getNamespaceURI(
-                XMLConstants.DEFAULT_NS_PREFIX));
         for (final XMLEvent event : events) {
             writer.add(event);
         }
         writer.flush();
         writer.close();
+
+        // TODO real logging
+        System.out.println(new String(baos.toByteArray(),
+                StandardCharsets.UTF_8));
         return baos.toByteArray();
     }
 
@@ -107,10 +117,9 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
 
     @Override
     protected void onRecordEnd(final HarvestedOAIRecord currentRecord,
-            final List<XMLEvent> recordEvents,
-            final NamespaceContext enclosingContext) {
+            final List<XMLEvent> recordEvents) {
         try {
-            final byte[] bytes = createXML(recordEvents, enclosingContext);
+            final byte[] bytes = createXML(recordEvents);
             final byte[] checksum = checksum(bytes);
             currentRecord.setXml(compress(bytes));
             currentRecord.setChecksum(checksum);
