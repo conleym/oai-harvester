@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service.config;
+package org.unizin.cmp.oai.harvester.service.config;
 
 import java.net.URI;
 

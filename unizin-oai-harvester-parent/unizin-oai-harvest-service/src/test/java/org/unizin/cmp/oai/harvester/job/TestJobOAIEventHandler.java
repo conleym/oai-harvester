@@ -1,14 +1,14 @@
-package org.unizin.cmp.harvester.job;
+package org.unizin.cmp.oai.harvester.job;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.CHECKSUM_ATTRIB;
-import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.DATESTAMP_ATTRIB;
-import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.SETS_ATTRIB;
-import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.STATUS_ATTRIB;
-import static org.unizin.cmp.harvester.job.HarvestedOAIRecord.XML_ATTRIB;
+import static org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord.CHECKSUM_ATTRIB;
+import static org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord.DATESTAMP_ATTRIB;
+import static org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord.SETS_ATTRIB;
+import static org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord.STATUS_ATTRIB;
+import static org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord.XML_ATTRIB;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -33,6 +33,10 @@ import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
+import org.unizin.cmp.oai.harvester.job.HarvestJob;
+import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.oai.harvester.job.JobOAIResponseHandler;
+import org.unizin.cmp.oai.harvester.job.Timeout;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 

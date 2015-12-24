@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service;
+package org.unizin.cmp.oai.harvester.service;
 
 import java.sql.SQLException;
 import java.util.Objects;

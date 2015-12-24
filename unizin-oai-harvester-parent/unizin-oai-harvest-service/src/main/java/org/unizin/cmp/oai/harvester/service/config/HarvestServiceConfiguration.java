@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service.config;
+package org.unizin.cmp.oai.harvester.service.config;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

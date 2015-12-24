@@ -1,13 +1,13 @@
-package org.unizin.cmp.harvester.service;
+package org.unizin.cmp.oai.harvester.service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.unizin.cmp.harvester.job.HarvestJob;
-import org.unizin.cmp.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.Harvester;
+import org.unizin.cmp.oai.harvester.job.HarvestJob;
+import org.unizin.cmp.oai.harvester.job.JobNotification;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

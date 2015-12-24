@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.job;
+package org.unizin.cmp.oai.harvester.job;
 
 import java.util.ArrayList;
 import java.util.HashMap;

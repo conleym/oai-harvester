@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service;
+package org.unizin.cmp.oai.harvester.service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -29,14 +29,14 @@ import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.client.HttpClient;
 import org.jboss.logging.MDC;
-import org.unizin.cmp.harvester.job.HarvestJob;
-import org.unizin.cmp.harvester.job.JobNotification;
-import org.unizin.cmp.harvester.job.JobNotification.JobNotificationType;
-import org.unizin.cmp.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
+import org.unizin.cmp.oai.harvester.job.HarvestJob;
+import org.unizin.cmp.oai.harvester.job.JobNotification;
+import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
+import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 

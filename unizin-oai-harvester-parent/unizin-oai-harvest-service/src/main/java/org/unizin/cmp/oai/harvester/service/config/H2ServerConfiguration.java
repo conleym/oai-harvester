@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service.config;
+package org.unizin.cmp.oai.harvester.service.config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.List;
 import javax.validation.constraints.Min;
 
 import org.h2.tools.Server;
-import org.unizin.cmp.harvester.service.ManagedH2Server;
+import org.unizin.cmp.oai.harvester.service.ManagedH2Server;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

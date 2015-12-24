@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.job;
+package org.unizin.cmp.oai.harvester.job;
 
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
@@ -28,11 +28,11 @@ import org.apache.http.message.BasicHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.unizin.cmp.harvester.job.JobNotification.JobNotificationType;
-import org.unizin.cmp.harvester.job.JobNotification.JobStatistic;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.OAIRequestFactory;
+import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
+import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 import com.amazonaws.AmazonClientException;
