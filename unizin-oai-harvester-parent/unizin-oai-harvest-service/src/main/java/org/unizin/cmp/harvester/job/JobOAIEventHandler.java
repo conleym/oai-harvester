@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.zip.GZIPOutputStream;
 
-import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
