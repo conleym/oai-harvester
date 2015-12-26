@@ -54,8 +54,9 @@ public class BufferingOAIEventHandler implements OAIEventHandler {
 
     public static Consumer<List<XMLEvent>> consumerFromEventHandler(
             final OAIEventHandler handler) {
-        return events -> events.forEach(Functions.wrap(
-                (x) -> handler.onEvent(x)));
+        final Consumer<XMLEvent> eventConsumer = Functions.wrap(
+                e -> handler.onEvent(e));
+        return events -> events.forEach(eventConsumer);
     }
 
     private final List<XMLEvent> eventBuffer = new ArrayList<>();
