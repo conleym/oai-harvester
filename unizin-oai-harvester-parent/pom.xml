@@ -12,7 +12,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <slf4j.version>1.7.12</slf4j.version>
-    <aws-sdk.version>1.10.41</aws-sdk.version>
+    <aws-sdk.version>1.10.43</aws-sdk.version>
     <github.project>unizin/oai-harvester</github.project>
     <scm.connection>scm:git:git@github.com:${github.project}.git</scm.connection>
   </properties>
