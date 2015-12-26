@@ -12,7 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.Tests;
+import org.unizin.cmp.oai.harvester.WireMock;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
 import org.unizin.cmp.oai.mocks.Mocks;
@@ -28,11 +28,11 @@ public final class TestResponseHandlerErrorHandling {
     public final ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMock.newWireMockRule();
 
     @Before
     public void setupWiremock() {
-        Tests.createWiremockStubForOKGetResponse(VALID_XML);
+        WireMock.createWiremockStubForOKGetResponse(VALID_XML);
     }
 
     /**

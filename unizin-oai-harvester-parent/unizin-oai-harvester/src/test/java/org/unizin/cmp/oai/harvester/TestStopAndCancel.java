@@ -30,7 +30,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
  */
 public final class TestStopAndCancel {
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMock.newWireMockRule();
 
     private void observerTest(final Consumer<Harvester> action,
             final Predicate<HarvestNotification> lastNotificationCheck)

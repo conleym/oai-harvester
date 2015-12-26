@@ -31,4 +31,12 @@ public interface OAIEventHandler {
      *             record metadata.
      */
     void onEvent(XMLEvent e) throws XMLStreamException;
+
+    /**
+     * Dispose of any underlying resources associated with this instance.
+     *
+     * @throws XMLStreamException
+     *             if there's an error disposing of resources.
+     */
+    default void close() throws XMLStreamException { }
 }

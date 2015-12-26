@@ -74,11 +74,14 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
 
     @Override
     public void onResponseProcessed(final HarvestNotification notification) {
-        OAIXMLUtils.closeQuietly(eventWriter);
         try (final OutputStream os = outputStream) {
-            eventWriter = null;
+            final XMLEventWriter ew = eventWriter;
             outputStream = null;
-        } catch (final IOException e) {
+            eventWriter = null;
+            if (ew != null) {
+                ew.close();
+            }
+        } catch (final XMLStreamException | IOException e) {
             throw new HarvesterException(e);
         }
     }

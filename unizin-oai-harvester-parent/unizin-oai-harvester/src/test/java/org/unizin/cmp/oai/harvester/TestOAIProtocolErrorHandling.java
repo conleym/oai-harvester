@@ -52,16 +52,16 @@ public final class TestOAIProtocolErrorHandling {
 
     /** WireMock is used for all but one test, so we'll just use the rule. */
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMock.newWireMockRule();
 
     private static void setupWithError()
             throws TemplateException, IOException {
         final String errorResponse = ErrorsTemplate.process();
-        Tests.createWiremockStubForOKGetResponse(errorResponse);
+        WireMock.createWiremockStubForOKGetResponse(errorResponse);
     }
 
     private static void setupWithError(final String errorResponse) {
-        Tests.createWiremockStubForOKGetResponse(errorResponse);
+        WireMock.createWiremockStubForOKGetResponse(errorResponse);
     }
 
     private Throwable checkSingleSuppressedException(final Throwable t) {

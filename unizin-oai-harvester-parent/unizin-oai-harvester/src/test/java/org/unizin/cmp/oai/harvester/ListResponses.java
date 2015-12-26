@@ -69,9 +69,9 @@ public final class ListResponses {
     private static void setupResponse(final String responseBody,
             final Optional<String> resumptionToken) {
         final String pattern = resumptionToken.isPresent() ?
-                Tests.urlResmptionTokenPattern(resumptionToken.get()) :
-                    Tests.URL_PATTERN_WITHOUT_RESUMPTION_TOKEN;
-        Tests.createWiremockStubForGetResponse(HttpStatus.SC_OK,
+                WireMock.urlResmptionTokenPattern(resumptionToken.get()) :
+                    WireMock.URL_PATTERN_WITHOUT_RESUMPTION_TOKEN;
+        WireMock.createWiremockStubForGetResponse(HttpStatus.SC_OK,
                 responseBody, pattern);
     }
 

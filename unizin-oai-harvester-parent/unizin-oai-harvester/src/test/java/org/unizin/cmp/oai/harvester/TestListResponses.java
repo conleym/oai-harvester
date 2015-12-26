@@ -50,7 +50,7 @@ public final class TestListResponses {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TestListResponses.class);
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMock.newWireMockRule();
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();

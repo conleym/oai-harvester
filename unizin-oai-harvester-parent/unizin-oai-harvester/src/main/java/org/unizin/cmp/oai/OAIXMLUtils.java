@@ -3,7 +3,6 @@ package org.unizin.cmp.oai;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -77,24 +76,6 @@ public final class OAIXMLUtils {
             reader.close();
         } catch (XMLStreamException e) {
             LOGGER.warn("Ignored exception closing XMLEventReader.", e);
-        }
-    }
-
-    /**
-     * Close an {@link XMLEventWriter}, logging any exceptions that occur as
-     * warnings.
-     *
-     * @param writer
-     *            the event writer to close.
-     */
-    public static void closeQuietly(final XMLEventWriter writer) {
-        if (writer == null) {
-            return;
-        }
-        try {
-            writer.close();
-        } catch (final XMLStreamException e) {
-            LOGGER.warn("Ignored exception closing XMLEventWriter.", e);
         }
     }
 

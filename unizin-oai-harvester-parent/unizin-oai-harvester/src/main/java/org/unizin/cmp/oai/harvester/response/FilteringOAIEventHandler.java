@@ -62,4 +62,9 @@ public final class FilteringOAIEventHandler implements OAIEventHandler {
             LOGGER.trace("Rejecting event {}", event);
         }
     }
+
+    @Override
+    public void close() throws XMLStreamException {
+        delegate.close();
+    }
 }

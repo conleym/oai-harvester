@@ -4,11 +4,11 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.unizin.cmp.oai.harvester.Tests.MOCK_OAI_BASE_URI;
 import static org.unizin.cmp.oai.harvester.Tests.STAX;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Iterator;
 
@@ -37,7 +37,7 @@ public final class TestNonListResponses {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMock.newWireMockRule();
 
     private static final NamespaceContext OAI_CONTEXT = new NamespaceContext(){
         @Override
@@ -91,12 +91,15 @@ public final class TestNonListResponses {
                 .withOAIRequestFactory(PostOAIRequestFactory.getInstance())
                 .build();
         final HarvestParams params = new HarvestParams.Builder(
-                MOCK_OAI_BASE_URI, OAIVerb.GET_RECORD)
+                WireMock.MOCK_OAI_BASE_URI, OAIVerb.GET_RECORD)
                 .withIdentifier(expectedIdentifier)
                 .build();
         Assert.assertTrue(params.areValid());
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        harvester.start(params, new MergingOAIResponseHandler(out));
+        harvester.start(params, new MergingOAIResponseHandler(
+                Tests.simpleMergingHandler(out)));
+
+        System.out.println(new String(out.toByteArray(), StandardCharsets.UTF_8));
 
         // This really just tests that we're not messing up the XML.
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
