@@ -17,7 +17,8 @@ import org.unizin.cmp.oai.OAIXMLUtils;
 
 
 /**
- * Event handler implementation that produces record objects.
+ * Event handler implementation that produces objects for each OAI
+ * &lt;record&gt; in a repository's response.
  * <p>
  * Instances have a {@link Consumer} to which finalized records are sent once
  * finalized for further processing.
@@ -40,15 +41,15 @@ implements OAIEventHandler {
 
     private List<XMLEvent> eventBuffer = new ArrayList<>();
     private final StringBuilder charBuffer = new StringBuilder();
-    private final Consumer<T> recordHandler;
+    private final Consumer<T> recordConsumer;
     private T currentRecord;
     private boolean inRecord;
     private boolean bufferChars;
     private QName currentStartElementQName;
 
 
-    protected RecordOAIEventHandler(final Consumer<T> recordHandler) {
-        this.recordHandler = recordHandler;
+    protected RecordOAIEventHandler(final Consumer<T> recordConsumer) {
+        this.recordConsumer = recordConsumer;
     }
 
     private boolean currentElementIs(final QName name) {
@@ -89,7 +90,7 @@ implements OAIEventHandler {
                 inRecord = false;
                 eventBuffer.add(e);
                 onRecordEnd(currentRecord, copyAndClearBuffer());
-                recordHandler.accept(currentRecord);
+                recordConsumer.accept(currentRecord);
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
                 final String identifier = getBufferedChars();
                 LOGGER.trace("Setting identifier {}", identifier);

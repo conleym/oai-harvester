@@ -55,6 +55,7 @@ final class RunningHarvesters {
      * then produces a new {@code Runnable} that executes the given
      * {@code Runnable}. When its execution completes, the key-harvester pair
      * will be removed.
+     * </p>
      *
      * @param harvester
      *            the harvester itself.

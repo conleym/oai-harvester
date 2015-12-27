@@ -34,7 +34,7 @@ public final class WireMock {
 
     private static final String LITERAL_QM = Pattern.quote("?");
     public static final String URL_PATTERN_WITHOUT_RESUMPTION_TOKEN =
-            "^.*\\?(?:(?!resumptionToken).)*$";
+            "^.*" + LITERAL_QM + "(?:(?!resumptionToken).)*$";
 
     public static String urlResmptionTokenPattern(
             final String resumptionToken) {
