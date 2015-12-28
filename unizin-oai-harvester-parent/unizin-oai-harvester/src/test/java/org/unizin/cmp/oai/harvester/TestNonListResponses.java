@@ -8,7 +8,6 @@ import static org.unizin.cmp.oai.harvester.Tests.STAX;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Iterator;
 
@@ -98,8 +97,6 @@ public final class TestNonListResponses {
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
         harvester.start(params, new MergingOAIResponseHandler(
                 Tests.simpleMergingHandler(out)));
-
-        System.out.println(new String(out.toByteArray(), StandardCharsets.UTF_8));
 
         // This really just tests that we're not messing up the XML.
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
