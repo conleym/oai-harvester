@@ -17,7 +17,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 import freemarker.template.TemplateException;
 
-public final class WireMock {
+public final class WireMockUtils {
 
     public static final int DEFAULT_WIREMOCK_PORT = 9000;
     public static final int WIREMOCK_PORT = Integer.parseInt(System.getProperty(
@@ -71,5 +71,5 @@ public final class WireMock {
     }
 
     /** No instances allowed. */
-    private WireMock() { }
+    private WireMockUtils() { }
 }

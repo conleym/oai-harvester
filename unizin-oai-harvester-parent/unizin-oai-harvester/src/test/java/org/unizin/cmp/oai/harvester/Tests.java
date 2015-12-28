@@ -44,12 +44,12 @@ public class Tests {
 
 
     public static HarvestParams.Builder defaultTestParams() {
-        return new HarvestParams.Builder(WireMock.MOCK_OAI_BASE_URI,
+        return new HarvestParams.Builder(WireMockUtils.MOCK_OAI_BASE_URI,
                 DEFAULT_VERB);
     }
 
     public static HarvestParams.Builder defaultTestParams(final OAIVerb verb) {
-        return new HarvestParams.Builder(WireMock.MOCK_OAI_BASE_URI, verb);
+        return new HarvestParams.Builder(WireMockUtils.MOCK_OAI_BASE_URI, verb);
     }
 
     public static final OAIEventHandler simpleMergingHandler(

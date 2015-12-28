@@ -16,13 +16,13 @@ import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.IOUtils;
 import org.unizin.cmp.oai.harvester.ListResponses;
 import org.unizin.cmp.oai.harvester.Tests;
-import org.unizin.cmp.oai.harvester.WireMock;
+import org.unizin.cmp.oai.harvester.WireMockUtils;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestMergingHandler {
     @Rule
-    public final WireMockRule wireMock = WireMock.newWireMockRule();
+    public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -47,7 +47,7 @@ public final class TestMergingHandler {
 
     @Test
     public void testSingleResponse() throws Exception {
-        WireMock.getStub(expected);
+        WireMockUtils.getStub(expected);
         test(new Harvester.Builder().build(), defaultTestParams().build());
     }
 

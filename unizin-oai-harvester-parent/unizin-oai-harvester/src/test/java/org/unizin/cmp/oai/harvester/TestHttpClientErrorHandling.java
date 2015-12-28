@@ -32,7 +32,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestHttpClientErrorHandling {
     @Rule
-    public final WireMockRule wireMock = WireMock.newWireMockRule();
+    public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
