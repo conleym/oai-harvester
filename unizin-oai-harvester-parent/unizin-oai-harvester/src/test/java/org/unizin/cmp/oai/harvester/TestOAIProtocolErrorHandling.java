@@ -57,11 +57,11 @@ public final class TestOAIProtocolErrorHandling {
     private static void setupWithError()
             throws TemplateException, IOException {
         final String errorResponse = ErrorsTemplate.process();
-        WireMock.createWiremockStubForOKGetResponse(errorResponse);
+        WireMock.getStub(errorResponse);
     }
 
     private static void setupWithError(final String errorResponse) {
-        WireMock.createWiremockStubForOKGetResponse(errorResponse);
+        WireMock.getStub(errorResponse);
     }
 
     private Throwable checkSingleSuppressedException(final Throwable t) {

@@ -47,7 +47,7 @@ public final class TestMergingHandler {
 
     @Test
     public void testSingleResponse() throws Exception {
-        WireMock.createWiremockStubForOKGetResponse(expected);
+        WireMock.getStub(expected);
         test(new Harvester.Builder().build(), defaultTestParams().build());
     }
 

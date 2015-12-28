@@ -32,8 +32,7 @@ public final class TestHarvestRestart {
      */
     @Test
     public void testRestartParametersWithoutToken() throws Exception {
-        WireMock.createWiremockStubForGetResponse(
-                HttpStatus.SC_INTERNAL_SERVER_ERROR,
+        WireMock.getStub(HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "Look. Something went wrong.");
         final HarvestParams params = defaultTestParams().build();
         final Harvester harvester = new Harvester.Builder().build();
@@ -52,12 +51,12 @@ public final class TestHarvestRestart {
     public void testRestartParmetersWithToken() throws Exception {
         final String expectedToken =
                 "0001-01-01T00:00:00Z/9999-12-31T23:59:59Z//oai_dc/100";
-        WireMock.createWiremockStubForGetResponse(HttpStatus.SC_OK,
+        WireMock.getStub(HttpStatus.SC_OK,
                 IOUtils.stringFromClasspathFile(
                         "/oai-responses/oai-partial-list-records-response.xml"),
                 WireMock.URL_PATTERN_WITHOUT_RESUMPTION_TOKEN);
-        WireMock.createWiremockStubForGetResponse(
-                HttpStatus.SC_INTERNAL_SERVER_ERROR, "Something's amiss.",
+        WireMock.getStub(HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                "Something's amiss.",
                 WireMock.urlResmptionTokenPattern(expectedToken));
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(HarvesterException.class);

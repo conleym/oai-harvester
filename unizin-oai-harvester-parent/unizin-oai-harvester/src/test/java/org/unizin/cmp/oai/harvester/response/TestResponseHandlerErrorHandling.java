@@ -32,7 +32,7 @@ public final class TestResponseHandlerErrorHandling {
 
     @Before
     public void setupWiremock() {
-        WireMock.createWiremockStubForOKGetResponse(VALID_XML);
+        WireMock.getStub(VALID_XML);
     }
 
     /**

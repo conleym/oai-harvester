@@ -46,20 +46,17 @@ public final class WireMock {
         return new WireMockRule(WIREMOCK_PORT);
     }
 
-    public static void createWiremockStubForOKGetResponse(
-            final String responseBody) {
-        createWiremockStubForGetResponse(HttpStatus.SC_OK,
-                responseBody);
+    public static void getStub(final String responseBody) {
+        getStub(HttpStatus.SC_OK, responseBody);
     }
 
-    public static void createWiremockStubForGetResponse(final int statusCode,
+    public static void getStub(final int statusCode,
             final String responseBody) {
-        createWiremockStubForGetResponse(statusCode, responseBody,
-                ".*");
+        getStub(statusCode, responseBody, ".*");
     }
 
-    public static void createWiremockStubForGetResponse(final int statusCode,
-            final String responseBody, final String urlPattern) {
+    public static void getStub(final int statusCode, final String responseBody,
+            final String urlPattern) {
         stubFor(get(urlMatching(urlPattern))
                 .willReturn(aResponse()
                         .withStatus(statusCode)
@@ -69,7 +66,7 @@ public final class WireMock {
     public static String setupWithDefaultErrorResponse()
             throws TemplateException, IOException {
         final String defaultError = ErrorsTemplate.process();
-        createWiremockStubForOKGetResponse(defaultError);
+        getStub(defaultError);
         return defaultError;
     }
 
