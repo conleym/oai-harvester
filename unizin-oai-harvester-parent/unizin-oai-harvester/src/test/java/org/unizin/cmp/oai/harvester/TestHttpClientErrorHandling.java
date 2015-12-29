@@ -9,7 +9,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.io.IOException;
@@ -60,7 +60,7 @@ public final class TestHttpClientErrorHandling {
         exception.expect(expected);
         try {
             new Harvester.Builder().withHttpClient(httpClient).build()
-                .start(defaultTestParams().build(), h);
+                .start(newParams().build(), h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
             verifyExpectations.accept(e);
@@ -109,7 +109,7 @@ public final class TestHttpClientErrorHandling {
                         HttpStatus.SC_BAD_GATEWAY)));
         final OAIResponseHandler h = Mocks.newResponseHandler();
         try {
-            new Harvester.Builder().build().start(defaultTestParams().build(),
+            new Harvester.Builder().build().start(newParams().build(),
                     h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
@@ -136,7 +136,7 @@ public final class TestHttpClientErrorHandling {
         exception.expect(RuntimeException.class);
         exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
         try {
-            harvester.start(defaultTestParams().build(), h);
+            harvester.start(newParams().build(), h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
             throw e;

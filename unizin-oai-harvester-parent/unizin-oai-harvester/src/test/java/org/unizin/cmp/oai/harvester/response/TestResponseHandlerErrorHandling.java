@@ -2,7 +2,7 @@ package org.unizin.cmp.oai.harvester.response;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -49,7 +49,7 @@ public final class TestResponseHandlerErrorHandling {
             .when(mockEventHandler).onEvent(any());
         exception.expect(HarvesterException.class);
         try {
-            harvester.start(defaultTestParams().build(), mockHandler);
+            harvester.start(newParams().build(), mockHandler);
         } catch (final HarvesterXMLParsingException e) {
             Assert.fail("No parsing exception expected here.");
         } catch (final HarvesterException e) {
@@ -72,6 +72,6 @@ public final class TestResponseHandlerErrorHandling {
             .when(mockEventHandler).onEvent(any());
         exception.expect(HarvesterXMLParsingException.class);
         exception.expectMessage(Mocks.TEST_EXCEPTION_MESSAGE);
-        harvester.start(defaultTestParams().build(), mockHandler);
+        harvester.start(newParams().build(), mockHandler);
     }
 }

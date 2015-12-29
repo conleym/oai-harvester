@@ -4,7 +4,7 @@ import static org.mockito.Matchers.eq;
 import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.HARVEST_ENDED;
 import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.RESPONSE_PROCESSED;
 import static org.unizin.cmp.oai.harvester.ListResponses.setupWithDefaultListRecordsResponse;
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.util.Observer;
@@ -55,7 +55,7 @@ public final class TestStopAndCancel {
         harvester.addObserver(obs);
         final Observer mockObserver = Mockito.mock(Observer.class);
         harvester.addObserver(mockObserver);
-        harvester.start(defaultTestParams(OAIVerb.LIST_RECORDS).build(), rh);
+        harvester.start(newParams(OAIVerb.LIST_RECORDS).build(), rh);
 
         // Verify notifications.
         inOrderVerify(rh).onHarvestStart(

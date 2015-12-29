@@ -1,7 +1,7 @@
 package org.unizin.cmp.oai.harvester.response;
 
 import static org.unizin.cmp.oai.harvester.IOUtils.stringFromStream;
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,7 +64,7 @@ public final class TestFilesHandler {
         FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
         final Harvester harvester = new Harvester.Builder().build();
-        harvester.start(defaultTestParams().build(), handler);
+        harvester.start(newParams().build(), handler);
         fileAssertions(expected);
     }
 
@@ -76,7 +76,7 @@ public final class TestFilesHandler {
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(defaultTestParams().build(), handler);
+            harvester.start(newParams().build(), handler);
         } catch (final OAIProtocolException e) {
             fileAssertions(Collections.singletonList(expected));
             throw e;

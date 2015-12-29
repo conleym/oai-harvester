@@ -6,7 +6,7 @@ import static org.unizin.cmp.oai.harvester.ListResponses.FIRST_TOKEN;
 import static org.unizin.cmp.oai.harvester.ListResponses.RESUMPTION_TOKENS;
 import static org.unizin.cmp.oai.harvester.ListResponses.setupWithDefaultListRecordsResponse;
 import static org.unizin.cmp.oai.harvester.ListResponses.toMap;
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.io.IOException;
@@ -62,7 +62,7 @@ public final class TestListResponses {
         final OAIResponseHandler h = Mocks.newResponseHandler();
         final Observer obs = Mockito.mock(Observer.class);
         harvester.addObserver(obs);
-        harvester.start(defaultTestParams().build(), h);
+        harvester.start(newParams().build(), h);
 
         // Observer and response handler... get harvest started event.
         final Supplier<HarvestNotification> hrvStarted = () -> {
@@ -180,7 +180,7 @@ public final class TestListResponses {
 
         exception.expect(OAIProtocolException.class);
         try {
-            final HarvestParams params = defaultTestParams(
+            final HarvestParams params = newParams(
                     OAIVerb.LIST_RECORDS).build();
             new Harvester.Builder().build().start(params,
                     Mocks.newResponseHandler());

@@ -1,6 +1,6 @@
 package org.unizin.cmp.oai.harvester;
 
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
@@ -34,7 +34,7 @@ public final class TestHarvestRestart {
     public void testRestartParametersWithoutToken() throws Exception {
         WireMockUtils.getStub(HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "Look. Something went wrong.");
-        final HarvestParams params = defaultTestParams().build();
+        final HarvestParams params = newParams().build();
         final Harvester harvester = new Harvester.Builder().build();
         try {
             harvester.start(params, Mocks.newResponseHandler());
@@ -61,14 +61,14 @@ public final class TestHarvestRestart {
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(HarvesterException.class);
         try {
-            harvester.start(defaultTestParams().build(),
+            harvester.start(newParams().build(),
                     Mocks.newResponseHandler());
         } catch (final HarvesterException e) {
             /*
              * Not getting the expected results? Check for unexpected
              * HarvesterExceptions, i.e., XML parsing errors.
              */
-            final HarvestParams expected = defaultTestParams()
+            final HarvestParams expected = newParams()
                     .withResumptionToken(expectedToken)
                     .build();
             Assert.assertEquals(expected, harvester.getRetryParams());

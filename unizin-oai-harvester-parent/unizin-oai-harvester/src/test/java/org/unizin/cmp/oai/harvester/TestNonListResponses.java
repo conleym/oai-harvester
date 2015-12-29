@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
-import org.unizin.cmp.oai.harvester.Tests.STAX_LIB;
 import org.unizin.cmp.oai.harvester.response.MergingOAIResponseHandler;
 import org.unizin.cmp.oai.templates.GetRecordTemplate;
 import org.w3c.dom.Document;
@@ -134,7 +133,7 @@ public final class TestNonListResponses {
         /*
          * In Xerces and the JDK, &#13; (carriage return) becomes "\n".
          */
-        final String chr13 = (STAX == STAX_LIB.WOODSTOX) ?
+        final String chr13 = (STAX == StAXImplementation.WOODSTOX) ?
                 new String(Character.toChars(13)) : "\n";
                 Assert.assertEquals("This should have a " + chr13 + " newline.",
                         coverage);
