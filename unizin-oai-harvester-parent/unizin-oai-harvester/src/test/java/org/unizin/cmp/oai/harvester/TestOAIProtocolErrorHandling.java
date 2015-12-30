@@ -5,7 +5,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.unizin.cmp.oai.harvester.Tests.STAX;
 import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
@@ -188,7 +187,7 @@ public final class TestOAIProtocolErrorHandling {
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
                     e.getOAIErrors());
-            if (STAX.equals(StAXImplementation.JDK) || STAX.equals(StAXImplementation.XERCES)) {
+            if (StAXImplementation.getImplementation().isXercesOrJDK()) {
                 /*
                  * Somehow Xerces (and its JDK derivative) close the stream
                  * early and get multiple suppressed exceptions, one

@@ -35,6 +35,7 @@ import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
+import org.unizin.cmp.oai.mocks.StAXRule;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 import org.unizin.cmp.oai.templates.ListRecordsTemplate;
 import org.unizin.cmp.oai.templates.RecordMetadataTemplate;
@@ -49,6 +50,9 @@ import freemarker.template.TemplateException;
 public final class TestListResponses {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(TestListResponses.class);
+    @Rule
+    public final StAXRule stax = StAXRule.usingAll();
+
     @Rule
     public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 

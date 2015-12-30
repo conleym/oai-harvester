@@ -21,11 +21,15 @@ import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.ListResponses;
 import org.unizin.cmp.oai.harvester.WireMockUtils;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
+import org.unizin.cmp.oai.mocks.StAXRule;
 import org.xml.sax.SAXException;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestFilesHandler {
+    @Rule
+    public final StAXRule stax = StAXRule.usingAll();
+
     @Rule
     public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 

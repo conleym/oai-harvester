@@ -10,10 +10,8 @@ import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.response.EventWriterOAIEventHandler;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 
-public class Tests {
-    public static StAXImplementation STAX =
-            StAXImplementation.getImplementation();
 
+public class Tests {
     public static final OAIVerb DEFAULT_VERB = OAIVerb.LIST_RECORDS;
 
 

@@ -17,10 +17,14 @@ import org.unizin.cmp.oai.harvester.IOUtils;
 import org.unizin.cmp.oai.harvester.ListResponses;
 import org.unizin.cmp.oai.harvester.Tests;
 import org.unizin.cmp.oai.harvester.WireMockUtils;
+import org.unizin.cmp.oai.mocks.StAXRule;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestMergingHandler {
+    @Rule
+    public final StAXRule stax = StAXRule.usingAll();
+
     @Rule
     public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
     @Rule

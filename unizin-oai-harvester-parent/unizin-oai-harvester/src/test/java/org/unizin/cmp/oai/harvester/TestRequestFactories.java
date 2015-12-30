@@ -20,6 +20,7 @@ import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.collect.ImmutableMap;
 
+
 public final class TestRequestFactories {
     private static final int EXPECTED_GET_STATUS =
             HttpStatus.SC_PAYMENT_REQUIRED;

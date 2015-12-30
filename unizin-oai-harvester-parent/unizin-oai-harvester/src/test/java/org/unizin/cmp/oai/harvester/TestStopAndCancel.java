@@ -22,6 +22,7 @@ import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
+import org.unizin.cmp.oai.mocks.StAXRule;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
@@ -29,6 +30,9 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
  * Tests the {@link Harvester#stop()} and {@link Harvester#cancel()} methods.
  */
 public final class TestStopAndCancel {
+    @Rule
+    public final StAXRule stax = StAXRule.usingAll();
+
     @Rule
     public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 

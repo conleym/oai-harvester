@@ -9,10 +9,15 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.mocks.Mocks;
+import org.unizin.cmp.oai.mocks.StAXRule;
+import org.unizin.cmp.oai.mocks.StAXRule.StAXImplementations;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestHarvestRestart {
+    @Rule
+    public final StAXRule stax = StAXRule.usingAll();
+
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -20,6 +25,7 @@ public final class TestHarvestRestart {
     public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 
     @Test
+    @StAXImplementations(StAXImplementation.JDK)
     public void testRetryParamsThrowsWithoutHarvest() throws Exception {
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(IllegalStateException.class);
@@ -31,6 +37,7 @@ public final class TestHarvestRestart {
      * resumption token.
      */
     @Test
+    @StAXImplementations(StAXImplementation.JDK)
     public void testRestartParametersWithoutToken() throws Exception {
         WireMockUtils.getStub(HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "Look. Something went wrong.");
@@ -48,7 +55,7 @@ public final class TestHarvestRestart {
      * repository.
      */
     @Test
-    public void testRestartParmetersWithToken() throws Exception {
+    public void testRestartParametersWithToken() throws Exception {
         final String expectedToken =
                 "0001-01-01T00:00:00Z/9999-12-31T23:59:59Z//oai_dc/100";
         WireMockUtils.getStub(HttpStatus.SC_OK,

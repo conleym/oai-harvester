@@ -5,7 +5,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
-import static org.unizin.cmp.oai.harvester.Tests.STAX;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -133,8 +132,8 @@ public final class TestNonListResponses {
         /*
          * In Xerces and the JDK, &#13; (carriage return) becomes "\n".
          */
-        final String chr13 = (STAX == StAXImplementation.WOODSTOX) ?
-                new String(Character.toChars(13)) : "\n";
+        final String chr13 = (StAXImplementation.getImplementation().isXercesOrJDK()) ?
+                "\n" : new String(Character.toChars(13));
                 Assert.assertEquals("This should have a " + chr13 + " newline.",
                         coverage);
     }

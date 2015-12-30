@@ -4,8 +4,10 @@
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-
-  <logger name="org.unizin.cmp.oai.harvester.Harvester" level="INFO"/>
+<!--
+  <logger name="org.unizin.cmp.oai.harvester" level="DEBUG"/>
+   -->
+  <logger name="org.unizin.cmp.oai.mocks.StAXRule" level="DEBUG"/>
 <!--
   <logger name="org.unizin.cmp.oai.harvester.response.FilteringOAIEventHandler"
      level="TRACE"/>

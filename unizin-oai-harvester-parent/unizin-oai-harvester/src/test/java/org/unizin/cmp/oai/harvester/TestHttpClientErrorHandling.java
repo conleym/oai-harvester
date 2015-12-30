@@ -1,9 +1,6 @@
 package org.unizin.cmp.oai.harvester;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -28,6 +25,7 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
 
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestHttpClientErrorHandling {
@@ -100,17 +98,16 @@ public final class TestHttpClientErrorHandling {
      */
     @Test
     public void testNotOKStatus() throws Exception {
-        stubFor(get(urlMatching(".*"))
-                .willReturn(aResponse()
-                        .withStatus(HttpStatus.SC_BAD_GATEWAY)));
+        final MappingBuilder mb = WireMockUtils.getAnyURL();
+        WireMockUtils.returning(mb, HttpStatus.SC_BAD_GATEWAY);
+        stubFor(mb);
         exception.expect(HarvesterException.class);
         exception.expectMessage(CoreMatchers.startsWith(
                 String.format("Got HTTP status %d for request",
                         HttpStatus.SC_BAD_GATEWAY)));
         final OAIResponseHandler h = Mocks.newResponseHandler();
         try {
-            new Harvester.Builder().build().start(newParams().build(),
-                    h);
+            new Harvester.Builder().build().start(newParams().build(), h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
             throw e;
@@ -124,6 +121,7 @@ public final class TestHttpClientErrorHandling {
      * <p>
      * Not strictly an {@code HttpClient} thing, but the results should be very
      * similar, so it's convenient to include this test here.
+     * </p>
      */
     @Test
     public void testRequestFactoryException() throws Exception {
