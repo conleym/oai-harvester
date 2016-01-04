@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.job;
+package org.unizin.cmp.oai.harvester.job;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -29,6 +29,9 @@ import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestParams;
+import org.unizin.cmp.oai.harvester.job.HarvestJob;
+import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.oai.harvester.job.JobOAIEventHandler;
 import org.unizin.cmp.oai.harvester.response.AbstractOAIResponseHandler;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;

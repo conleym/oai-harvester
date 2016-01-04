@@ -45,7 +45,7 @@
                   implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                 <transformer
                   implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>org.unizin.cmp.harvester.service.HarvestServiceApplication</mainClass>
+                  <mainClass>org.unizin.cmp.oai.harvester.service.HarvestServiceApplication</mainClass>
                 </transformer>
               </transformers>
             </configuration>

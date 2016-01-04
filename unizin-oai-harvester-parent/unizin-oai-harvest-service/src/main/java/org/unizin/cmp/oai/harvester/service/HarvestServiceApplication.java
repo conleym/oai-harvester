@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service;
+package org.unizin.cmp.oai.harvester.service;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -9,10 +9,10 @@ import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
-import org.unizin.cmp.harvester.service.config.DynamoDBConfiguration;
-import org.unizin.cmp.harvester.service.config.HarvestHttpClientBuilder;
-import org.unizin.cmp.harvester.service.config.HarvestServiceConfiguration;
+import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
+import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
+import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;

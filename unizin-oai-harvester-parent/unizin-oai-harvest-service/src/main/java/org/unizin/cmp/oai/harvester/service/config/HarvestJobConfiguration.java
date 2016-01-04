@@ -1,4 +1,4 @@
-package org.unizin.cmp.harvester.service.config;
+package org.unizin.cmp.oai.harvester.service.config;
 
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
@@ -12,10 +12,10 @@ import javax.validation.constraints.Min;
 
 import org.apache.http.client.HttpClient;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.unizin.cmp.harvester.job.HarvestJob;
-import org.unizin.cmp.harvester.job.HarvestedOAIRecord;
-import org.unizin.cmp.harvester.job.Timeout;
 import org.unizin.cmp.oai.harvester.HarvestParams;
+import org.unizin.cmp.oai.harvester.job.HarvestJob;
+import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.oai.harvester.job.Timeout;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
