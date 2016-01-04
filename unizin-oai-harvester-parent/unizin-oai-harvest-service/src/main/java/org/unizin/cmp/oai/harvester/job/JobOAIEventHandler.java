@@ -16,6 +16,8 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.harvester.response.RecordOAIEventHandler;
@@ -26,6 +28,9 @@ import org.unizin.cmp.oai.harvester.response.RecordOAIEventHandler;
  */
 public final class JobOAIEventHandler
 extends RecordOAIEventHandler<HarvestedOAIRecord> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            JobOAIEventHandler.class);
+
     private final String baseURL;
     private final XMLOutputFactory outputFactory;
     private final MessageDigest messageDigest;
@@ -73,11 +78,11 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
         }
         writer.flush();
         writer.close();
-
-        // TODO real logging
-        System.out.println(new String(baos.toByteArray(),
-                StandardCharsets.UTF_8));
-        return baos.toByteArray();
+        final byte[] bytes = baos.toByteArray();
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(new String(bytes, StandardCharsets.UTF_8));
+        }
+        return bytes;
     }
 
     private byte[] compress(final byte[] rawBytes) {
