@@ -1,6 +1,6 @@
 package org.unizin.cmp.oai.harvester;
 
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
@@ -17,7 +17,7 @@ public final class TestHarvestRestart {
     public final ExpectedException exception = ExpectedException.none();
 
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 
     @Test
     public void testRetryParamsThrowsWithoutHarvest() throws Exception {
@@ -32,10 +32,10 @@ public final class TestHarvestRestart {
      */
     @Test
     public void testRestartParametersWithoutToken() throws Exception {
-        Tests.createWiremockStubForGetResponse(
+        WireMockUtils.getStub(
                 HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "Look. Something went wrong.");
-        final HarvestParams params = defaultTestParams().build();
+        final HarvestParams params = newParams().build();
         final Harvester harvester = new Harvester.Builder().build();
         try {
             harvester.start(params, Mocks.newResponseHandler());
@@ -52,22 +52,22 @@ public final class TestHarvestRestart {
     public void testRestartParmetersWithToken() throws Exception {
         final String expectedToken =
                 "0001-01-01T00:00:00Z/9999-12-31T23:59:59Z//oai_dc/100";
-        Tests.createWiremockStubForGetResponse(HttpStatus.SC_OK,
+        WireMockUtils.getStub(HttpStatus.SC_OK,
                 IOUtils.stringFromClasspathFile(
                         "/oai-responses/oai-partial-list-records-response.xml"),
                 Tests.URL_PATTERN_WITHOUT_RESUMPTION_TOKEN);
-        Tests.createWiremockStubForGetResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR,
+        WireMockUtils.getStub(HttpStatus.SC_INTERNAL_SERVER_ERROR,
                 "Something's amiss.", Tests.urlResmptionTokenPattern(expectedToken));
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(HarvesterException.class);
         try {
-            harvester.start(defaultTestParams().build(), Mocks.newResponseHandler());
+            harvester.start(newParams().build(), Mocks.newResponseHandler());
         } catch (final HarvesterException e) {
             /*
              * Not getting the expected results? Check for unexpected
              * HarvesterExceptions, i.e., XML parsing errors.
              */
-            final HarvestParams expected = defaultTestParams()
+            final HarvestParams expected = newParams()
                     .withResumptionToken(expectedToken)
                     .build();
             Assert.assertEquals(expected, harvester.getRetryParams());

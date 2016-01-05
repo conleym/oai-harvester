@@ -1,6 +1,6 @@
 package org.unizin.cmp.oai.harvester.response;
 
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,13 +15,13 @@ import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.IOUtils;
 import org.unizin.cmp.oai.harvester.ListResponses;
-import org.unizin.cmp.oai.harvester.Tests;
+import org.unizin.cmp.oai.harvester.WireMockUtils;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestMergingHandler {
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
@@ -45,14 +45,14 @@ public final class TestMergingHandler {
 
     @Test
     public void testSingleResponse() throws Exception {
-        Tests.createWiremockStubForOKGetResponse(expected);
-        test(new Harvester.Builder().build(), defaultTestParams().build());
+        WireMockUtils.getStub(expected);
+        test(new Harvester.Builder().build(), newParams().build());
     }
 
     @Test
     public void testMultipleResponses() throws Exception {
         ListResponses.setupWithDefaultListRecordsResponse(true);
         final Harvester harvester = new Harvester.Builder().build();
-        test(harvester, defaultTestParams().build());
+        test(harvester, newParams().build());
     }
 }
