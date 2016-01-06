@@ -94,7 +94,8 @@ public final class TestNonListResponses {
                 .build();
         Assert.assertTrue(params.areValid());
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
-        harvester.start(params, new MergingOAIResponseHandler(out));
+        harvester.start(params, new MergingOAIResponseHandler(
+                Tests.simpleMergingHandler(out)));
 
         // This really just tests that we're not messing up the XML.
         final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

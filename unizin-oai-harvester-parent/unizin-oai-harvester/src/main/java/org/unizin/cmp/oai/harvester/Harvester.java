@@ -390,63 +390,8 @@ public final class Harvester extends Observable {
         return harvest.getRetryParams();
     }
 
-    /**
-     * Safely run some code requiring a {@code finally} block without losing
-     * exceptions.
-     * <p>
-     * Suppose an exception, {@code E}, is thrown in a {@code try} block. We
-     * need to run some code in the corresponding {@code finally} block that may
-     * <em>also</em> throw an exception, {@code F}, but we don't want to lose
-     * {@code E}.
-     * </p>
-     * <p>
-     * There are four possibilities to consider:
-     * <ol>
-     * <li>Neither {@code E} nor {@code F} is thrown. This method will not
-     * throw.
-     * <li>{@code E} and {@code F} are both thrown. This method will throw
-     * {@code E}, with {@code F} attached as a suppressed exception.
-     * <li>Only {@code E} is thrown. This method will throw {@code E}.
-     * <li>Only {@code F} is thrown. This method will throw {@code F}.
-     * </ol>
-     * </p>
-     *
-     * @param tryCall
-     *            the code to run inside a {@code try} block.
-     * @param finallyCall
-     *            the code to run inside the corresponding {@code finally}
-     *            block.
-     */
-    private static void suppressExceptions(final Runnable tryCall,
-            final Runnable finallyCall) {
-        RuntimeException caught = null;
-        try {
-            tryCall.run();
-        } catch (final RuntimeException bodyEx) {
-            caught = bodyEx;
-        } finally {
-            try {
-                finallyCall.run();
-            } catch (final RuntimeException finallyEx) {
-                if (caught == null) {
-                    throw finallyEx;
-                } else {
-                    caught.addSuppressed(finallyEx);
-                    throw caught;
-                }
-            }
-            /*
-             * Finally block had no exceptions. Might still have to throw try
-             * block's exception.
-             */
-            if (caught != null) {
-                throw caught;
-            }
-        }
-    }
-
     private void harvest() {
-        suppressExceptions(this::harvestLoop,
+        Functions.suppressExceptions(this::harvestLoop,
                 this::sendHarvestEndNotifications);
     }
 
@@ -455,7 +400,7 @@ public final class Harvester extends Observable {
         sendHarvestStartNotifications();
         final HarvestIterable iterable = new HarvestIterable();
         for (final InputStream is : iterable) {
-            suppressExceptions(() -> handleResponse(is),
+            Functions.suppressExceptions(() -> handleResponse(is),
                     this::sendResponseEndNotifications);
         }
     }

@@ -15,6 +15,7 @@ import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.IOUtils;
 import org.unizin.cmp.oai.harvester.ListResponses;
+import org.unizin.cmp.oai.harvester.Tests;
 import org.unizin.cmp.oai.harvester.WireMockUtils;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -38,7 +39,8 @@ public final class TestMergingHandler {
     private void test(final Harvester harvester, final HarvestParams params)
             throws Exception {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        harvester.start(params, new MergingOAIResponseHandler(baos));
+        harvester.start(params, new MergingOAIResponseHandler(
+                Tests.simpleMergingHandler(baos)));
         XMLAssert.assertXMLEqual(expected, new String(baos.toByteArray(),
                 StandardCharsets.UTF_8));
     }

@@ -21,6 +21,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
  */
 public interface OAIEventHandler {
     /**
+     * Called once for each XML event received in the repository's response.
      *
      * @param e
      *            the XML event to handle.
@@ -31,4 +32,12 @@ public interface OAIEventHandler {
      *             record metadata.
      */
     void onEvent(XMLEvent e) throws XMLStreamException;
+
+    /**
+     * Dispose of any underlying resources associated with this instance.
+     *
+     * @throws XMLStreamException
+     *             if there's an error disposing of resources.
+     */
+     void close() throws XMLStreamException;
 }
