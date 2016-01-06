@@ -1,6 +1,6 @@
 package org.unizin.cmp.oai.harvester;
 
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,24 +34,23 @@ public final class TestHarvestParams {
         Assert.assertFalse(message, valid);
     }
 
-
     @Test
     public void testValidation() {
         assertValid("Default parameters for testing should be valid.",
-                defaultTestParams().build());
+                newParams().build());
         assertInvalid("Identifier is not valid with ListRecords.",
-                defaultTestParams(OAIVerb.LIST_RECORDS)
+                newParams(OAIVerb.LIST_RECORDS)
                     .withIdentifier("not valid")
                     .build());
         assertInvalid("Identifier is required with GetRecord.",
-                defaultTestParams(OAIVerb.GET_RECORD)
+                newParams(OAIVerb.GET_RECORD)
                 .build());
         assertValid("Nonstandard parameters are assumed to be valid.",
-                defaultTestParams().withNonstandardParameter("FOO", "bar")
+                newParams().withNonstandardParameter("FOO", "bar")
                 .build());
         assertInvalid("Nonstandard parameters don't make invalid standard "
                 + "parameters valid.",
-                defaultTestParams(OAIVerb.GET_RECORD)
+                newParams(OAIVerb.GET_RECORD)
                     .withNonstandardParameter("FOO", "bar")
                     .build());
     }

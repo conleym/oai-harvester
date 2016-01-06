@@ -5,8 +5,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.unizin.cmp.oai.harvester.Tests.STAX;
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
 import java.io.IOException;
@@ -32,7 +31,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.OAIError;
 import org.unizin.cmp.oai.OAIErrorCode;
-import org.unizin.cmp.oai.harvester.Tests.STAX_LIB;
 import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
@@ -52,16 +50,16 @@ public final class TestOAIProtocolErrorHandling {
 
     /** WireMock is used for all but one test, so we'll just use the rule. */
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 
     private static void setupWithError()
             throws TemplateException, IOException {
         final String errorResponse = ErrorsTemplate.process();
-        Tests.createWiremockStubForOKGetResponse(errorResponse);
+        WireMockUtils.getStub(errorResponse);
     }
 
     private static void setupWithError(final String errorResponse) {
-        Tests.createWiremockStubForOKGetResponse(errorResponse);
+        WireMockUtils.getStub(errorResponse);
     }
 
     private Throwable checkSingleSuppressedException(final Throwable t) {
@@ -76,7 +74,7 @@ public final class TestOAIProtocolErrorHandling {
         setupWithError(errorResponse);
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams().build(),
+            new Harvester.Builder().build().start(newParams().build(),
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(errors, e.getOAIErrors());
@@ -137,7 +135,7 @@ public final class TestOAIProtocolErrorHandling {
         setupWithError(errorResponse);
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams().build(),
+            new Harvester.Builder().build().start(newParams().build(),
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
@@ -184,11 +182,11 @@ public final class TestOAIProtocolErrorHandling {
                 .build();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(defaultTestParams().build(), Mocks.newResponseHandler());
+            harvester.start(newParams().build(), Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             Assert.assertEquals(ErrorsTemplate.defaultErrorList(),
                     e.getOAIErrors());
-            if (STAX.equals(STAX_LIB.JDK) || STAX.equals(STAX_LIB.XERCES)) {
+            if (StAXImplementation.DEFAULT.isJDKOrXerces()) {
                 /*
                  * Somehow Xerces (and its JDK derivative) close the stream
                  * early and get multiple suppressed exceptions, one
@@ -224,7 +222,7 @@ public final class TestOAIProtocolErrorHandling {
             .when(h).onHarvestEnd(any());
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams().build(),
+            new Harvester.Builder().build().start(newParams().build(),
                     h);
         } catch (final OAIProtocolException e) {
             final Throwable suppressed = checkSingleSuppressedException(e);
@@ -240,7 +238,7 @@ public final class TestOAIProtocolErrorHandling {
         final OAIResponseHandler h = Mocks.newResponseHandler();
         exception.expect(OAIProtocolException.class);
         try {
-            new Harvester.Builder().build().start(defaultTestParams().build(),
+            new Harvester.Builder().build().start(newParams().build(),
                     h);
         } catch (final OAIProtocolException e) {
             /*
@@ -269,7 +267,7 @@ public final class TestOAIProtocolErrorHandling {
         harvester.addObserver(observer);
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(defaultTestParams().build(),
+            harvester.start(newParams().build(),
                     Mocks.newResponseHandler());
         } catch (final OAIProtocolException e) {
             inOrderVerify(observer).update(eq(harvester),

@@ -1,7 +1,7 @@
 package org.unizin.cmp.oai.harvester.response;
 
 import static org.unizin.cmp.oai.harvester.IOUtils.stringFromStream;
-import static org.unizin.cmp.oai.harvester.Tests.defaultTestParams;
+import static org.unizin.cmp.oai.harvester.Tests.newParams;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,7 +19,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.ListResponses;
-import org.unizin.cmp.oai.harvester.Tests;
+import org.unizin.cmp.oai.harvester.WireMockUtils;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.xml.sax.SAXException;
 
@@ -27,7 +27,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestFilesHandler {
     @Rule
-    public final WireMockRule wireMock = Tests.newWireMockRule();
+    public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 
     @Rule
     public final TemporaryFolder tempDir = new TemporaryFolder();
@@ -64,19 +64,19 @@ public final class TestFilesHandler {
         FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
         final Harvester harvester = new Harvester.Builder().build();
-        harvester.start(defaultTestParams().build(), handler);
+        harvester.start(newParams().build(), handler);
         fileAssertions(expected);
     }
 
     @Test
     public void testOAIProtocolError() throws Exception {
-        final String expected = Tests.setupWithDefaultError();
+        final String expected = WireMockUtils.oaiErrorResponse();
         final FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(OAIProtocolException.class);
         try {
-            harvester.start(defaultTestParams().build(), handler);
+            harvester.start(newParams().build(), handler);
         } catch (final OAIProtocolException e) {
             fileAssertions(Collections.singletonList(expected));
             throw e;
