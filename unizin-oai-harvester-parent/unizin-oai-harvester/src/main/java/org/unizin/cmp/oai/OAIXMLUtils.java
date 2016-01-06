@@ -3,7 +3,6 @@ package org.unizin.cmp.oai;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -26,7 +25,7 @@ public final class OAIXMLUtils {
     /**
      * Create a new {@code XMLInputFactory} instance.
      * <p>
-     * The new instance will be coalescing, namespace aware, and will not
+     * The new instance will be namespace aware, and will not
      * support DTDs (see below).
      * </p>
      *
@@ -44,7 +43,6 @@ public final class OAIXMLUtils {
      */
     public static XMLInputFactory newInputFactory() {
         final XMLInputFactory factory = XMLInputFactory.newFactory();
-        factory.setProperty(XMLInputFactory.IS_COALESCING, true);
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,
@@ -80,23 +78,6 @@ public final class OAIXMLUtils {
         }
     }
 
-    /**
-     * Close an {@link XMLEventWriter}, logging any exceptions that occur as
-     * warnings.
-     *
-     * @param writer
-     *            the event writer to close.
-     */
-    public static void closeQuietly(final XMLEventWriter writer) {
-        if (writer == null) {
-            return;
-        }
-        try {
-            writer.close();
-        } catch (final XMLStreamException e) {
-            LOGGER.warn("Ignored exception closing XMLEventWriter.", e);
-        }
-    }
 
     /** No instances allowed. */
     private OAIXMLUtils() { }

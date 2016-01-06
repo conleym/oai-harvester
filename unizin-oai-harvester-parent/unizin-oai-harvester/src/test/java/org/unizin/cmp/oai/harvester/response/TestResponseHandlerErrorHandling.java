@@ -21,7 +21,6 @@ import org.unizin.cmp.oai.mocks.Mocks;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 
-
 public final class TestResponseHandlerErrorHandling {
     private static final String VALID_XML = "<someXML/>";
 
@@ -58,7 +57,6 @@ public final class TestResponseHandlerErrorHandling {
             Assert.fail("No parsing exception expected here.");
         }
     }
-
 
     /**
      * Tests that {@code HarvesterXMLParsingExceptions} thrown by the response

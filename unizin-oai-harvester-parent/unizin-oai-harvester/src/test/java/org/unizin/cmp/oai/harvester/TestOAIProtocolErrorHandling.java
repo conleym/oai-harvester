@@ -34,14 +34,13 @@ import org.unizin.cmp.oai.OAIErrorCode;
 import org.unizin.cmp.oai.harvester.exception.HarvesterXMLParsingException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
+import org.unizin.cmp.oai.harvester.stax.StAXImplementation;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
-
-import freemarker.template.TemplateException;
 
 
 public final class TestOAIProtocolErrorHandling {
@@ -52,15 +51,6 @@ public final class TestOAIProtocolErrorHandling {
     @Rule
     public final WireMockRule wireMock = WireMockUtils.newWireMockRule();
 
-    private static void setupWithError()
-            throws TemplateException, IOException {
-        final String errorResponse = ErrorsTemplate.process();
-        WireMockUtils.getStub(errorResponse);
-    }
-
-    private static void setupWithError(final String errorResponse) {
-        WireMockUtils.getStub(errorResponse);
-    }
 
     private Throwable checkSingleSuppressedException(final Throwable t) {
         final Throwable[] suppressed = t.getSuppressed();
@@ -71,7 +61,7 @@ public final class TestOAIProtocolErrorHandling {
     private void simpleTest(final List<OAIError> errors)
             throws Exception {
         final String errorResponse = ErrorsTemplate.process(errors);
-        setupWithError(errorResponse);
+        WireMockUtils.getStub(errorResponse);
         exception.expect(OAIProtocolException.class);
         try {
             new Harvester.Builder().build().start(newParams().build(),
@@ -132,7 +122,7 @@ public final class TestOAIProtocolErrorHandling {
         final String errorResponse = ErrorsTemplate.process(
                 ErrorsTemplate.defaultErrorList()) +
                 " some extra content making the XML invalid.";
-        setupWithError(errorResponse);
+        WireMockUtils.getStub(errorResponse);
         exception.expect(OAIProtocolException.class);
         try {
             new Harvester.Builder().build().start(newParams().build(),
@@ -216,7 +206,7 @@ public final class TestOAIProtocolErrorHandling {
 
     @Test
     public void testPriorityOverResponseHandlerErrors() throws Exception {
-        setupWithError();
+        WireMockUtils.oaiErrorResponseStub();
         final OAIResponseHandler h = Mocks.newResponseHandler();
         doThrow(new IllegalArgumentException(Mocks.TEST_EXCEPTION_MESSAGE))
             .when(h).onHarvestEnd(any());
@@ -234,7 +224,7 @@ public final class TestOAIProtocolErrorHandling {
 
     @Test
     public void testOAIHandlerCallsAreMade() throws Exception {
-        setupWithError();
+        WireMockUtils.oaiErrorResponseStub();
         final OAIResponseHandler h = Mocks.newResponseHandler();
         exception.expect(OAIProtocolException.class);
         try {
@@ -261,7 +251,7 @@ public final class TestOAIProtocolErrorHandling {
 
     @Test
     public void testObserverReceivesNotifications() throws Exception {
-        setupWithError();
+        WireMockUtils.oaiErrorResponseStub();
         final Observer observer = mock(Observer.class);
         final Harvester harvester = new Harvester.Builder().build();
         harvester.addObserver(observer);

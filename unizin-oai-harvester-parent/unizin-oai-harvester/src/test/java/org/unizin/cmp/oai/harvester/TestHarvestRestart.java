@@ -57,7 +57,8 @@ public final class TestHarvestRestart {
                         "/oai-responses/oai-partial-list-records-response.xml"),
                 Tests.URL_PATTERN_WITHOUT_RESUMPTION_TOKEN);
         WireMockUtils.getStub(HttpStatus.SC_INTERNAL_SERVER_ERROR,
-                "Something's amiss.", Tests.urlResmptionTokenPattern(expectedToken));
+                "Something's amiss.", Tests.urlResmptionTokenPattern(
+                        expectedToken));
         final Harvester harvester = new Harvester.Builder().build();
         exception.expect(HarvesterException.class);
         try {

@@ -40,15 +40,15 @@ implements OAIEventHandler {
 
     private List<XMLEvent> eventBuffer = new ArrayList<>();
     private final StringBuilder charBuffer = new StringBuilder();
-    private final Consumer<T> recordHandler;
+    private final Consumer<T> recordConsumer;
     private T currentRecord;
     private boolean inRecord;
     private boolean bufferChars;
     private QName currentStartElementQName;
 
 
-    protected RecordOAIEventHandler(final Consumer<T> recordHandler) {
-        this.recordHandler = recordHandler;
+    protected RecordOAIEventHandler(final Consumer<T> recordConsumer) {
+        this.recordConsumer = recordConsumer;
     }
 
     private boolean currentElementIs(final QName name) {
@@ -89,7 +89,7 @@ implements OAIEventHandler {
                 inRecord = false;
                 eventBuffer.add(e);
                 onRecordEnd(currentRecord, copyAndClearBuffer());
-                recordHandler.accept(currentRecord);
+                recordConsumer.accept(currentRecord);
             } else if (OAI2Constants.IDENTIFIER.equals(name)) {
                 final String identifier = getBufferedChars();
                 LOGGER.trace("Setting identifier {}", identifier);
@@ -152,4 +152,8 @@ implements OAIEventHandler {
      * @return a new instance of the record object.
      */
     protected abstract T createRecord(final StartElement recordStartElement);
+
+    /** Does nothing */
+    @Override
+    public void close() throws XMLStreamException { }
 }

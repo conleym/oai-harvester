@@ -100,7 +100,6 @@ public final class TestStopAndCancel {
         observerTest((h) -> h.stop(), p);
     }
 
-
     /**
      * Tests that {@code Observers} can cancel the harvest via
      * {@link Harvester#cancel()}.

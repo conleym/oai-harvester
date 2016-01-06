@@ -70,7 +70,7 @@ public final class TestFilesHandler {
 
     @Test
     public void testOAIProtocolError() throws Exception {
-        final String expected = WireMockUtils.oaiErrorResponse();
+        final String expected = WireMockUtils.oaiErrorResponseStub();
         final FilesOAIResponseHandler handler =
                 new FilesOAIResponseHandler(tempDir.getRoot());
         final Harvester harvester = new Harvester.Builder().build();
