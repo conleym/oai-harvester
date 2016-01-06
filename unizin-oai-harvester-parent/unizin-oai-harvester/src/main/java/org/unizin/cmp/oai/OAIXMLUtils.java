@@ -26,7 +26,7 @@ public final class OAIXMLUtils {
     /**
      * Create a new {@code XMLInputFactory} instance.
      * <p>
-     * The new instance will be coalescing, namespace aware, and will not
+     * The new instance will be namespace aware, and will not
      * support DTDs (see below).
      * </p>
      *
@@ -44,7 +44,6 @@ public final class OAIXMLUtils {
      */
     public static XMLInputFactory newInputFactory() {
         final XMLInputFactory factory = XMLInputFactory.newFactory();
-        factory.setProperty(XMLInputFactory.IS_COALESCING, true);
         factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
         factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES,
