@@ -1,4 +1,4 @@
-package org.unizin.cmp.oai.harvester;
+package org.unizin.cmp.oai.harvester.stax;
 
 import java.util.Objects;
 
@@ -6,6 +6,9 @@ import javax.xml.stream.XMLEventFactory;
 
 /** Enumeration of supported StAX implementations. */
 public enum StAXImplementation {
+    AALTO("com.fasterxml.aalto.stax.InputFactoryImpl",
+            "com.fasterxml.aalto.stax.OutputFactoryImpl",
+            "com.fasterxml.aalto.stax.EventFactoryImpl"),
     /** JDK built in implementation, based on Xerces. */
     JDK("com.sun.xml.internal.stream.XMLInputFactoryImpl",
         "com.sun.xml.internal.stream.XMLOutputFactoryImpl",
