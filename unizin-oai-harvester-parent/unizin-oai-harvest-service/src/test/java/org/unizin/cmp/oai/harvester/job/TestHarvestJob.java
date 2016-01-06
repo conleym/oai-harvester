@@ -48,8 +48,8 @@ public final class TestHarvestJob {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
     private final URI testURI;
-    private final DynamoDBTestClient dynamoDBTestClient = new DynamoDBTestClient(
-            this.getClass().getSimpleName());
+    private final DynamoDBTestClient dynamoDBTestClient =
+            new DynamoDBTestClient(this.getClass().getSimpleName());
 
 
     public TestHarvestJob() throws URISyntaxException {
@@ -144,7 +144,8 @@ public final class TestHarvestJob {
         final String updatedRecord3 = new String(ByteStreams.toByteArray(in),
                 StandardCharsets.UTF_8);
         updatedRecords.add(updatedRecord3);
-        final String updatedResponse = Tests.listRecordsResponse(updatedRecords);
+        final String updatedResponse = Tests.listRecordsResponse(
+                updatedRecords);
         doRun(updatedResponse);
     }
 

@@ -50,7 +50,8 @@ public final class Tests {
 
     private static final Template OAI_LIST_RECORDS_TEMPLATE;
     static {
-        final Configuration config = new Configuration(Configuration.getVersion());
+        final Configuration config = new Configuration(
+                Configuration.getVersion());
         config.setTemplateLoader(new ClassTemplateLoader(
                 Tests.class, "/oai-response-templates"));
         try {

@@ -64,6 +64,11 @@ public final class JobStatus {
         status.put("baseURI", notification.getBaseURI());
         status.put("verb", notification.getVerb());
         status.put("hasError", notification.hasError());
+        status.put("started", formatInstant(notification.getStarted()));
+        final Optional<Instant> ended = notification.getEnded();
+        if (ended.isPresent()) {
+            status.put("ended", formatInstant(ended.get()));
+        }
         final Exception e = notification.getException();
         if (e != null) {
             status.put("exception", e);

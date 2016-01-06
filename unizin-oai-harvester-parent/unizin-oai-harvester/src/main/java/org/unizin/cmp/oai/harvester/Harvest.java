@@ -45,6 +45,8 @@ final class Harvest {
      */
     private volatile ResumptionToken resumptionToken;
     private Instant lastResponseDate;
+    private Instant started;
+    private Instant ended;
     private long requestCount;
     private long responseCount;
     private long xmlEventCount;
@@ -71,7 +73,7 @@ final class Harvest {
         final URI uri = (request == null) ? null : request.getURI();
         return new HarvestNotification(type, tags, state, exception,
                 resumptionToken, lastResponseDate, params, stats,
-                uri);
+                uri, started, ended);
     }
 
     void setLastResponseDate(final Instant lastResponseDate) {
@@ -113,10 +115,12 @@ final class Harvest {
 
     void start() {
         state.running = true;
+        started = Instant.now();
     }
 
     void stop() {
         state.running = false;
+        ended = Instant.now();
     }
 
     void cancel() {

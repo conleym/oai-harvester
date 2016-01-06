@@ -54,7 +54,8 @@ public final class DynamoDBTestClient {
     }
 
     public int countItems(final Class<?> mappedClass) {
-        final DynamoDBScanExpression scanExpression = new DynamoDBScanExpression();
+        final DynamoDBScanExpression scanExpression =
+                new DynamoDBScanExpression();
         return countItems(mappedClass, scanExpression);
     }
 
