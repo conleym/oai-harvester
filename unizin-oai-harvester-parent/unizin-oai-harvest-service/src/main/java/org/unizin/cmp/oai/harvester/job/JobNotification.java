@@ -3,6 +3,7 @@ package org.unizin.cmp.oai.harvester.job;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 
 public final class JobNotification {
@@ -36,7 +37,7 @@ public final class JobNotification {
     private final Map<JobStatistic, Long> stats;
     private final Exception exception;
     private final Instant started;
-    private final Instant ended;
+    private final Optional<Instant> ended;
 
 
     JobNotification(final JobNotificationType type,
@@ -50,7 +51,7 @@ public final class JobNotification {
         this.stats = Collections.unmodifiableMap(stats);
         this.exception = exception;
         this.started = started;
-        this.ended = ended;
+        this.ended = Optional.ofNullable(ended);
     }
 
     public JobNotificationType getType() { return type; }
@@ -58,6 +59,7 @@ public final class JobNotification {
     public boolean isRunning() { return running; }
     public Map<JobStatistic, Long> getStats() { return stats; }
     public Exception getException() { return exception; }
+    public boolean hasError() { return exception != null; }
     public Instant getStarted() { return started; }
-    public Instant getEnded() { return ended; }
+    public Optional<Instant> getEnded() { return ended; }
 }

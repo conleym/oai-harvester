@@ -115,6 +115,10 @@ public final class HarvestNotification {
         return type;
     }
 
+    public Instant getLastReponseDate() {
+        return lastResponseDate;
+    }
+
     public Map<String, String> getTags() {
         return tags;
     }
