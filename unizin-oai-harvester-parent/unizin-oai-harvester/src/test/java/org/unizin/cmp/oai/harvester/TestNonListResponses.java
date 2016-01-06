@@ -1,14 +1,18 @@
 package org.unizin.cmp.oai.harvester;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,6 +22,9 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,7 +88,11 @@ public final class TestNonListResponses {
                 .withIdentifier(expectedIdentifier)
                 .withResponseDate(expectedResponseDate)
                 .process();
+        final List<NameValuePair> parameters = Arrays.asList(
+                new BasicNameValuePair("identifier", expectedIdentifier));
         stubFor(post(urlMatching(".*"))
+                .withRequestBody(containing(URLEncodedUtils.format(parameters,
+                        StandardCharsets.UTF_8)))
                 .willReturn(aResponse()
                         .withStatus(HttpStatus.SC_OK)
                         .withBody(responseBody)));
@@ -122,7 +133,8 @@ public final class TestNonListResponses {
         /*
          * In Xerces and the JDK, &#13; (carriage return) becomes "\n".
          */
-        final String chr13 = (StAXImplementation.DEFAULT == StAXImplementation.WOODSTOX) ?
+        final String chr13 = (StAXImplementation.getImplementation() ==
+                    StAXImplementation.WOODSTOX) ?
                 new String(Character.toChars(13)) : "\n";
                 Assert.assertEquals("This should have a " + chr13 + " newline.",
                         coverage);
