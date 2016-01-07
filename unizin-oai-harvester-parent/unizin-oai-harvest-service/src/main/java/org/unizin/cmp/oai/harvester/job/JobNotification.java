@@ -16,10 +16,14 @@ public final class JobNotification {
 
     public static enum JobStatistic {
         /**
-         * The number of records received by the consumer thread on the blocking
-         * queue so far.
+         * The number of records received by the consumer thread so far.
          */
         RECORDS_RECEIVED,
+        /**
+         * The number of bytes in the XML of records received by the consumer
+         * thread so far.
+         */
+        RECORD_BYTES_RECEIVED,
         /**
          * The number of batch writes to DynamoDB attempted so far.
          */

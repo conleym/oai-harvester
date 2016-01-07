@@ -10,8 +10,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
-import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.job.HarvestJob;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -36,8 +34,7 @@ public final class JobStatus {
         }
     }
 
-    void harvestUpdate(final Harvester harvester,
-            final HarvestNotification notification) {
+    void harvestUpdate(final HarvestNotification notification) {
         final Map<String, String> tags = notification.getTags();
         final String harvestName = tags.get("harvestName");
         final Map<String, Object> status = new HashMap<>();
@@ -82,8 +79,7 @@ public final class JobStatus {
 
     }
 
-    void jobUpdate(final HarvestJob job,
-            final JobNotification notification) {
+    void jobUpdate(final JobNotification notification) {
         final Map<String, Object> status = new HashMap<>();
         status.put("job", notification.getJobName());
         status.put("hasError", notification.hasError());

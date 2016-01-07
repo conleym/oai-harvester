@@ -151,7 +151,7 @@ public final class JobResource {
                 jobStatus.remove(jobName);
             } else {
                 final JobStatus status = jobStatus.get(jobName);
-                status.jobUpdate((HarvestJob)o, notification);
+                status.jobUpdate(notification);
                 jobStatus.put(jobName, status);
             }
         }
@@ -161,7 +161,7 @@ public final class JobResource {
             final Object arg) {
         if (o instanceof Harvester && arg instanceof HarvestNotification) {
             final JobStatus status = jobStatus.get(jobName);
-            status.harvestUpdate((Harvester)o, (HarvestNotification)arg);
+            status.harvestUpdate((HarvestNotification)arg);
             jobStatus.put(jobName, status);
         }
     }

@@ -194,6 +194,7 @@ public final class HarvestJob extends Observable {
         private boolean interrupted;
         private long batchesAttempted;
         private long recordsReceived;
+        private long recordBytesReceived;
         private Exception exception;
         private Instant start;
         private Instant end;
@@ -350,6 +351,8 @@ public final class HarvestJob extends Observable {
         final Map<JobStatistic, Long> stats = new HashMap<>(
                 JobStatistic.values().length);
         stats.put(JobStatistic.RECORDS_RECEIVED, state.recordsReceived);
+        stats.put(JobStatistic.RECORD_BYTES_RECEIVED,
+                state.recordBytesReceived);
         stats.put(JobStatistic.QUEUE_SIZE, (long)harvestedRecordQueue.size());
         stats.put(JobStatistic.BATCHES_ATTEMPTED, state.batchesAttempted);
         final JobNotification notification = new JobNotification(type, name,
@@ -392,6 +395,7 @@ public final class HarvestJob extends Observable {
                     continue;
                 }
                 state.recordsReceived++;
+                state.recordBytesReceived += record.getXml().length;
                 batch.add(record);
                 if (batch.full()) {
                     LOGGER.info("Writing {} records to database.",
