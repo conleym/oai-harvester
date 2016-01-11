@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.http.client.methods.HttpUriRequest;
@@ -35,6 +36,7 @@ final class Harvest {
     private final Map<String, String> tags;
     private final State state = new State();
     private HttpUriRequest request;
+    private SortedMap<String, String> requestParams;
     private Exception exception;
     /**
      * The resumption token from the last response, if any.
@@ -73,7 +75,7 @@ final class Harvest {
         final URI uri = (request == null) ? null : request.getURI();
         return new HarvestNotification(type, tags, state, exception,
                 resumptionToken, lastResponseDate, params, stats,
-                uri, started, ended);
+                uri, requestParams, started, ended);
     }
 
     void setLastResponseDate(final Instant lastResponseDate) {
@@ -104,9 +106,10 @@ final class Harvest {
                     resumptionToken.getToken());
             m.put(OAI2Constants.VERB_PARAM_NAME,
                     params.getVerb().localPart());
-            return m;
+            requestParams = new TreeMap<>(m);
         }
-        return params.getParameters();
+        requestParams = params.getParameters();
+        return requestParams;
     }
 
     URI getBaseURI() {

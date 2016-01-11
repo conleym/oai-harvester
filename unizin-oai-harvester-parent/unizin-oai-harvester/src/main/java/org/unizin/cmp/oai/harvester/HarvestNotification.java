@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
@@ -71,6 +72,7 @@ public final class HarvestNotification {
     private final HarvestParams params;
     private final Map<HarvestStatistic, Long> stats;
     private final URI lastRequestURI;
+    private final SortedMap<String, String> lastRequestParameters;
     private final Instant started;
     private final Optional<Instant> ended;
 
@@ -79,6 +81,7 @@ public final class HarvestNotification {
             final Exception exception, final ResumptionToken resumptionToken,
             final Instant lastResponseDate, final HarvestParams params,
             final Map<HarvestStatistic, Long> stats, final URI lastRequestURI,
+            final SortedMap<String, String> lastRequestParameters,
             final Instant started, final Instant ended) {
         this.type = type;
         this.tags = tags;
@@ -92,6 +95,8 @@ public final class HarvestNotification {
         this.params = params;
         this.stats = Collections.unmodifiableMap(stats);
         this.lastRequestURI = lastRequestURI;
+        this.lastRequestParameters = Collections.unmodifiableSortedMap(
+                lastRequestParameters);
         this.started = started;
         this.ended = Optional.ofNullable(ended);
     }
@@ -166,6 +171,10 @@ public final class HarvestNotification {
         return lastRequestURI;
     }
 
+    public Map<String, String> getLastRequestParameters() {
+        return lastRequestParameters;
+    }
+
     public Instant getStarted() {
         return started;
     }
@@ -188,6 +197,8 @@ public final class HarvestNotification {
                 .append(", resumptionToken=").append(resumptionToken)
                 .append(", lastResponseDate=").append(lastResponseDate)
                 .append(", lastRequestURI=").append(lastRequestURI)
+                .append(", lastRequestParameters=")
+                .append(lastRequestParameters)
                 .append(", started=").append(DateTimeFormatter.ISO_INSTANT
                         .format(started))
                 .append(", ended=").append(end)
