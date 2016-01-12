@@ -8,6 +8,9 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.sql.DataSource;
+
+import org.skife.jdbi.v2.DBI;
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
@@ -21,6 +24,12 @@ public final class JobStatus {
 
     @JsonProperty
     private volatile Map<String, Object> lastJobNotification;
+
+    private final DBI dbi;
+
+    JobStatus(final DataSource ds) {
+        this.dbi = new DBI(ds);
+    }
 
 
     private static String formatInstant(final Instant instant) {

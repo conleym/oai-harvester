@@ -95,8 +95,8 @@ public final class HarvestNotification {
         this.params = params;
         this.stats = Collections.unmodifiableMap(stats);
         this.lastRequestURI = lastRequestURI;
-        this.lastRequestParameters = Collections.unmodifiableSortedMap(
-                lastRequestParameters);
+        this.lastRequestParameters = lastRequestParameters == null ? null :
+                Collections.unmodifiableSortedMap(lastRequestParameters);
         this.started = started;
         this.ended = Optional.ofNullable(ended);
     }

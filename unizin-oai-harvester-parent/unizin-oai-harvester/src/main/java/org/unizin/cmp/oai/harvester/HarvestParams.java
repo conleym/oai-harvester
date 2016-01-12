@@ -1,5 +1,6 @@
 package org.unizin.cmp.oai.harvester;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.time.temporal.TemporalAccessor;
 import java.util.Collections;
@@ -23,7 +24,8 @@ import org.unizin.cmp.oai.ResumptionToken;
  * Instances are immutable.
  * </p>
  */
-public final class HarvestParams {
+public final class HarvestParams implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     public static final class Builder {
         private final URI baseURI;

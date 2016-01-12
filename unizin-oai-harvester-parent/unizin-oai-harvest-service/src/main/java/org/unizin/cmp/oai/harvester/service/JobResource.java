@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observer;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -28,7 +27,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.client.HttpClient;
-import org.jboss.logging.MDC;
+import org.skife.jdbi.v2.DBI;
+import org.slf4j.MDC;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestParams;
@@ -53,6 +53,7 @@ public final class JobResource {
 
 
     private final DataSource ds;
+    private final DBI dbi;
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
@@ -69,10 +70,16 @@ public final class JobResource {
             final DynamoDBMapper mapper,
             final ExecutorService executor) {
         this.ds = ds;
+        this.dbi = new DBI(ds);
         this.jobConfig = jobConfig;
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.executor = executor;
+    }
+
+    private long createJob(final List<HarvestParams> harvests) {
+        final JobJDBI jdbi = dbi.open(JobJDBI.class);
+        return jdbi.createJobHarvests(harvests);
     }
 
     @POST
@@ -86,14 +93,15 @@ public final class JobResource {
             return Response.status(Status.BAD_REQUEST)
                     .entity(m).build();
         }
-        final String jobName = nextJobName();
+        final JobStatus status = new JobStatus(ds);
+        final String jobName = String.valueOf(createJob(h.valid));
         final Observer observeHarvests = (o, arg) -> {
             harvestUpdate(jobName, o, arg);
         };
         final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
                 jobName, h.valid, Collections.singletonList(observeHarvests));
         job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
-        jobStatus.put(jobName, new JobStatus());
+        jobStatus.put(jobName, status);
         jobs.put(jobName, job);
         try {
             executor.submit(() -> {
@@ -104,10 +112,6 @@ public final class JobResource {
             return Response.status(Status.SERVICE_UNAVAILABLE).build();
         }
         return Response.created(new URI(PATH + jobName)).build();
-    }
-
-    private static String nextJobName() {
-        return UUID.randomUUID().toString();
     }
 
     private static Harvests params(final List<Map<String, String>> harvests) {

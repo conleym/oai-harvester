@@ -3,16 +3,28 @@ databaseChangeLog:
       id: 1
       author: mconley
       changes:
-        - tagDatabase:
-            tag: version_1.0
+        - createSequence:
+            sequenceName: REPOSITORY_ID_SEQ
+            startValue: 1
+            incrementBy: 1
+            cycle: false
+        - createSequence:
+            sequenceName: JOB_ID_SEQ
+            startValue: 1
+            incrementBy: 1
+            cycle: false
+        - createSequence:
+            sequenceName: HARVEST_ID_SEQ
+            startValue: 1
+            incrementBy: 1
+            cycle: false
 
         - createTable:
             tableName: REPOSITORY
             columns:
               - column:
                   name: REPOSITORY_ID
-                  type: int
-                  autoIncrement: true
+                  type: bigint
                   constraints:
                     primaryKey: true
               - column:
@@ -27,36 +39,40 @@ databaseChangeLog:
                   defaultValueBoolean: true
                   constraints:
                     nullable: false
+        - createIndex:
+            tableName: REPOSITORY
+            columns:
+              - column:
+                  name: REPOSITORY_BASE_URI
 
         - createTable:
             tableName: JOB
             columns:
               - column:
                   name: JOB_ID
-                  type: int
-                  autoIncrement: true
+                  type: bigint
                   constraints:
                     primaryKey: true
               - column:
-                  name: JOB_NAME
-                  type: char(36)
-                  constraints:
-                    unique: true
-                    nullable: false
-              - column:
                   name: JOB_START
                   type: timestamp
+                  defaultValueComputed: now()
                   constraints:
                     nullable: false
               - column:
                   name: JOB_END
                   type: timestamp
               - column:
+                  name: JOB_LAST_UPDATE
+                  type: timestamp
+                  computed: true
+                  defaultValueComputed: now()
+              - column:
                   name: JOB_STACK_TRACE
                   type: clob
               - column:
                   name: JOB_RECORDS_RECEIVED
-                  type: int
+                  type: bigint
                   defaultValueNumeric: 0
                   constraints:
                     nullable: false
@@ -68,23 +84,41 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: JOB_BATCHES_ATTEMPTED
-                  type: int
+                  type: bigint
                   defaultValueNumeric: 0
                   constraints:
                     nullable: false
+        - createIndex:
+            tableName: JOB
+            indexName: JOB_START_IDX
+            columns:
+              - column:
+                  name: JOB_START
+        - createIndex:
+            tableName: JOB
+            indexName: JOB_END_IDX
+            columns:
+              - column:
+                  name: JOB_END
+        - createIndex:
+            tableName: JOB
+            indexName: JOB_LAST_UPDATE_IDX
+            columns:
+              - column:
+                  name: JOB_LAST_UPDATE
+
 
         - createTable:
             tableName: HARVEST
             columns:
               - column:
                   name: HARVEST_ID
-                  type: int
-                  autoIncrement: true
+                  type: bigint
                   constraints:
                     primaryKey: true
               - column:
                   name: REPOSITORY_ID
-                  type: int
+                  type: bigint
                   constraints:
                     nullable: false
                     foreignKeyName: HARVEST_REPOSITORY_FK
@@ -92,7 +126,7 @@ databaseChangeLog:
                     referencedColumnNames: REPOSITORY_ID
               - column:
                   name: JOB_ID
-                  type: int
+                  type: bigint
                   constraints:
                     nullable: false
                     foreignKeyName: HARVEST_JOB_FK
@@ -101,14 +135,17 @@ databaseChangeLog:
               - column:
                   name: HARVEST_START
                   type: timestamp
+                  defaultValueComputed: now()
                   constraints:
                     nullable: false
               - column:
                   name: HARVEST_END
                   type: timestamp
               - column:
-                  name: HARVEST_VERB
-                  type: varchar(20)
+                  name: HARVEST_LAST_UPDATE
+                  type: timestamp
+                  computed: true
+                  valueComputed: now()
               - column:
                   name: HARVEST_INITIAL_PARAMETERS
                   type: clob
@@ -137,13 +174,13 @@ databaseChangeLog:
                   type: clob
               - column:
                   name: HARVEST_REQUEST_COUNT
-                  type: int
+                  type: bigint
                   defaultValueNumeric: 0
                   constraints:
                     nullable: false
               - column:
                   name: HARVEST_RESPONSE_COUNT
-                  type: int
+                  type: bigint
                   defaultValueNumeric: 0
                   constraints:
                     nullable: false
@@ -160,10 +197,15 @@ databaseChangeLog:
             columns:
               - column:
                   name: HARVEST_START
-
         - createIndex:
             indexName: HARVEST_END_IDX
             tableName: HARVEST
             columns:
               - column:
                   name: HARVEST_END
+        - createIndex:
+            indexName: HARVEST_LAST_UPDATE_IDX
+            tableName: HARVEST
+            columns:
+              - column:
+                  name: HARVEST_LAST_UPDATE
