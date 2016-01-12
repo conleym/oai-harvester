@@ -1,6 +1,5 @@
 package org.unizin.cmp.oai.harvester.service;
 
-import java.util.List;
 import java.util.Map;
 
 import org.skife.jdbi.v2.HashPrefixStatementRewriter;
@@ -9,10 +8,9 @@ import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.OverrideStatementRewriterWith;
-import org.unizin.cmp.oai.harvester.HarvestParams;
 
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
-public interface JobJDBI {
+public interface JobJDBI extends AutoCloseable {
     public static final String JOB_UPDATE = "update JOB " +
             "set JOB_START = #start," +
             "JOB_END = #end, " +
@@ -26,7 +24,7 @@ public interface JobJDBI {
             "set HARVEST_START = #start, " +
             "HARVEST_END = #end, " +
             "HARVEST_LAST_UPDATE = now(), " +
-            "HARVEST_INITIAL_PARAMETERS = #initialParams, " +
+            "HARVEST_INITIAL_PARAMETERS = #initialParameters, " +
             "HARVEST_CANCELLED = #cancelled, " +
             "HARVEST_INTERRUPTED = #interrupted, " +
             "HARVEST_LAST_REQUEST_URI = #lastRequestURI," +
@@ -79,8 +77,7 @@ public interface JobJDBI {
     @SqlQuery("select * from JOB where JOB_ID = #id")
     Map<String, Object> findJobByID(@Bind("id") long id);
 
-    @SqlQuery("select CREATE_JOB(#paramList) from dual")
-    long createJobHarvests(@Bind("paramList") List<HarvestParams> paramList);
 
+    @Override
     void close();
 }

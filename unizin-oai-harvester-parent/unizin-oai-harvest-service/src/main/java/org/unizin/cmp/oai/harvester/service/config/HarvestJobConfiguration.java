@@ -12,9 +12,9 @@ import javax.validation.constraints.Min;
 
 import org.apache.http.client.HttpClient;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.job.HarvestJob;
 import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.oai.harvester.job.JobHarvestSpec;
 import org.unizin.cmp.oai.harvester.job.Timeout;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -31,7 +31,7 @@ import io.dropwizard.util.Duration;
  */
 public final class HarvestJobConfiguration {
     private static final Observer[] EMPTY_OBS = new Observer[]{};
-    private static final HarvestParams[] EMPTY_PARAMS = new HarvestParams[]{};
+    private static final JobHarvestSpec[] EMPTY_SPECS = new JobHarvestSpec[]{};
 
     @JsonProperty
     @Min(1)
@@ -82,14 +82,14 @@ public final class HarvestJobConfiguration {
             final DynamoDBMapper mapper,
             final ExecutorService executor,
             final String name,
-            final List<HarvestParams> harvestParams,
+            final List<JobHarvestSpec> specs,
             final List<Observer> harvestObservers)
             throws NoSuchAlgorithmException, URISyntaxException {
         final HarvestJob.Builder builder = new HarvestJob.Builder(mapper)
                 .withHttpClient(httpClient)
                 .withExecutorService(executor)
                 .withHarvestObservers(harvestObservers.toArray(EMPTY_OBS))
-                .withHarvestParams(harvestParams.toArray(EMPTY_PARAMS));
+                .withSpecs(specs.toArray(EMPTY_SPECS));
 
         if (recordQueueCapacity != null) {
             builder.withRecordQueue(new ArrayBlockingQueue<HarvestedOAIRecord>(

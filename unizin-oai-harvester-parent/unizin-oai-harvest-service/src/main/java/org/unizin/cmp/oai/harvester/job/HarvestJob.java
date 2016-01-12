@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.OAIRequestFactory;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
@@ -85,7 +84,7 @@ public final class HarvestJob extends Observable {
         private BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
         private ExecutorService executorService;
         private String name;
-        private List<HarvestParams> harvestParams;
+        private List<JobHarvestSpec> specs;
         private List<Observer> harvestObservers;
 
 
@@ -151,8 +150,8 @@ public final class HarvestJob extends Observable {
             return this;
         }
 
-        public Builder withHarvestParams(final HarvestParams...params) {
-            harvestParams = Arrays.asList(params);
+        public Builder withSpecs(final JobHarvestSpec...specs) {
+            this.specs = Arrays.asList(specs);
             return this;
         }
 
@@ -176,15 +175,15 @@ public final class HarvestJob extends Observable {
             if (pollTimeout == null) {
                 pollTimeout = DEFAULT_TIMEOUT;
             }
-            if (harvestParams == null) {
-                harvestParams = Collections.emptyList();
+            if (specs == null) {
+                specs = Collections.emptyList();
             }
             if (harvestObservers == null) {
                 harvestObservers = Collections.emptyList();
             }
             return new HarvestJob(httpClient, mapper, harvestedRecordQueue,
                     executorService, offerTimeout, pollTimeout, batchSize,
-                    name, harvestParams, harvestObservers);
+                    name, specs, harvestObservers);
         }
     }
 
@@ -272,7 +271,7 @@ public final class HarvestJob extends Observable {
             final Timeout pollTimeout,
             final int batchSize,
             final String name,
-            final List<HarvestParams> harvestParams,
+            final List<JobHarvestSpec> harvests,
             final List<Observer> harvestObservers)
                     throws NoSuchAlgorithmException, URISyntaxException {
         Objects.requireNonNull(httpClient, "httpClient");
@@ -281,7 +280,7 @@ public final class HarvestJob extends Observable {
         Objects.requireNonNull(executorService, "executorService");
         Objects.requireNonNull(offerTimeout, "offerTimeout");
         Objects.requireNonNull(pollTimeout, "pollTimeout");
-        Objects.requireNonNull(harvestParams, "harvestParams");
+        Objects.requireNonNull(harvests, "harvests");
         Objects.requireNonNull(harvestObservers, "harvestObservers");
         validateBatchSize(batchSize);
         this.httpClient = httpClient;
@@ -293,8 +292,9 @@ public final class HarvestJob extends Observable {
         this.batchSize = batchSize;
         this.name = name;
 
-        for (final HarvestParams hp: harvestParams) {
-            final Runnable r = createHarvestRunnable(hp, harvestObservers);
+        for (final JobHarvestSpec h: harvests) {
+            final Runnable r = createHarvestRunnable(h.getParams(), h.getTags(),
+                    harvestObservers);
             tasks.add(r);
         }
     }
@@ -312,7 +312,7 @@ public final class HarvestJob extends Observable {
     }
 
     private Runnable createHarvestRunnable(final HarvestParams params,
-            final Iterable<Observer> observers)
+            final Map<String, String> tags, final Iterable<Observer> observers)
                     throws NoSuchAlgorithmException, URISyntaxException {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(httpClient)
@@ -320,12 +320,9 @@ public final class HarvestJob extends Observable {
         observers.forEach(harvester::addObserver);
         final OAIResponseHandler handler = new JobOAIResponseHandler(
                 params.getBaseURI(), harvestedRecordQueue, offerTimeout);
-        final String harvestName = OAIRequestFactory.buildURI(
-                params.getBaseURI(), params.getParameters()).toString();
         final Runnable harvest = () -> {
-            final Map<String, String> tags = new HashMap<>(2);
-            tags.put("jobName", name);
-            tags.put("harvestName", harvestName);
+            final Map<String, String> t = new HashMap<>(tags);
+            t.put("jobName", name);
             MDC.put("baseURI", params.getBaseURI().toString());
             tags.forEach((k, v) -> MDC.put(k, v));
             try {

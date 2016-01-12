@@ -1,5 +1,8 @@
 package org.unizin.cmp.oai.harvester.service;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.URI;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -13,7 +16,9 @@ import javax.sql.DataSource;
 import org.skife.jdbi.v2.DBI;
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
+import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,6 +36,12 @@ public final class JobStatus {
         this.dbi = new DBI(ds);
     }
 
+    private static String formatStackTrace(final Exception e) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
+    }
 
     private static String formatInstant(final Instant instant) {
         return DateTimeFormatter.ISO_INSTANT.format(instant);
@@ -43,9 +54,21 @@ public final class JobStatus {
         }
     }
 
+    private static <T> T unwrapOptional(final Optional<T> optional) {
+        if (optional.isPresent()) {
+            return optional.get();
+        }
+        return null;
+    }
+
     void harvestUpdate(final HarvestNotification notification) {
         final Map<String, String> tags = notification.getTags();
         final String harvestName = tags.get("harvestName");
+        final long harvestID = Long.valueOf(harvestName);
+        final String started = formatInstant(notification.getStarted());
+        final String ended = notification.getEnded().isPresent() ?
+                formatInstant(notification.getEnded().get()) : null;
+
         final Map<String, Object> status = new HashMap<>();
         final ResumptionToken rt = notification.getResumptionToken();
         if (rt != null) {
@@ -70,26 +93,44 @@ public final class JobStatus {
         status.put("baseURI", notification.getBaseURI());
         status.put("verb", notification.getVerb());
         status.put("hasError", notification.hasError());
-        status.put("started", formatInstant(notification.getStarted()));
-        final Optional<Instant> ended = notification.getEnded();
-        if (ended.isPresent()) {
-            status.put("ended", formatInstant(ended.get()));
+        status.put("started", started);
+        if (ended != null) {
+            status.put("ended", ended);
         }
         final Exception e = notification.getException();
         if (e != null) {
             status.put("exception", e);
         }
         status.put("lastRequestURI", notification.getLastRequestURI());
+
+        // Update running harvest status.
         lastHarvestNotifications.put(harvestName, status);
-        updateDBHarvests(status);
-    }
 
-    private void updateDBHarvests(final Map<String, Object> status) {
-
+        final URI uri = unwrapOptional(notification.getLastRequestURI());
+        final String lastReqURI = uri == null ? null : uri.toString();
+        final Map<String, String> params =
+                unwrapOptional(notification.getLastRequestParameters());
+        final String lastReqParams = params == null ? null : params.toString();
+        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
+            final String stackTrace = notification.hasError() ?
+                    formatStackTrace(e) : null;
+            jdbi.updateHarvest(harvestID, started, ended,
+                    notification.getHarvestParameters().toString(),
+                    notification.isCancelled(),
+                    notification.isInterrupted(), lastReqURI, lastReqParams,
+                    stackTrace,
+                    notification.getStat(HarvestStatistic.REQUEST_COUNT),
+                    notification.getStat(HarvestStatistic.RESPONSE_COUNT),
+                    notification.getStat(HarvestStatistic.XML_EVENT_COUNT));
+        }
     }
 
     void jobUpdate(final JobNotification notification) {
         final Map<String, Object> status = new HashMap<>();
+        final String started = formatInstant(notification.getStarted());
+        final String ended = (notification.getEnded().isPresent()) ?
+                formatInstant(notification.getEnded().get()) : null;
+
         status.put("job", notification.getJobName());
         status.put("hasError", notification.hasError());
         final Exception e = notification.getException();
@@ -98,17 +139,24 @@ public final class JobStatus {
         }
         status.put("isRunning", notification.isRunning());
         status.put("statistics", notification.getStats());
-        status.put("started", formatInstant(notification.getStarted()));
-        final Optional<Instant> ended = notification.getEnded();
-        if (ended.isPresent()) {
-            status.put("ended", formatInstant(ended.get()));
+        status.put("started", started);
+        if (ended != null) {
+            status.put("ended", ended);
         }
         status.put("harvests", lastHarvestNotifications);
+
+        // Update running harvest status.
         lastJobNotification = status;
-        updateDBJobs(status);
-    }
 
-    private void updateDBJobs(final Map<String, Object> status) {
-
+        // Update the database.
+        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
+            final String stackTrace = (notification.hasError()) ?
+                    formatStackTrace(notification.getException()) : null;
+            jdbi.updateJob(Long.valueOf(notification.getJobName()),
+                    started, ended, stackTrace,
+                    notification.getStat(JobStatistic.RECORDS_RECEIVED),
+                    notification.getStat(JobStatistic.RECORD_BYTES_RECEIVED),
+                    notification.getStat(JobStatistic.BATCHES_ATTEMPTED));
+        }
     }
 }

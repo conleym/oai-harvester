@@ -71,8 +71,8 @@ public final class HarvestNotification {
     private final Instant lastResponseDate;
     private final HarvestParams params;
     private final Map<HarvestStatistic, Long> stats;
-    private final URI lastRequestURI;
-    private final SortedMap<String, String> lastRequestParameters;
+    private final Optional<URI> lastRequestURI;
+    private final Optional<SortedMap<String, String>> lastRequestParameters;
     private final Instant started;
     private final Optional<Instant> ended;
 
@@ -94,9 +94,11 @@ public final class HarvestNotification {
         this.lastResponseDate = lastResponseDate;
         this.params = params;
         this.stats = Collections.unmodifiableMap(stats);
-        this.lastRequestURI = lastRequestURI;
-        this.lastRequestParameters = lastRequestParameters == null ? null :
-                Collections.unmodifiableSortedMap(lastRequestParameters);
+        this.lastRequestURI = Optional.ofNullable(lastRequestURI);
+        this.lastRequestParameters = lastRequestParameters == null ?
+                Optional.empty() :
+                Optional.of(Collections.unmodifiableSortedMap(
+                        lastRequestParameters));
         this.started = started;
         this.ended = Optional.ofNullable(ended);
     }
@@ -167,11 +169,11 @@ public final class HarvestNotification {
         return params;
     }
 
-    public URI getLastRequestURI() {
+    public Optional<URI> getLastRequestURI() {
         return lastRequestURI;
     }
 
-    public Map<String, String> getLastRequestParameters() {
+    public Optional<SortedMap<String, String>> getLastRequestParameters() {
         return lastRequestParameters;
     }
 
