@@ -1,0 +1,169 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: mconley
+      changes:
+        - tagDatabase:
+            tag: version_1.0
+
+        - createTable:
+            tableName: REPOSITORY
+            columns:
+              - column:
+                  name: REPOSITORY_ID
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: REPOSITORY_BASE_URI
+                  type: varchar(1024)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: REPOSITORY_ENABLED
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: JOB
+            columns:
+              - column:
+                  name: JOB_ID
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: JOB_NAME
+                  type: char(36)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: JOB_START
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: JOB_END
+                  type: timestamp
+              - column:
+                  name: JOB_STACK_TRACE
+                  type: clob
+              - column:
+                  name: JOB_RECORDS_RECEIVED
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: JOB_RECORD_BYTES_RECEIVED
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: JOB_BATCHES_ATTEMPTED
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: HARVEST
+            columns:
+              - column:
+                  name: HARVEST_ID
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: REPOSITORY_ID
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: HARVEST_REPOSITORY_FK
+                    referencedTableName: REPOSITORY
+                    referencedColumnNames: REPOSITORY_ID
+              - column:
+                  name: JOB_ID
+                  type: int
+                  constraints:
+                    nullable: false
+                    foreignKeyName: HARVEST_JOB_FK
+                    referencedTableName: JOB
+                    referencedColumnNames: JOB_ID
+              - column:
+                  name: HARVEST_START
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: HARVEST_END
+                  type: timestamp
+              - column:
+                  name: HARVEST_VERB
+                  type: varchar(20)
+              - column:
+                  name: HARVEST_INITIAL_PARAMETERS
+                  type: clob
+                  constraints:
+                    nullable: false
+              - column:
+                  name: HARVEST_CANCELLED
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: HARVEST_INTERRUPTED
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: HARVEST_LAST_REQUEST_URI
+                  type: clob
+              - column:
+                  name: HARVEST_LAST_REQUEST_PARAMETERS
+                  type: clob
+              - column:
+                  name: HARVEST_STACK_TRACE
+                  type: clob
+              - column:
+                  name: HARVEST_REQUEST_COUNT
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: HARVEST_RESPONSE_COUNT
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: HARVEST_XML_EVENT_COUNT
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+
+        - createIndex:
+            indexName: HARVEST_START_IDX
+            tableName: HARVEST
+            columns:
+              - column:
+                  name: HARVEST_START
+
+        - createIndex:
+            indexName: HARVEST_END_IDX
+            tableName: HARVEST
+            columns:
+              - column:
+                  name: HARVEST_END
