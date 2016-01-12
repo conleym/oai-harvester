@@ -390,6 +390,17 @@ public final class Harvester extends Observable {
         return harvest.getRetryParams();
     }
 
+    /**
+     * Get the parameters used to start the current harvest.
+     *
+     * @return the parameters used to start the current harvest.
+     * @throws IllegalStateException
+     *             if there is no current harvest.
+     */
+    public HarvestParams getInitialParams() {
+        return harvest.getHarvestParams();
+    }
+
     private void harvest() {
         Functions.suppressExceptions(this::harvestLoop,
                 this::sendHarvestEndNotifications);

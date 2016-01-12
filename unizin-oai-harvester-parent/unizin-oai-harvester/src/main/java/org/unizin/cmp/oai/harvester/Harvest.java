@@ -178,6 +178,13 @@ final class Harvest {
         throw new IllegalStateException("No current harvest parameters.");
     }
 
+    HarvestParams getHarvestParams() {
+        if (params != null) {
+            return params;
+        }
+        throw new IllegalStateException("No current harvest parameters.");
+    }
+
     OAIResponseHandler getResponseHandler() {
         return responseHandler;
     }
