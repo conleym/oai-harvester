@@ -3,28 +3,13 @@ databaseChangeLog:
       id: 1
       author: mconley
       changes:
-        - createSequence:
-            sequenceName: REPOSITORY_ID_SEQ
-            startValue: 1
-            incrementBy: 1
-            cycle: false
-        - createSequence:
-            sequenceName: JOB_ID_SEQ
-            startValue: 1
-            incrementBy: 1
-            cycle: false
-        - createSequence:
-            sequenceName: HARVEST_ID_SEQ
-            startValue: 1
-            incrementBy: 1
-            cycle: false
-
         - createTable:
             tableName: REPOSITORY
             columns:
               - column:
                   name: REPOSITORY_ID
                   type: bigint
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
               - column:
@@ -51,6 +36,7 @@ databaseChangeLog:
               - column:
                   name: JOB_ID
                   type: bigint
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
               - column:
@@ -114,6 +100,7 @@ databaseChangeLog:
               - column:
                   name: HARVEST_ID
                   type: bigint
+                  autoIncrement: true
                   constraints:
                     primaryKey: true
               - column:

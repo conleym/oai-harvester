@@ -5,12 +5,12 @@ import java.util.Map;
 
 import org.skife.jdbi.v2.HashPrefixStatementRewriter;
 import org.skife.jdbi.v2.sqlobject.Bind;
+import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.OverrideStatementRewriterWith;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 
-// Use hash rewriter for Postgres compatibility.
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
 public interface JobJDBI {
     public static final String JOB_UPDATE = "update JOB " +
@@ -38,11 +38,12 @@ public interface JobJDBI {
             "where HARVEST_ID = #id";
 
     public static final String INSERT_HARVEST = "insert into HARVEST(" +
-            "HARVEST_ID, JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS) " +
-            "values (#id, #jobID, #repoID, #initialParameters)";
+            "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS) " +
+            "values (#jobID, #repoID, #initialParameters)";
 
-    @SqlUpdate("insert into JOB(JOB_ID) values(#id)")
-    void createJob(@Bind("id") long id);
+    @SqlUpdate("insert into JOB() values()")
+    @GetGeneratedKeys
+    long createJob();
 
     @SqlUpdate(JOB_UPDATE)
     void updateJob(@Bind("id") long id, @Bind("start") String start,
@@ -52,7 +53,8 @@ public interface JobJDBI {
             @Bind("batchesAttempted") long batchesAttempted);
 
     @SqlUpdate(INSERT_HARVEST)
-    void createHarvest(@Bind("id") long id, @Bind("jobID") long jobID,
+    @GetGeneratedKeys
+    long createHarvest(@Bind("jobID") long jobID,
             @Bind("repoID") long repositoryID,
             @Bind("initialParameters") String initialParameters);
 
@@ -68,11 +70,6 @@ public interface JobJDBI {
             @Bind("requestCount") long requestCount,
             @Bind("responseCount") long responseCount,
             @Bind("eventCount") long eventCount);
-
-    @SqlUpdate("insert into REPOSITORY(REPOSITORY_ID, REPOSITORY_BASE_URI, " +
-            "REPOSITORY_ENABLED) values (#id, #baseURI, true)")
-    void createRepository(@Bind("id") long repositoryID,
-            @Bind("baseURI") String baseURI);
 
     @SqlQuery("select REPOSITORY_ID from REPOSITORY " +
                  "where REPOSITORY_BASE_URI = #baseURI")

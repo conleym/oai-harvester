@@ -20,7 +20,7 @@ h2Server:
 #  webPort: 6969
 
 job:
-  batchSize: 1
+  batchSize: 15
   minThreads: 100
   maxThreads: 1000
   recordQueueCapacity: 100
