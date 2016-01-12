@@ -62,6 +62,7 @@ public final class JobNotification {
     public String getJobName() { return jobName; }
     public boolean isRunning() { return running; }
     public Map<JobStatistic, Long> getStats() { return stats; }
+    public Long getStat(final JobStatistic stat) { return stats.get(stat); }
     public Exception getException() { return exception; }
     public boolean hasError() { return exception != null; }
     public Instant getStarted() { return started; }
