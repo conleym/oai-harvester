@@ -83,8 +83,8 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
             final URI dest = directory.toURI().resolve(fileCount + ".xml");
             final File destFile = new File(dest);
             final OutputStream out = new FileOutputStream(destFile);
-            final XMLEventWriter eventWriter = outputFactory
-                    .createXMLEventWriter(out);
+            final XMLEventWriter eventWriter = OAIXMLUtils.createEventWriter(
+                    outputFactory, out);
             return new OAIEventHandler() {
                 @Override
                 public void onEvent(final XMLEvent e)

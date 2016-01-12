@@ -72,7 +72,8 @@ extends RecordOAIEventHandler<HarvestedOAIRecord> {
     private byte[] createXML(final List<XMLEvent> events)
             throws XMLStreamException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final XMLEventWriter writer = outputFactory.createXMLEventWriter(baos);
+        final XMLEventWriter writer = OAIXMLUtils.createEventWriter(
+                outputFactory, baos);
         for (final XMLEvent event : events) {
             writer.add(event);
         }

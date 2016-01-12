@@ -37,8 +37,8 @@ public class Tests {
     public static final OAIEventHandler simpleMergingHandler(
             final OutputStream out)
             throws XMLStreamException {
-        final XMLEventWriter eventWriter = OAIXMLUtils.newOutputFactory()
-                .createXMLEventWriter(out);
+        final XMLEventWriter eventWriter = OAIXMLUtils.createEventWriter(
+                OAIXMLUtils.newOutputFactory(), out);
         return new EventWriterOAIEventHandler(eventWriter);
     }
 
