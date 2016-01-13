@@ -4,7 +4,7 @@
   <groupId>org.unizin.cmp</groupId>
   <artifactId>unizin-oai-harvester-parent</artifactId>
   <name>Unizin OAI Harvester Parent</name>
-  <version>1.0.6</version>
+  <version>1.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
 
@@ -201,7 +201,7 @@
     <connection>${scm.connection}</connection>
     <url>${scm.connection}</url>
     <developerConnection>${scm.connection}</developerConnection>
-    <tag>1.0.6</tag>
+    <tag>HEAD</tag>
   </scm>
 
 </project>
