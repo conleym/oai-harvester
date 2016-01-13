@@ -95,7 +95,6 @@ public final class Functions {
      * <li>Only {@code E} is thrown. This method will throw {@code E}.
      * <li>Only {@code F} is thrown. This method will throw {@code F}.
      * </ol>
-     * </p>
      *
      * @param tryCall
      *            the code to run inside a {@code try} block.
