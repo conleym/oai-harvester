@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
@@ -98,7 +99,7 @@ public final class HarvestNotification {
         this.lastRequestParameters = lastRequestParameters == null ?
                 Optional.empty() :
                 Optional.of(Collections.unmodifiableSortedMap(
-                        lastRequestParameters));
+                        new TreeMap<>(lastRequestParameters)));
         this.started = started;
         this.ended = Optional.ofNullable(ended);
     }

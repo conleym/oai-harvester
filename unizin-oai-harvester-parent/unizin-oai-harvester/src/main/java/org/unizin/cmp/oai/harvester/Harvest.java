@@ -107,8 +107,9 @@ final class Harvest {
             m.put(OAI2Constants.VERB_PARAM_NAME,
                     params.getVerb().localPart());
             requestParams = new TreeMap<>(m);
+        } else {
+            requestParams = params.getParameters();
         }
-        requestParams = params.getParameters();
         return requestParams;
     }
 
