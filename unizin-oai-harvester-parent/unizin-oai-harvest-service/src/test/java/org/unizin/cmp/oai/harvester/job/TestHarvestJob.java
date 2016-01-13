@@ -29,9 +29,6 @@ import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestParams;
-import org.unizin.cmp.oai.harvester.job.HarvestJob;
-import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
-import org.unizin.cmp.oai.harvester.job.JobOAIEventHandler;
 import org.unizin.cmp.oai.harvester.response.AbstractOAIResponseHandler;
 import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
@@ -48,8 +45,8 @@ public final class TestHarvestJob {
     @Rule
     public final ExpectedException exception = ExpectedException.none();
     private final URI testURI;
-    private final DynamoDBTestClient dynamoDBTestClient = new DynamoDBTestClient(
-            this.getClass().getSimpleName());
+    private final DynamoDBTestClient dynamoDBTestClient =
+            new DynamoDBTestClient(this.getClass().getSimpleName());
 
 
     public TestHarvestJob() throws URISyntaxException {
@@ -101,8 +98,8 @@ public final class TestHarvestJob {
         final Set<HarvestedOAIRecord> expectedRecords = expectedRecords(
                 serverResponseBody);
         final HarvestJob job = newJobBuilder()
-                .withHarvestParams(new HarvestParams.Builder(testURI,
-                        OAIVerb.LIST_RECORDS).build())
+                .withSpecs(new JobHarvestSpec(new HarvestParams.Builder(testURI,
+                        OAIVerb.LIST_RECORDS).build()))
                 .build();
         stubFor(get(urlMatching(".*"))
                 .willReturn(aResponse()
@@ -144,7 +141,8 @@ public final class TestHarvestJob {
         final String updatedRecord3 = new String(ByteStreams.toByteArray(in),
                 StandardCharsets.UTF_8);
         updatedRecords.add(updatedRecord3);
-        final String updatedResponse = Tests.listRecordsResponse(updatedRecords);
+        final String updatedResponse = Tests.listRecordsResponse(
+                updatedRecords);
         doRun(updatedResponse);
     }
 

@@ -27,6 +27,7 @@ import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.db.ManagedDataSource;
 import io.dropwizard.jdbi.DBIHealthCheck;
+import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
@@ -48,6 +49,14 @@ extends Application<HarvestServiceConfiguration> {
             final Bootstrap<HarvestServiceConfiguration> bootstrap) {
         super.initialize(bootstrap);
         this.bootstrap = bootstrap;
+        bootstrap.addBundle(
+                new MigrationsBundle<HarvestServiceConfiguration>() {
+                    @Override
+                    public DataSourceFactory getDataSourceFactory(
+                            final HarvestServiceConfiguration configuration) {
+                        return configuration.getDataSourceFactory();
+                    }
+                });
     }
 
     private DataSource createConnectionPool(

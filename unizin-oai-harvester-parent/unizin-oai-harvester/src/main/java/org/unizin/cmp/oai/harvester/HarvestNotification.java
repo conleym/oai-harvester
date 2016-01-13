@@ -2,8 +2,12 @@ package org.unizin.cmp.oai.harvester;
 
 import java.net.URI;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
@@ -68,13 +72,18 @@ public final class HarvestNotification {
     private final Instant lastResponseDate;
     private final HarvestParams params;
     private final Map<HarvestStatistic, Long> stats;
-    private final URI lastRequestURI;
+    private final Optional<URI> lastRequestURI;
+    private final Optional<SortedMap<String, String>> lastRequestParameters;
+    private final Instant started;
+    private final Optional<Instant> ended;
 
     HarvestNotification(final HarvestNotificationType type,
             final Map<String, String> tags, final State state,
             final Exception exception, final ResumptionToken resumptionToken,
             final Instant lastResponseDate, final HarvestParams params,
-            final Map<HarvestStatistic, Long> stats, final URI lastRequestURI) {
+            final Map<HarvestStatistic, Long> stats, final URI lastRequestURI,
+            final SortedMap<String, String> lastRequestParameters,
+            final Instant started, final Instant ended) {
         this.type = type;
         this.tags = tags;
         this.running = state.running;
@@ -86,7 +95,13 @@ public final class HarvestNotification {
         this.lastResponseDate = lastResponseDate;
         this.params = params;
         this.stats = Collections.unmodifiableMap(stats);
-        this.lastRequestURI = lastRequestURI;
+        this.lastRequestURI = Optional.ofNullable(lastRequestURI);
+        this.lastRequestParameters = lastRequestParameters == null ?
+                Optional.empty() :
+                Optional.of(Collections.unmodifiableSortedMap(
+                        new TreeMap<>(lastRequestParameters)));
+        this.started = started;
+        this.ended = Optional.ofNullable(ended);
     }
 
     /**
@@ -113,6 +128,10 @@ public final class HarvestNotification {
 
     public HarvestNotificationType getType() {
         return type;
+    }
+
+    public Instant getLastReponseDate() {
+        return lastResponseDate;
     }
 
     public Map<String, String> getTags() {
@@ -151,12 +170,26 @@ public final class HarvestNotification {
         return params;
     }
 
-    public URI getLastRequestURI() {
+    public Optional<URI> getLastRequestURI() {
         return lastRequestURI;
+    }
+
+    public Optional<SortedMap<String, String>> getLastRequestParameters() {
+        return lastRequestParameters;
+    }
+
+    public Instant getStarted() {
+        return started;
+    }
+
+    public Optional<Instant> getEnded() {
+        return ended;
     }
 
     @Override
     public String toString() {
+        final String end = ended.isPresent() ? DateTimeFormatter.ISO_INSTANT
+                .format(ended.get()) : "";
         return new StringBuilder(this.getClass().getName())
                 .append("[type=").append(type)
                 .append(", running=").append(running)
@@ -167,6 +200,11 @@ public final class HarvestNotification {
                 .append(", resumptionToken=").append(resumptionToken)
                 .append(", lastResponseDate=").append(lastResponseDate)
                 .append(", lastRequestURI=").append(lastRequestURI)
+                .append(", lastRequestParameters=")
+                .append(lastRequestParameters)
+                .append(", started=").append(DateTimeFormatter.ISO_INSTANT
+                        .format(started))
+                .append(", ended=").append(end)
                 .append(", stats=").append(stats).append("]")
                 .toString();
     }

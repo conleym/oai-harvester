@@ -118,8 +118,7 @@ public final class WireMockUtils {
         getStub(statusCode, responseBody, ".*");
     }
 
-    public static void getStub(
-            final String responseBody) {
+    public static void getStub(final String responseBody) {
         getStub(HttpStatus.SC_OK, responseBody);
     }
 

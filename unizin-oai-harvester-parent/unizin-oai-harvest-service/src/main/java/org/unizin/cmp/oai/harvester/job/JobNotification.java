@@ -3,6 +3,7 @@ package org.unizin.cmp.oai.harvester.job;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 
 public final class JobNotification {
@@ -15,10 +16,14 @@ public final class JobNotification {
 
     public static enum JobStatistic {
         /**
-         * The number of records received by the consumer thread on the blocking
-         * queue so far.
+         * The number of records received by the consumer thread so far.
          */
         RECORDS_RECEIVED,
+        /**
+         * The number of bytes in the XML of records received by the consumer
+         * thread so far.
+         */
+        RECORD_BYTES_RECEIVED,
         /**
          * The number of batch writes to DynamoDB attempted so far.
          */
@@ -36,7 +41,7 @@ public final class JobNotification {
     private final Map<JobStatistic, Long> stats;
     private final Exception exception;
     private final Instant started;
-    private final Instant ended;
+    private final Optional<Instant> ended;
 
 
     JobNotification(final JobNotificationType type,
@@ -50,14 +55,16 @@ public final class JobNotification {
         this.stats = Collections.unmodifiableMap(stats);
         this.exception = exception;
         this.started = started;
-        this.ended = ended;
+        this.ended = Optional.ofNullable(ended);
     }
 
     public JobNotificationType getType() { return type; }
     public String getJobName() { return jobName; }
     public boolean isRunning() { return running; }
     public Map<JobStatistic, Long> getStats() { return stats; }
+    public Long getStat(final JobStatistic stat) { return stats.get(stat); }
     public Exception getException() { return exception; }
+    public boolean hasError() { return exception != null; }
     public Instant getStarted() { return started; }
-    public Instant getEnded() { return ended; }
+    public Optional<Instant> getEnded() { return ended; }
 }

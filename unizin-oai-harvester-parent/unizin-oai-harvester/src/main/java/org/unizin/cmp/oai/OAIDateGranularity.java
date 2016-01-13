@@ -53,6 +53,7 @@ public enum OAIDateGranularity {
         case "YYYY-MM-DD":
             return DAY;
         case "YYYY-MM-DDThh:mm:ssZ":
+            return SECOND;
         default:
             return null;
         }

@@ -3,13 +3,15 @@ package org.unizin.cmp.oai.harvester.service;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observer;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -28,14 +30,18 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.http.client.HttpClient;
-import org.jboss.logging.MDC;
+import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
+import org.slf4j.MDC;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.job.HarvestJob;
+import org.unizin.cmp.oai.harvester.job.JobHarvestSpec;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
+import org.unizin.cmp.oai.harvester.service.H2Functions.JobInfo;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -53,6 +59,7 @@ public final class JobResource {
 
 
     private final DataSource ds;
+    private final DBI dbi;
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
@@ -69,10 +76,37 @@ public final class JobResource {
             final DynamoDBMapper mapper,
             final ExecutorService executor) {
         this.ds = ds;
+        this.dbi = new DBI(ds);
         this.jobConfig = jobConfig;
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.executor = executor;
+    }
+
+    private JobInfo createJob(final List<HarvestParams> harvests) {
+        try (final Handle handle = dbi.open()) {
+            return handle.createCall(":info = call CREATE_JOB(:paramList)")
+            .bind("paramList", harvests)
+            .registerOutParameter("info", Types.OTHER)
+            .invoke().getObject("info", JobInfo.class);
+        }
+    }
+
+    private List<HarvestParams> removeDuplicates(
+            final List<HarvestParams> harvests) {
+        return new ArrayList<>(new HashSet<>(harvests));
+    }
+
+    private List<JobHarvestSpec> buildSpecs(final String jobName,
+            final JobInfo jobInfo, final List<HarvestParams> params) {
+        final List<JobHarvestSpec> specs = new ArrayList<>();
+        final Iterator<Long> harvestIDs = jobInfo.harvestIDs.iterator();
+        params.forEach(x -> {
+            final Map<String, String> tags = new HashMap<>(1);
+            tags.put("harvestName", String.valueOf(harvestIDs.next()));
+            specs.add(new JobHarvestSpec(x, tags));
+        });
+        return specs;
     }
 
     @POST
@@ -86,28 +120,27 @@ public final class JobResource {
             return Response.status(Status.BAD_REQUEST)
                     .entity(m).build();
         }
-        final String jobName = nextJobName();
+        final JobInfo jobInfo = createJob(removeDuplicates(h.valid));
+        final String jobName = String.valueOf(jobInfo.id);
         final Observer observeHarvests = (o, arg) -> {
             harvestUpdate(jobName, o, arg);
         };
+        final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo,
+                h.valid);
         final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
-                jobName, h.valid, Collections.singletonList(observeHarvests));
+                jobName, specs, Collections.singletonList(observeHarvests));
         job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
-        jobStatus.put(jobName, new JobStatus());
+        jobStatus.put(jobName, new JobStatus(ds));
         jobs.put(jobName, job);
         try {
             executor.submit(() -> {
                 MDC.put("jobName", jobName);
                 job.start();
             });
-        } catch (RejectedExecutionException e) {
+        } catch (final RejectedExecutionException e) {
             return Response.status(Status.SERVICE_UNAVAILABLE).build();
         }
         return Response.created(new URI(PATH + jobName)).build();
-    }
-
-    private static String nextJobName() {
-        return UUID.randomUUID().toString();
     }
 
     private static Harvests params(final List<Map<String, String>> harvests) {
@@ -151,7 +184,7 @@ public final class JobResource {
                 jobStatus.remove(jobName);
             } else {
                 final JobStatus status = jobStatus.get(jobName);
-                status.jobUpdate((HarvestJob)o, notification);
+                status.jobUpdate(notification);
                 jobStatus.put(jobName, status);
             }
         }
@@ -161,7 +194,7 @@ public final class JobResource {
             final Object arg) {
         if (o instanceof Harvester && arg instanceof HarvestNotification) {
             final JobStatus status = jobStatus.get(jobName);
-            status.harvestUpdate((Harvester)o, (HarvestNotification)arg);
+            status.harvestUpdate((HarvestNotification)arg);
             jobStatus.put(jobName, status);
         }
     }
@@ -174,13 +207,21 @@ public final class JobResource {
 
     @GET
     @Path("{jobID}")
-    public Response status(final @PathParam("jobID") String jobID) {
-        final Object status = jobStatus.get(jobID);
+    public Response status(final @PathParam("jobID") long jobID) {
+        Object status = jobStatus.get(jobID);
         if (status == null) {
-            // TODO check database.
-            return Response.status(Status.NOT_FOUND).build();
+            status = readStatusFromDatabase(jobID);
+            if (status == null) {
+                return Response.status(Status.NOT_FOUND).build();
+            }
         }
         return Response.ok(status).build();
+    }
+
+    private Object readStatusFromDatabase(final long jobID) {
+        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
+            return jdbi.findJobByID(jobID);
+        }
     }
 
     @PUT

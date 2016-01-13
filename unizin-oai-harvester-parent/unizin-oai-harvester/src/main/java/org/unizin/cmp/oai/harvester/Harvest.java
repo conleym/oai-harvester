@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.http.client.methods.HttpUriRequest;
@@ -35,6 +36,7 @@ final class Harvest {
     private final Map<String, String> tags;
     private final State state = new State();
     private HttpUriRequest request;
+    private SortedMap<String, String> requestParams;
     private Exception exception;
     /**
      * The resumption token from the last response, if any.
@@ -45,6 +47,8 @@ final class Harvest {
      */
     private volatile ResumptionToken resumptionToken;
     private Instant lastResponseDate;
+    private Instant started;
+    private Instant ended;
     private long requestCount;
     private long responseCount;
     private long xmlEventCount;
@@ -71,7 +75,7 @@ final class Harvest {
         final URI uri = (request == null) ? null : request.getURI();
         return new HarvestNotification(type, tags, state, exception,
                 resumptionToken, lastResponseDate, params, stats,
-                uri);
+                uri, requestParams, started, ended);
     }
 
     void setLastResponseDate(final Instant lastResponseDate) {
@@ -102,9 +106,11 @@ final class Harvest {
                     resumptionToken.getToken());
             m.put(OAI2Constants.VERB_PARAM_NAME,
                     params.getVerb().localPart());
-            return m;
+            requestParams = new TreeMap<>(m);
+        } else {
+            requestParams = params.getParameters();
         }
-        return params.getParameters();
+        return requestParams;
     }
 
     URI getBaseURI() {
@@ -113,10 +119,12 @@ final class Harvest {
 
     void start() {
         state.running = true;
+        started = Instant.now();
     }
 
     void stop() {
         state.running = false;
+        ended = Instant.now();
     }
 
     void cancel() {
@@ -167,6 +175,13 @@ final class Harvest {
     HarvestParams getRetryParams() {
         if (params != null) {
             return params.getRetryParameters(resumptionToken);
+        }
+        throw new IllegalStateException("No current harvest parameters.");
+    }
+
+    HarvestParams getHarvestParams() {
+        if (params != null) {
+            return params;
         }
         throw new IllegalStateException("No current harvest parameters.");
     }

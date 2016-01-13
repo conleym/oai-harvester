@@ -25,6 +25,7 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.XMLEvent;
 
 import org.unizin.cmp.oai.OAI2Constants;
+import org.unizin.cmp.oai.OAIXMLUtils;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.ByteStreams;
@@ -50,7 +51,8 @@ public final class Tests {
 
     private static final Template OAI_LIST_RECORDS_TEMPLATE;
     static {
-        final Configuration config = new Configuration(Configuration.getVersion());
+        final Configuration config = new Configuration(
+                Configuration.getVersion());
         config.setTemplateLoader(new ClassTemplateLoader(
                 Tests.class, "/oai-response-templates"));
         try {
@@ -121,8 +123,8 @@ public final class Tests {
         final Set<Namespace> ns = Collections.singleton(
                 ef.createNamespace(OAI2Constants.OAI_2_NS_URI));
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final XMLEventWriter w = XMLOutputFactory.newFactory()
-                .createXMLEventWriter(baos);
+        final XMLEventWriter w = OAIXMLUtils.createEventWriter(
+                XMLOutputFactory.newFactory(), baos);
         while (r.hasNext()) {
             final XMLEvent e = r.nextEvent();
             if (e.isStartDocument() || e.isEndDocument()) {

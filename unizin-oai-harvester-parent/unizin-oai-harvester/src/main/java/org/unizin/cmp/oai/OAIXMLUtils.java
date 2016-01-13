@@ -1,8 +1,12 @@
 package org.unizin.cmp.oai;
 
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -58,6 +62,13 @@ public final class OAIXMLUtils {
             final QName name) {
         final Attribute attr = se.getAttributeByName(name);
         return (attr == null) ? null : attr.getValue();
+    }
+
+    public static XMLEventWriter createEventWriter(
+            final XMLOutputFactory outputFactory, final OutputStream out)
+                    throws XMLStreamException {
+        return outputFactory.createXMLEventWriter(out,
+                StandardCharsets.UTF_8.name());
     }
 
     /**
