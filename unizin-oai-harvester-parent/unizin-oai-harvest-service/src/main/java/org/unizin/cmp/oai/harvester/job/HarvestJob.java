@@ -248,8 +248,8 @@ public final class HarvestJob extends Observable {
      *            the name of this job. The name will be reported in job
      *            notifications and will be placed in the {@link MDC} of each
      *            harvest's thread for tracking purposes.
-     * @param harvestParams
-     *            list of harvest parameters. A new producer thread will be
+     * @param harvests
+     *            list of harvest specifications. A new producer thread will be
      *            created and started for each of these when {@link #start()} is
      *            invoked.
      * @param harvestObservers
