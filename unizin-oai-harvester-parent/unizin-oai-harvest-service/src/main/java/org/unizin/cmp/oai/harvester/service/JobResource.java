@@ -181,6 +181,7 @@ public final class JobResource {
         if (o instanceof HarvestJob && arg instanceof JobNotification) {
             final JobNotification notification = (JobNotification)arg;
             if (notification.getType() == JobNotificationType.STOPPED) {
+                jobStatus.get(jobName).jobUpdate(notification);
                 jobStatus.remove(jobName);
             } else {
                 final JobStatus status = jobStatus.get(jobName);

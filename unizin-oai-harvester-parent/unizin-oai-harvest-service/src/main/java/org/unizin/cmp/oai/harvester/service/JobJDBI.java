@@ -35,6 +35,15 @@ public interface JobJDBI extends AutoCloseable {
             return str == null ? null : str.toUpperCase();
         }
 
+        private static final String fromClob(final Clob clob,
+                final StatementContext ctx) throws SQLException {
+            try (final Reader reader = clob.getCharacterStream()) {
+                return CharStreams.toString(reader);
+            } catch (final IOException e) {
+                throw new ResultSetException("Error reading clob", e, ctx);
+            }
+        }
+
         @Override
         public Map<String, Object> map(final int index, final ResultSet r,
                 final StatementContext ctx) {
@@ -53,17 +62,12 @@ public interface JobJDBI extends AutoCloseable {
                     String alias = toUpper(m.getColumnLabel(i));
                     Object value = r.getObject(i);
                     if (value instanceof Clob) {
-                        try (final Reader reader = ((Clob)value).getCharacterStream()) {
-                            value = CharStreams.toString(reader);
-                        } catch (final IOException e) {
-                            throw new ResultSetException("Error reading clob",
-                                    e, ctx);
-                        }
+                        value = fromClob((Clob)value, ctx);
                     }
                     row.put(alias != null ? alias : key, value);
                 }
             }
-            catch (SQLException e) {
+            catch (final SQLException e) {
                 throw new ResultSetException(
                         "Unable to access specific metadata from " +
                                 "result set metadata", e, ctx);
@@ -76,12 +80,13 @@ public interface JobJDBI extends AutoCloseable {
     public static final class MapperFactory implements ResultSetMapperFactory {
         private static final ResultSetMapper MAPPER = new Mapper();
         @Override
-        public boolean accepts(Class type, StatementContext ctx) {
+        public boolean accepts(final Class type, final StatementContext ctx) {
             return Map.class.isAssignableFrom(type);
         }
 
         @Override
-        public ResultSetMapper mapperFor(Class type, StatementContext ctx) {
+        public ResultSetMapper mapperFor(final Class type,
+                final StatementContext ctx) {
             return MAPPER ;
         }
     }
