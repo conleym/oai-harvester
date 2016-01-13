@@ -20,9 +20,11 @@ import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
+@JsonIgnoreProperties(ignoreUnknown=true)
 public final class JobStatus {
     private final ConcurrentMap<String, Object> lastHarvestNotifications =
             new ConcurrentHashMap<>();

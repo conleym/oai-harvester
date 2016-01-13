@@ -207,13 +207,21 @@ public final class JobResource {
 
     @GET
     @Path("{jobID}")
-    public Response status(final @PathParam("jobID") String jobID) {
-        final Object status = jobStatus.get(jobID);
+    public Response status(final @PathParam("jobID") long jobID) {
+        Object status = jobStatus.get(jobID);
         if (status == null) {
-            // TODO check database.
-            return Response.status(Status.NOT_FOUND).build();
+            status = readStatusFromDatabase(jobID);
+            if (status == null) {
+                return Response.status(Status.NOT_FOUND).build();
+            }
         }
         return Response.ok(status).build();
+    }
+
+    private Object readStatusFromDatabase(final long jobID) {
+        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
+            return jdbi.findJobByID(jobID);
+        }
     }
 
     @PUT

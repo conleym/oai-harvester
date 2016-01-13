@@ -1,16 +1,92 @@
 package org.unizin.cmp.oai.harvester.service;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Clob;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.skife.jdbi.v2.HashPrefixStatementRewriter;
+import org.skife.jdbi.v2.ResultSetMapperFactory;
+import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.exceptions.ResultSetException;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.OverrideStatementRewriterWith;
+import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
+import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
+import org.skife.jdbi.v2.tweak.ResultSetMapper;
+
+import com.google.common.io.CharStreams;
 
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
 public interface JobJDBI extends AutoCloseable {
+
+    public static final class Mapper
+        implements ResultSetMapper<Map<String, Object>> {
+
+        private static final String toUpper(final String str) {
+            return str == null ? null : str.toUpperCase();
+        }
+
+        @Override
+        public Map<String, Object> map(final int index, final ResultSet r,
+                final StatementContext ctx) {
+            Map<String, Object> row = new HashMap<>();
+            ResultSetMetaData m;
+            try {
+                m = r.getMetaData();
+            }
+            catch (SQLException e) {
+                throw new ResultSetException(
+                        "Unable to obtain metadata from result set", e, ctx);
+            }
+            try {
+                for (int i = 1; i <= m.getColumnCount(); i ++) {
+                    String key = toUpper(m.getColumnName(i));
+                    String alias = toUpper(m.getColumnLabel(i));
+                    Object value = r.getObject(i);
+                    if (value instanceof Clob) {
+                        try (final Reader reader = ((Clob)value).getCharacterStream()) {
+                            value = CharStreams.toString(reader);
+                        } catch (final IOException e) {
+                            throw new ResultSetException("Error reading clob",
+                                    e, ctx);
+                        }
+                    }
+                    row.put(alias != null ? alias : key, value);
+                }
+            }
+            catch (SQLException e) {
+                throw new ResultSetException(
+                        "Unable to access specific metadata from " +
+                                "result set metadata", e, ctx);
+            }
+            return row;
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static final class MapperFactory implements ResultSetMapperFactory {
+        private static final ResultSetMapper MAPPER = new Mapper();
+        @Override
+        public boolean accepts(Class type, StatementContext ctx) {
+            return Map.class.isAssignableFrom(type);
+        }
+
+        @Override
+        public ResultSetMapper mapperFor(Class type, StatementContext ctx) {
+            return MAPPER ;
+        }
+    }
+
+
     public static final String JOB_UPDATE = "update JOB " +
             "set JOB_START = #start," +
             "JOB_END = #end, " +
@@ -74,8 +150,12 @@ public interface JobJDBI extends AutoCloseable {
     long findRepositoryIDByBaseURI(
             @Bind("baseURI") String baseURI);
 
-    @SqlQuery("select * from JOB where JOB_ID = #id")
-    Map<String, Object> findJobByID(@Bind("id") long id);
+    @SqlQuery("select * from JOB inner join HARVEST " +
+                    "on JOB.JOB_ID = HARVEST.JOB_ID " +
+                 "where JOB.JOB_ID = #id")
+    @SingleValueResult(Map.class)
+    @RegisterMapperFactory(MapperFactory.class)
+    List<Map<String, Object>> findJobByID(@Bind("id") long id);
 
 
     @Override

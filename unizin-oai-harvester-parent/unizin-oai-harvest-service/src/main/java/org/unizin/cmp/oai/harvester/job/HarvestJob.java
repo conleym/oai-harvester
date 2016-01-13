@@ -71,7 +71,7 @@ public final class HarvestJob extends Observable {
          * send in one API request.
          */
         private static final int DEFAULT_BATCH_SIZE = 25;
-        private static final Timeout DEFAULT_TIMEOUT = new Timeout(100,
+        private static final Timeout DEFAULT_TIMEOUT = new Timeout(5000,
                 TimeUnit.MILLISECONDS);
         private static final int DEFAULT_QUEUE_CAPACITY = 10 * 1000;
 

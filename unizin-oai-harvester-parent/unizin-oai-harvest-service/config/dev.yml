@@ -14,8 +14,8 @@ database:
   checkConnectionOnReturn: true
   autoCommentsEnabled: false
 
-h2Server:
-  jdbcPort: 6767
+#h2Server:
+#  jdbcPort: 6767
   # The web server really shouldn't be run in production, but can be useful for testing.
 #  webPort: 6969
 
