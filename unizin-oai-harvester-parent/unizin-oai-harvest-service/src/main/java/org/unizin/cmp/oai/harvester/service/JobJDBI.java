@@ -6,6 +6,7 @@ import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.OverrideStatementRewriterWith;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.unizin.cmp.oai.OAIVerb;
 
 import com.google.common.io.CharStreams;
 
@@ -63,6 +65,8 @@ public interface JobJDBI extends AutoCloseable {
                     Object value = r.getObject(i);
                     if (value instanceof Clob) {
                         value = fromClob((Clob)value, ctx);
+                    } else if (value instanceof Timestamp) {
+                        value = ((Timestamp)value).toInstant();
                     }
                     row.put(alias != null ? alias : key, value);
                 }
@@ -117,8 +121,14 @@ public interface JobJDBI extends AutoCloseable {
             "where HARVEST_ID = #id";
 
     public static final String INSERT_HARVEST = "insert into HARVEST(" +
-            "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS) " +
-            "values (#jobID, #repoID, #initialParameters)";
+            "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS, " +
+            " HARVEST_VERB) values (#jobID, #repoID, #initialParameters, " +
+            "#verb)";
+
+    public static final String JOB_QUERY = "select * from JOB inner join " +
+            "HARVEST on JOB.JOB_ID = HARVEST.JOB_ID inner join REPOSITORY on " +
+            "REPOSITORY.REPOSITORY_ID = HARVEST.REPOSITORY_ID " +
+            "where JOB.JOB_ID = #id";
 
     @SqlUpdate("insert into JOB() values()")
     @GetGeneratedKeys
@@ -135,7 +145,8 @@ public interface JobJDBI extends AutoCloseable {
     @GetGeneratedKeys
     long createHarvest(@Bind("jobID") long jobID,
             @Bind("repoID") long repositoryID,
-            @Bind("initialParameters") String initialParameters);
+            @Bind("initialParameters") String initialParameters,
+            @Bind("verb") OAIVerb verb);
 
     @SqlUpdate(HARVEST_UPDATE)
     void updateHarvest(@Bind("id") long id, @Bind("start") String start,
@@ -155,13 +166,10 @@ public interface JobJDBI extends AutoCloseable {
     long findRepositoryIDByBaseURI(
             @Bind("baseURI") String baseURI);
 
-    @SqlQuery("select * from JOB inner join HARVEST " +
-                    "on JOB.JOB_ID = HARVEST.JOB_ID " +
-                 "where JOB.JOB_ID = #id")
+    @SqlQuery(JOB_QUERY)
     @SingleValueResult(Map.class)
     @RegisterMapperFactory(MapperFactory.class)
     List<Map<String, Object>> findJobByID(@Bind("id") long id);
-
 
     @Override
     void close();

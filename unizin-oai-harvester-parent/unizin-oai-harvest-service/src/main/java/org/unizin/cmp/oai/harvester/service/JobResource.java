@@ -86,9 +86,9 @@ public final class JobResource {
     private JobInfo createJob(final List<HarvestParams> harvests) {
         try (final Handle handle = dbi.open()) {
             return handle.createCall(":info = call CREATE_JOB(:paramList)")
-            .bind("paramList", harvests)
-            .registerOutParameter("info", Types.OTHER)
-            .invoke().getObject("info", JobInfo.class);
+                    .bind("paramList", harvests)
+                    .registerOutParameter("info", Types.OTHER)
+                    .invoke().getObject("info", JobInfo.class);
         }
     }
 
@@ -220,9 +220,8 @@ public final class JobResource {
     }
 
     private Object readStatusFromDatabase(final long jobID) {
-        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
-            return jdbi.findJobByID(jobID);
-        }
+        final JobStatus status = new JobStatus(ds);
+        return status.loadFromDB(jobID) ? status : null;
     }
 
     @PUT

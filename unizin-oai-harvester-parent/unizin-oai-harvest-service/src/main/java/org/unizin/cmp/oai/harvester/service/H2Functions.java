@@ -45,7 +45,7 @@ public final class H2Functions {
         final long repositoryID = jdbi.findRepositoryIDByBaseURI(
                 params.getBaseURI().toString());
         return jdbi.createHarvest(jobID, repositoryID,
-                params.toString());
+                params.toString(), params.getVerb());
     }
 
     /** No instances allowed. */

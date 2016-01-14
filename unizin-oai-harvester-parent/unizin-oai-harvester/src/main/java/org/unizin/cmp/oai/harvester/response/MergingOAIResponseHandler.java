@@ -7,6 +7,7 @@ import static org.unizin.cmp.oai.OAI2Constants.RESUMPTION_TOKEN;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.EventFilter;
@@ -152,9 +153,9 @@ extends AbstractOAIResponseHandler {
      * @return {@code true} iff we should write the epilogue.
      */
     private boolean shouldAddEpilogue(final HarvestNotification notification) {
-        final Exception ex = notification.getException();
-        final boolean exOK = (ex == null ||
-                ex instanceof OAIProtocolException);
+        final Optional<Exception> ex = notification.getException();
+        final boolean exOK = (!ex.isPresent() ||
+                ex.get() instanceof OAIProtocolException);
         return exOK && !notification.isCancelled();
     }
 

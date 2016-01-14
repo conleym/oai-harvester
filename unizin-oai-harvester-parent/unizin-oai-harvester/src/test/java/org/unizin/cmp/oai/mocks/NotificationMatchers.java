@@ -6,6 +6,7 @@ import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificati
 import static org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType.RESPONSE_RECEIVED;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.unizin.cmp.oai.ResumptionToken;
@@ -39,8 +40,7 @@ public final class NotificationMatchers {
                 (hn) -> {
                     return hn.getType() == RESPONSE_RECEIVED &&
                             NotificationMatchers.RUNNING.test(hn);
-                },
-                HarvestNotification.class);
+                }, HarvestNotification.class);
     }
 
     public static final HarvestNotification responseProcessedWithError() {
@@ -48,8 +48,7 @@ public final class NotificationMatchers {
                 (hn) -> {
                     return hn.getType() == RESPONSE_PROCESSED &&
                             NotificationMatchers.HAS_ERROR.test(hn);
-                },
-                HarvestNotification.class);
+                }, HarvestNotification.class);
     }
 
     public static final HarvestNotification responseProcessedSuccessfully() {
@@ -57,48 +56,49 @@ public final class NotificationMatchers {
                 (hn) -> {
                     return hn.getType() == RESPONSE_PROCESSED &&
                             NotificationMatchers.RUNNING.test(hn);
-                },
-                HarvestNotification.class);
+                }, HarvestNotification.class);
     }
 
     public static final HarvestNotification lastResponseProcessedSuccessfully() {
         return Mocks.matcherFromPredicate((hn) -> {
             return hn.getType() == RESPONSE_PROCESSED &&
-                    !hn.isRunning() && !hn.isExplicitlyStopped() && !hn.hasError();
-        },
-                HarvestNotification.class);
+                    !hn.isRunning() && !hn.isExplicitlyStopped() &&
+                    !hn.hasError();
+        }, HarvestNotification.class);
     }
 
     public static final HarvestNotification harvestEndedWithError() {
         return Mocks.matcherFromPredicate((hn) -> {
             return hn.getType() == HARVEST_ENDED &&
                     NotificationMatchers.HAS_ERROR.test(hn);
-        },
-                HarvestNotification.class);
+        }, HarvestNotification.class);
     }
 
     public static final HarvestNotification harvestEndedSuccessfully() {
         return Mocks.matcherFromPredicate((hn) -> {
             return hn.getType() == HARVEST_ENDED &&
                     NotificationMatchers.NOT_RUNNING.test(hn);
-        },
-                HarvestNotification.class);
+        }, HarvestNotification.class);
     }
 
     public static final HarvestNotification withStats(final long requestCount,
             final long responseCount) {
         return Mocks.matcherFromPredicate((hn) -> {
             return hn.getStat(HarvestStatistic.REQUEST_COUNT) == requestCount &&
-                    hn.getStat(HarvestStatistic.RESPONSE_COUNT) == responseCount;
-        },
-                HarvestNotification.class);
+                    hn.getStat(HarvestStatistic.RESPONSE_COUNT) ==
+                        responseCount;
+        }, HarvestNotification.class);
     }
 
-    public static final HarvestNotification withToken(final ResumptionToken token) {
+    public static final HarvestNotification withToken(
+            final ResumptionToken token) {
         return Mocks.matcherFromPredicate((hn) -> {
-            return Objects.equals(token, hn.getResumptionToken());
-        },
-                HarvestNotification.class);
+            final Optional<ResumptionToken> rt = hn.getResumptionToken();
+            if (token == null) {
+                return !rt.isPresent();
+            }
+            return rt.isPresent() && Objects.equals(token, rt.get());
+        }, HarvestNotification.class);
     }
 
     /** No instances allowed. */
