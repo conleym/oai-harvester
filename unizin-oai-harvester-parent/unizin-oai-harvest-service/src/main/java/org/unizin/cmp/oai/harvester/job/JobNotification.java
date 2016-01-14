@@ -39,7 +39,7 @@ public final class JobNotification {
     private final String jobName;
     private final boolean running;
     private final Map<JobStatistic, Long> stats;
-    private final Exception exception;
+    private final Optional<Exception> exception;
     private final Instant started;
     private final Optional<Instant> ended;
 
@@ -53,7 +53,7 @@ public final class JobNotification {
         this.jobName = jobName;
         this.running = running;
         this.stats = Collections.unmodifiableMap(stats);
-        this.exception = exception;
+        this.exception = Optional.ofNullable(exception);
         this.started = started;
         this.ended = Optional.ofNullable(ended);
     }
@@ -63,7 +63,7 @@ public final class JobNotification {
     public boolean isRunning() { return running; }
     public Map<JobStatistic, Long> getStats() { return stats; }
     public Long getStat(final JobStatistic stat) { return stats.get(stat); }
-    public Exception getException() { return exception; }
+    public Optional<Exception> getException() { return exception; }
     public boolean hasError() { return exception != null; }
     public Instant getStarted() { return started; }
     public Optional<Instant> getEnded() { return ended; }

@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: mconley
+      changes:
+        - addColumn:
+            tableName: HARVEST
+            columns:
+              - column:
+                  name: HARVEST_VERB
+                  type: varchar(30)
+              - column:
+                  name: HARVEST_EXPLICITLY_STOPPED
+                  type: boolean
+                  defaultValue: false
+              - column:
+                  name: HARVEST_LAST_RESPONSE_DATE
+                  type: timestamp
+        - update:
+            tableName: HARVEST
+            columns:
+              - column:
+                  name: HARVEST_VERB
+                  value: LIST_RECORDS
+              - column:
+                  name: HARVEST_EXPLICITLY_STOPPED
+                  value: false
+              - column:
+                  name: HARVEST_LAST_RESPONSE_DATE
+                  valueComputed: HARVEST_LAST_UPDATE
+        - addNotNullConstraint:
+            tableName: HARVEST
+            columnName: HARVEST_VERB
+            columnDataType: varchar(30)
+        - addNotNullConstraint:
+            tableName: HARVEST
+            columnName: HARVEST_EXPLICITLY_STOPPED
+            columnDataType: boolean
+        - tagDatabase:
+            tag: version_1.1

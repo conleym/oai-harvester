@@ -5,6 +5,9 @@ import java.util.Map;
 
 import org.unizin.cmp.oai.harvester.HarvestParams;
 
+/**
+ * A combination of harvest parameters and optional tags for a harvest.
+ */
 public final class JobHarvestSpec {
 
     private final HarvestParams params;

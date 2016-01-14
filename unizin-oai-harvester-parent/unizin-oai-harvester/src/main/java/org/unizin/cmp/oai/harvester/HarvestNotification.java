@@ -67,9 +67,9 @@ public final class HarvestNotification {
     private final boolean explicitlyStopped;
     private final boolean cancelled;
     private final boolean interrupted;
-    private final Exception exception;
-    private final ResumptionToken resumptionToken;
-    private final Instant lastResponseDate;
+    private final Optional<Exception> exception;
+    private final Optional<ResumptionToken> resumptionToken;
+    private final Optional<Instant> lastResponseDate;
     private final HarvestParams params;
     private final Map<HarvestStatistic, Long> stats;
     private final Optional<URI> lastRequestURI;
@@ -90,9 +90,9 @@ public final class HarvestNotification {
         this.explicitlyStopped = state.explicitlyStopped;
         this.cancelled = state.cancelled;
         this.interrupted = state.interrupted;
-        this.exception = exception;
-        this.resumptionToken = resumptionToken;
-        this.lastResponseDate = lastResponseDate;
+        this.exception = Optional.ofNullable(exception);
+        this.resumptionToken = Optional.ofNullable(resumptionToken);
+        this.lastResponseDate = Optional.ofNullable(lastResponseDate);
         this.params = params;
         this.stats = Collections.unmodifiableMap(stats);
         this.lastRequestURI = Optional.ofNullable(lastRequestURI);
@@ -130,7 +130,7 @@ public final class HarvestNotification {
         return type;
     }
 
-    public Instant getLastReponseDate() {
+    public Optional<Instant> getLastReponseDate() {
         return lastResponseDate;
     }
 
@@ -138,7 +138,7 @@ public final class HarvestNotification {
         return tags;
     }
 
-    public ResumptionToken getResumptionToken() {
+    public Optional<ResumptionToken> getResumptionToken() {
         return resumptionToken;
     }
 
@@ -159,10 +159,10 @@ public final class HarvestNotification {
     }
 
     public boolean hasError() {
-        return exception != null;
+        return exception.isPresent();
     }
 
-    public Exception getException() {
+    public Optional<Exception> getException() {
         return exception;
     }
 

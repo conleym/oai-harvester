@@ -6,6 +6,7 @@ import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.OverrideStatementRewriterWith;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.unizin.cmp.oai.OAIVerb;
 
 import com.google.common.io.CharStreams;
 
@@ -33,6 +35,15 @@ public interface JobJDBI extends AutoCloseable {
 
         private static final String toUpper(final String str) {
             return str == null ? null : str.toUpperCase();
+        }
+
+        private static final String fromClob(final Clob clob,
+                final StatementContext ctx) throws SQLException {
+            try (final Reader reader = clob.getCharacterStream()) {
+                return CharStreams.toString(reader);
+            } catch (final IOException e) {
+                throw new ResultSetException("Error reading clob", e, ctx);
+            }
         }
 
         @Override
@@ -53,17 +64,14 @@ public interface JobJDBI extends AutoCloseable {
                     String alias = toUpper(m.getColumnLabel(i));
                     Object value = r.getObject(i);
                     if (value instanceof Clob) {
-                        try (final Reader reader = ((Clob)value).getCharacterStream()) {
-                            value = CharStreams.toString(reader);
-                        } catch (final IOException e) {
-                            throw new ResultSetException("Error reading clob",
-                                    e, ctx);
-                        }
+                        value = fromClob((Clob)value, ctx);
+                    } else if (value instanceof Timestamp) {
+                        value = ((Timestamp)value).toInstant();
                     }
                     row.put(alias != null ? alias : key, value);
                 }
             }
-            catch (SQLException e) {
+            catch (final SQLException e) {
                 throw new ResultSetException(
                         "Unable to access specific metadata from " +
                                 "result set metadata", e, ctx);
@@ -76,12 +84,13 @@ public interface JobJDBI extends AutoCloseable {
     public static final class MapperFactory implements ResultSetMapperFactory {
         private static final ResultSetMapper MAPPER = new Mapper();
         @Override
-        public boolean accepts(Class type, StatementContext ctx) {
+        public boolean accepts(final Class type, final StatementContext ctx) {
             return Map.class.isAssignableFrom(type);
         }
 
         @Override
-        public ResultSetMapper mapperFor(Class type, StatementContext ctx) {
+        public ResultSetMapper mapperFor(final Class type,
+                final StatementContext ctx) {
             return MAPPER ;
         }
     }
@@ -112,8 +121,14 @@ public interface JobJDBI extends AutoCloseable {
             "where HARVEST_ID = #id";
 
     public static final String INSERT_HARVEST = "insert into HARVEST(" +
-            "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS) " +
-            "values (#jobID, #repoID, #initialParameters)";
+            "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS, " +
+            " HARVEST_VERB) values (#jobID, #repoID, #initialParameters, " +
+            "#verb)";
+
+    public static final String JOB_QUERY = "select * from JOB inner join " +
+            "HARVEST on JOB.JOB_ID = HARVEST.JOB_ID inner join REPOSITORY on " +
+            "REPOSITORY.REPOSITORY_ID = HARVEST.REPOSITORY_ID " +
+            "where JOB.JOB_ID = #id";
 
     @SqlUpdate("insert into JOB() values()")
     @GetGeneratedKeys
@@ -130,7 +145,8 @@ public interface JobJDBI extends AutoCloseable {
     @GetGeneratedKeys
     long createHarvest(@Bind("jobID") long jobID,
             @Bind("repoID") long repositoryID,
-            @Bind("initialParameters") String initialParameters);
+            @Bind("initialParameters") String initialParameters,
+            @Bind("verb") OAIVerb verb);
 
     @SqlUpdate(HARVEST_UPDATE)
     void updateHarvest(@Bind("id") long id, @Bind("start") String start,
@@ -150,13 +166,10 @@ public interface JobJDBI extends AutoCloseable {
     long findRepositoryIDByBaseURI(
             @Bind("baseURI") String baseURI);
 
-    @SqlQuery("select * from JOB inner join HARVEST " +
-                    "on JOB.JOB_ID = HARVEST.JOB_ID " +
-                 "where JOB.JOB_ID = #id")
+    @SqlQuery(JOB_QUERY)
     @SingleValueResult(Map.class)
     @RegisterMapperFactory(MapperFactory.class)
     List<Map<String, Object>> findJobByID(@Bind("id") long id);
-
 
     @Override
     void close();
