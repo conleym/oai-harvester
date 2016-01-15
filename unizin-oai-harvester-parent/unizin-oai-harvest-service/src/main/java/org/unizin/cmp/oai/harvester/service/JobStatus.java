@@ -172,6 +172,7 @@ public final class JobStatus {
         maybeAddObject(tags, "tags", status);
         maybeAddObject(stackTrace, "exception", status);
         maybeAddObject(lastRequestParams, "lastRequestParameters", status);
+        maybeAddObject(lastRequestURI, "lastRequestURI", status);
         maybeAdd(lastResponseDate, "lastResponseDate", status);
 
         final Map<String, Object> rt = new TreeMap<>();
