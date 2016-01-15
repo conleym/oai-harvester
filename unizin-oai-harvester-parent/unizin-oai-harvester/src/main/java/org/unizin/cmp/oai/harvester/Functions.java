@@ -64,6 +64,8 @@ public final class Functions {
      * Wrap a call to void function taking one argument that can throw checked
      * exceptions in a {@code Runnable}.
      *
+     * @param <T>
+     *            the type of the function's argument.
      * @param consumer
      *            the checked-exception-throwing function to wrap.
      * @param t
