@@ -42,6 +42,7 @@ public enum OAIDateGranularity {
      * repository's <a href=
      * "http://www.openarchives.org/OAI/openarchivesprotocol.html#Identify">
      * Identify response</a>.
+     * </p>
      *
      * @param format
      *            the format string.
