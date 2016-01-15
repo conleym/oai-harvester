@@ -58,7 +58,6 @@ public final class JobResource {
     public static final String PATH = "/job/";
 
 
-    private final DataSource ds;
     private final DBI dbi;
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
@@ -75,7 +74,6 @@ public final class JobResource {
             final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final ExecutorService executor) {
-        this.ds = ds;
         this.dbi = new DBI(ds);
         this.jobConfig = jobConfig;
         this.httpClient = httpClient;
@@ -130,7 +128,7 @@ public final class JobResource {
         final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
                 jobName, specs, Collections.singletonList(observeHarvests));
         job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
-        jobStatus.put(jobName, new JobStatus(ds));
+        jobStatus.put(jobName, new JobStatus(dbi));
         jobs.put(jobName, job);
         try {
             executor.submit(() -> {
@@ -220,7 +218,7 @@ public final class JobResource {
     }
 
     private Object readStatusFromDatabase(final long jobID) {
-        final JobStatus status = new JobStatus(ds);
+        final JobStatus status = new JobStatus(dbi);
         return status.loadFromDB(jobID) ? status : null;
     }
 
