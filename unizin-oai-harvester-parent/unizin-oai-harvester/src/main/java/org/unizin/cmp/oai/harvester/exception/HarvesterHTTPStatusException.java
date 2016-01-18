@@ -21,10 +21,8 @@ import org.apache.http.StatusLine;
 public final class HarvesterHTTPStatusException extends HarvesterException {
     private static final long serialVersionUID = 1L;
 
-    // HttpResponse is not serializable.
-    private transient final HttpResponse response;
-
-    // These are provided to enable serialization and deserialization.
+    // HttpEntity is not serializable.
+    private transient final HttpEntity entity;
     private final Header[] headers;
     private final Locale locale;
     private final StatusLine statusLine;
@@ -33,18 +31,15 @@ public final class HarvesterHTTPStatusException extends HarvesterException {
     public HarvesterHTTPStatusException(final String message,
             final HttpResponse response) {
         super(message);
-        this.response = response;
+        this.entity = response.getEntity();
         this.headers = response.getAllHeaders();
         this.locale = response.getLocale();
         this.statusLine = response.getStatusLine();
     }
 
     public void writeResponseBodyTo(final OutputStream out) throws IOException {
-        if (response != null) {
-            final HttpEntity e = response.getEntity();
-            if (e != null) {
-                e.writeTo(out);
-            }
+        if (entity != null) {
+            entity.writeTo(out);
         }
     }
 
