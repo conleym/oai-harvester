@@ -1,7 +1,0 @@
-databaseChangeLog:
-  - changeSet:
-      id: 5
-      author: mconley
-      changes:
-        - tagDatabase:
-            tag: version_1.2
