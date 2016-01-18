@@ -1,12 +1,10 @@
 package org.unizin.cmp.oai.harvester;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Observable;
@@ -15,7 +13,6 @@ import java.util.function.Consumer;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -84,8 +81,6 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 public final class Harvester extends Observable {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(Harvester.class);
-
-    private static byte[] EMPTY = new byte[]{};
 
     /**
      * Default socket timeout (the amount of time {@code HttpClient} will wait
@@ -517,35 +512,12 @@ public final class Harvester extends Observable {
         }
     }
 
-    private byte[] responseBytes(final HttpEntity entity) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        entity.writeTo(baos);
-        return baos.toByteArray();
-    }
-
     private HarvesterHTTPStatusException statusException(
             final HttpUriRequest request, final HttpResponse response) {
-        final StatusLine statusLine = response.getStatusLine();
-        final Locale locale = response.getLocale();
-        final Header[] headers = response.getAllHeaders();
-        final HttpEntity entity = response.getEntity();
         final String message = String.format(
                 "Got HTTP status %d for request %s.",
                 response.getStatusLine().getStatusCode(), request);
-        try {
-            final byte[] responseBody = responseBytes(entity);
-            return new HarvesterHTTPStatusException(message, statusLine, locale,
-                    headers, responseBody);
-        } catch (final IOException e) {
-            LOGGER.warn(
-                    "Error getting response body handling HTTP status error.",
-                    e);
-            final HarvesterHTTPStatusException hhse =
-                    new HarvesterHTTPStatusException(message, statusLine,
-                            locale, headers, EMPTY);
-            hhse.addSuppressed(e);
-            return hhse;
-        }
+        return new HarvesterHTTPStatusException(message, response);
     }
 
     /**

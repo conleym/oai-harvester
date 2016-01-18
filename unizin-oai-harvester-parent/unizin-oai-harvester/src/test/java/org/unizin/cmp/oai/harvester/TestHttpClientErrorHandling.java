@@ -3,7 +3,6 @@ package org.unizin.cmp.oai.harvester;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -12,25 +11,27 @@ import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 import static org.unizin.cmp.oai.mocks.WireMockUtils.getAnyURL;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.HttpVersion;
-import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
-import org.apache.http.message.BasicStatusLine;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
 import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
@@ -46,6 +47,9 @@ public final class TestHttpClientErrorHandling {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public final TemporaryFolder temp = new TemporaryFolder();
 
 
     private static void verifyResponseHandler(final OAIResponseHandler h) {
@@ -139,7 +143,10 @@ public final class TestHttpClientErrorHandling {
                                 && "text/plain".equals(x.getValue()));
                 Assert.assertTrue("content-type header should be present with "
                         + "value 'text/plain'.", sb.anyMatch(x -> x));
-                checkBody(hhse.getResponseBody());
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                hhse.writeResponseBodyTo(baos);
+                checkBody(baos.toByteArray());
+                checkSerialization(hhse);
             }
             throw e;
         }
@@ -151,40 +158,34 @@ public final class TestHttpClientErrorHandling {
         Assert.assertEquals(s, new String(bytes, StandardCharsets.UTF_8));
     }
 
-    /**
-     * Tests that, when the server returns a status other than 200 OK, and when
-     * there is an IOException trying to read the response body, that the
-     * exception is an HTTP status exception with the IOException suppressed.
-     * <p>Does not use WireMock.</p>
-     */
-    @Test
-    public void testNotOKStatusWithIOException() throws Exception {
-        final HttpClient httpClient = mock(HttpClient.class);
-        final HttpResponse response = mock(HttpResponse.class);
-        final HttpEntity entity = mock(HttpEntity.class);
-        final StatusLine sl = new BasicStatusLine(HttpVersion.HTTP_1_1,
-                HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
-        when(response.getStatusLine()).thenReturn(sl);
-        when(response.getEntity()).thenReturn(entity);
-        // Our implementation calls entity.writeTo, but stub both writeTo and
-        // getContent in case the implementation changes some day.
-        final IOException io = new IOException(Mocks.TEST_EXCEPTION_MESSAGE);
-        when(entity.getContent()).thenThrow(io);
-        doThrow(io).when(entity)
-        .writeTo(any());
-
-        when(httpClient.execute(any())).thenReturn(response);
-        final Harvester harvester = new Harvester.Builder()
-                .withHttpClient(httpClient)
-                .build();
-        exception.expect(HarvesterHTTPStatusException.class);
-        final OAIResponseHandler h = Mocks.newResponseHandler();
-        try {
-            harvester.start(newParams().build(), h);
-        } catch (final HarvesterHTTPStatusException e) {
-            Assert.assertEquals(1,  e.getSuppressed().length);
-            Assert.assertTrue(e.getSuppressed()[0] instanceof IOException);
-            throw e;
+    private void checkSerialization(final HarvesterHTTPStatusException e)
+            throws Exception {
+        final File serialized = temp.newFile();
+        try (final ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(serialized))) {
+            oos.writeObject(e);
+        }
+        try (final ObjectInputStream ois = new ObjectInputStream(
+                new FileInputStream(serialized))) {
+            final Object obj = ois.readObject();
+            Assert.assertTrue(obj instanceof HarvesterHTTPStatusException);
+            final HarvesterHTTPStatusException deserialized =
+                    (HarvesterHTTPStatusException)obj;
+            Assert.assertEquals(e.getHeaders().length,
+                    deserialized.getHeaders().length);
+            for (int i = 0; i < e.getHeaders().length; i++) {
+                Assert.assertEquals(e.getHeaders()[i].getName(),
+                        deserialized.getHeaders()[i].getName());
+                Assert.assertEquals(e.getHeaders()[i].getValue(),
+                        deserialized.getHeaders()[i].getValue());
+            }
+            Assert.assertEquals(e.getLocale(), deserialized.getLocale());
+            Assert.assertEquals(e.getStatusLine().getStatusCode(),
+                    deserialized.getStatusLine().getStatusCode());
+            Assert.assertEquals(e.getStatusLine().getReasonPhrase(),
+                    deserialized.getStatusLine().getReasonPhrase());
+            Assert.assertEquals(e.getStatusLine().getProtocolVersion(),
+                    deserialized.getStatusLine().getProtocolVersion());
         }
     }
 
