@@ -48,6 +48,7 @@ implements OAIEventHandler {
 
 
     protected RecordOAIEventHandler(final Consumer<T> recordConsumer) {
+        Objects.requireNonNull(recordConsumer, "recordConsumer");
         this.recordConsumer = recordConsumer;
     }
 
