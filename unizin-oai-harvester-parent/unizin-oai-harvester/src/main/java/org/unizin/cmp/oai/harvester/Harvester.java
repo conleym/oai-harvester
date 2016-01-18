@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.OAIXMLUtils;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
+import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 
 /**
@@ -489,10 +490,11 @@ public final class Harvester extends Observable {
      * @param response
      *            the HTTP response.
      * @return the content of the response's entity.
+     * @throws HarvesterHTTPStatusException
+     *             if the response's status code is not OK.
      * @throws HarvesterException
-     *             if the response's status code is not OK, the response's
-     *             entity is {@code null}, or if there's an error getting the
-     *             entity's content.
+     *             if the response's entity is {@code null}, or if there's an
+     *             error getting the entity's content.
      */
     private InputStream contentOf(final HttpResponse response) {
         try {
@@ -502,16 +504,21 @@ public final class Harvester extends Observable {
             if (statusCode == HttpStatus.SC_OK) {
                 return entity(response).getContent();
             }
-            throw new HarvesterException(String.format(
-                    "Got HTTP status %d for request %s.",
-                    statusCode,
-                    harvest.getRequest()));
+            throw statusException(harvest.getRequest(), response);
         } catch (final HarvesterException e) {
-            // Avoid wrapping the exception we just threw.
+            // Avoid wrapping any harvester exception we just threw.
             throw e;
         } catch (final RuntimeException | IOException e) {
             throw new HarvesterException(e);
         }
+    }
+
+    private HarvesterHTTPStatusException statusException(
+            final HttpUriRequest request, final HttpResponse response) {
+        final String message = String.format(
+                "Got HTTP status %d for request %s.",
+                response.getStatusLine().getStatusCode(), request);
+        return new HarvesterHTTPStatusException(message, response);
     }
 
     /**

@@ -8,12 +8,11 @@ import java.util.Optional;
  * Container for information about <a href=
  * "http://www.openarchives.org/OAI/openarchivesprotocol.html#ErrorConditions">
  * OAI error conditions</a>.
- *
+ * <p>
+ * Instances are serializable so that protocol exceptions can be serialized.
+ * </p>
  */
 public final class OAIError implements Serializable {
-    // Serializable because exceptions containing this will be also.
-    // We're never going to serialize exceptions, but we shouldn't prevent
-    // others from doing so.
     private static final long serialVersionUID = 1L;
 
     private final String errorCodeString;
@@ -36,6 +35,7 @@ public final class OAIError implements Serializable {
      * <p>
      * This exists to allow support for any nonstandard error codes that might
      * be received from repositories.
+     * </p>
      *
      * @return the raw string representation of the error code associated with
      *         this error.
@@ -60,6 +60,7 @@ public final class OAIError implements Serializable {
      * <p>
      * This method never returns {@code null}. If no message was provided,
      * returns the empty string.
+     * </p>
      *
      * @return the non-{@code null} message sent with this error.
      */

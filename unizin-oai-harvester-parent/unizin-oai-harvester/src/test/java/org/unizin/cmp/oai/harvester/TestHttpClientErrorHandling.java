@@ -1,9 +1,7 @@
 package org.unizin.cmp.oai.harvester;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -11,10 +9,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
+import static org.unizin.cmp.oai.mocks.WireMockUtils.getAnyURL;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -23,11 +31,14 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.unizin.cmp.oai.harvester.exception.HarvesterException;
+import org.junit.rules.TemporaryFolder;
+import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
+import org.unizin.cmp.oai.mocks.WireMockUtils;
 
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 public final class TestHttpClientErrorHandling {
@@ -36,6 +47,9 @@ public final class TestHttpClientErrorHandling {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+
+    @Rule
+    public final TemporaryFolder temp = new TemporaryFolder();
 
 
     private static void verifyResponseHandler(final OAIResponseHandler h) {
@@ -51,7 +65,7 @@ public final class TestHttpClientErrorHandling {
     private void testExecuteException(final Class<? extends Throwable> thrown,
             final Class<? extends Throwable> expected,
             final Consumer<Throwable> verifyExpectations)
-            throws Exception {
+                    throws Exception {
         final HttpClient httpClient = mock(HttpClient.class);
         final Throwable t = thrown.getConstructor(String.class)
                 .newInstance(Mocks.TEST_EXCEPTION_MESSAGE);
@@ -60,7 +74,7 @@ public final class TestHttpClientErrorHandling {
         exception.expect(expected);
         try {
             new Harvester.Builder().withHttpClient(httpClient).build()
-                .start(newParams().build(), h);
+            .start(newParams().build(), h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
             verifyExpectations.accept(e);
@@ -100,23 +114,78 @@ public final class TestHttpClientErrorHandling {
      */
     @Test
     public void testNotOKStatus() throws Exception {
-        stubFor(get(urlMatching(".*"))
+        final int status = HttpStatus.SC_BAD_GATEWAY;
+        final MappingBuilder mb = getAnyURL()
                 .willReturn(aResponse()
-                        .withStatus(HttpStatus.SC_BAD_GATEWAY)));
-        exception.expect(HarvesterException.class);
+                        .withBodyFile("error.txt")
+                        .withStatus(status)
+                        .withHeader("content-type", "text/plain"));
+        stubFor(mb);
+        exception.expect(HarvesterHTTPStatusException.class);
         exception.expectMessage(CoreMatchers.startsWith(
-                String.format("Got HTTP status %d for request",
-                        HttpStatus.SC_BAD_GATEWAY)));
+                String.format("Got HTTP status %d for request", status)));
         final OAIResponseHandler h = Mocks.newResponseHandler();
         try {
             new Harvester.Builder().build().start(newParams().build(),
                     h);
         } catch (final Exception e) {
             verifyResponseHandler(h);
+            Assert.assertTrue(e.getSuppressed().length == 0);
+            if (e instanceof HarvesterHTTPStatusException) {
+                final HarvesterHTTPStatusException hhse =
+                        (HarvesterHTTPStatusException)e;
+                Assert.assertEquals(hhse.getStatusLine().getStatusCode(),
+                        status);
+                final Stream<Boolean> sb = Arrays.stream(hhse.getHeaders())
+                        .map(x -> "content-type".equalsIgnoreCase(x.getName())
+                                && "text/plain".equals(x.getValue()));
+                Assert.assertTrue("content-type header should be present with "
+                        + "value 'text/plain'.", sb.anyMatch(x -> x));
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                hhse.writeResponseBodyTo(baos);
+                checkBody(baos.toByteArray());
+                checkSerialization(hhse);
+            }
             throw e;
         }
     }
 
+    private void checkBody(final byte[] bytes) throws Exception {
+        final String s = IOUtils.stringFromClasspathFile(
+                "/__files/error.txt");
+        Assert.assertEquals(s, new String(bytes, StandardCharsets.UTF_8));
+    }
+
+    private void checkSerialization(final HarvesterHTTPStatusException e)
+            throws Exception {
+        final File serialized = temp.newFile();
+        try (final ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(serialized))) {
+            oos.writeObject(e);
+        }
+        try (final ObjectInputStream ois = new ObjectInputStream(
+                new FileInputStream(serialized))) {
+            final Object obj = ois.readObject();
+            Assert.assertTrue(obj instanceof HarvesterHTTPStatusException);
+            final HarvesterHTTPStatusException deserialized =
+                    (HarvesterHTTPStatusException)obj;
+            Assert.assertEquals(e.getHeaders().length,
+                    deserialized.getHeaders().length);
+            for (int i = 0; i < e.getHeaders().length; i++) {
+                Assert.assertEquals(e.getHeaders()[i].getName(),
+                        deserialized.getHeaders()[i].getName());
+                Assert.assertEquals(e.getHeaders()[i].getValue(),
+                        deserialized.getHeaders()[i].getValue());
+            }
+            Assert.assertEquals(e.getLocale(), deserialized.getLocale());
+            Assert.assertEquals(e.getStatusLine().getStatusCode(),
+                    deserialized.getStatusLine().getStatusCode());
+            Assert.assertEquals(e.getStatusLine().getReasonPhrase(),
+                    deserialized.getStatusLine().getReasonPhrase());
+            Assert.assertEquals(e.getStatusLine().getProtocolVersion(),
+                    deserialized.getStatusLine().getProtocolVersion());
+        }
+    }
 
     /**
      * Tests notifications and exception handling when the harvester's request
@@ -124,6 +193,7 @@ public final class TestHttpClientErrorHandling {
      * <p>
      * Not strictly an {@code HttpClient} thing, but the results should be very
      * similar, so it's convenient to include this test here.
+     * </p>
      */
     @Test
     public void testRequestFactoryException() throws Exception {

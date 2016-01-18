@@ -11,8 +11,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.sql.DataSource;
-
 import org.skife.jdbi.v2.DBI;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.ResumptionToken;
@@ -36,8 +34,8 @@ public final class JobStatus {
 
     private final DBI dbi;
 
-    JobStatus(final DataSource ds) {
-        this.dbi = new DBI(ds);
+    JobStatus(final DBI dbi) {
+        this.dbi = dbi;
     }
 
     public boolean loadFromDB(final long jobID) {
@@ -174,6 +172,7 @@ public final class JobStatus {
         maybeAddObject(tags, "tags", status);
         maybeAddObject(stackTrace, "exception", status);
         maybeAddObject(lastRequestParams, "lastRequestParameters", status);
+        maybeAddObject(lastRequestURI, "lastRequestURI", status);
         maybeAdd(lastResponseDate, "lastResponseDate", status);
 
         final Map<String, Object> rt = new TreeMap<>();

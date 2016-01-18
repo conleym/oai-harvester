@@ -33,6 +33,7 @@ public final class OAI2Constants {
      * <p>
      * Elements from this namespace are used in the default metadata format,
      * which all repositories are required to support.
+     * </p>
      * @see #DEFAULT_METADATA_PREFIX
      */
     public static final String OAI_DC_NS_URI =
@@ -43,6 +44,7 @@ public final class OAI2Constants {
      * <p>
      * Elements from this namespace are used in the default metadata format,
      * which all repositories are required to support.
+     * </p>
      * @see #DEFAULT_METADATA_PREFIX
      */
     public static final String DC_NS_URI = "http://purl.org/dc/elements/1.1/";

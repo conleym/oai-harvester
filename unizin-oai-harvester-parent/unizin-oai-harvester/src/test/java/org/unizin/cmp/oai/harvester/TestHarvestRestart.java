@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.harvester.exception.HarvesterException;
 import org.unizin.cmp.oai.mocks.Mocks;
+import org.unizin.cmp.oai.mocks.WireMockUtils;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 

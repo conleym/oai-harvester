@@ -63,7 +63,7 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
         private final File directory;
         private final XMLOutputFactory outputFactory;
 
-        private DirectoryEventHandlerProvider(final File directory,
+        public DirectoryEventHandlerProvider(final File directory,
                 final XMLOutputFactory outputFactory) {
             Objects.requireNonNull(directory, "directory");
             Objects.requireNonNull(outputFactory, "outputFactory");
@@ -117,7 +117,9 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
 
     /**
      * Create an instance with a {@link DirectoryEventHandlerProvider} provider
+     *
      * @param directory
+     *            the directory where harvest response files should be stored.
      */
     public FilesOAIResponseHandler(final File directory) {
         this(directory, OAIXMLUtils.newOutputFactory());
@@ -128,7 +130,10 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
      * using the given directory and output factory.
      *
      * @param directory
+     *            directory the directory where harvest response files should be
+     *            stored.
      * @param outputFactory
+     *            the XML output factory to use to write XML events to files.
      */
     public FilesOAIResponseHandler(final File directory,
             final XMLOutputFactory outputFactory) {
