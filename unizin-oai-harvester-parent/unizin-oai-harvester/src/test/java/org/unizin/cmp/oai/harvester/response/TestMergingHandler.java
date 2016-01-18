@@ -16,7 +16,7 @@ import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.IOUtils;
 import org.unizin.cmp.oai.harvester.ListResponses;
 import org.unizin.cmp.oai.harvester.Tests;
-import org.unizin.cmp.oai.harvester.WireMockUtils;
+import org.unizin.cmp.oai.mocks.WireMockUtils;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 

@@ -15,6 +15,7 @@ import org.junit.rules.ExpectedException;
 import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIRequestParameter;
 import org.unizin.cmp.oai.OAIVerb;
+import org.unizin.cmp.oai.mocks.WireMockUtils;
 
 import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;

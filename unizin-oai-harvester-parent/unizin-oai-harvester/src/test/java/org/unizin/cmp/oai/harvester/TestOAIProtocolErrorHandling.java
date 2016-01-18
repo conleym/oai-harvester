@@ -37,6 +37,7 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
 import org.unizin.cmp.oai.harvester.stax.StAXImplementation;
 import org.unizin.cmp.oai.mocks.Mocks;
 import org.unizin.cmp.oai.mocks.NotificationMatchers;
+import org.unizin.cmp.oai.mocks.WireMockUtils;
 import org.unizin.cmp.oai.templates.ErrorsTemplate;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;

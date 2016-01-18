@@ -19,8 +19,8 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.ListResponses;
-import org.unizin.cmp.oai.harvester.WireMockUtils;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
+import org.unizin.cmp.oai.mocks.WireMockUtils;
 import org.xml.sax.SAXException;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;

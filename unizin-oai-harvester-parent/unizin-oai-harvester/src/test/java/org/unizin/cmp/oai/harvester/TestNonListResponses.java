@@ -33,6 +33,7 @@ import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.response.MergingOAIResponseHandler;
 import org.unizin.cmp.oai.harvester.stax.StAXImplementation;
+import org.unizin.cmp.oai.mocks.WireMockUtils;
 import org.unizin.cmp.oai.templates.GetRecordTemplate;
 import org.w3c.dom.Document;
 

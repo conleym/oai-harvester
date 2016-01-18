@@ -1,4 +1,4 @@
-package org.unizin.cmp.oai.harvester;
+package org.unizin.cmp.oai.mocks;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
