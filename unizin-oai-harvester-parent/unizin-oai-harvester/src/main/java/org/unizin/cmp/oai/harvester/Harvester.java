@@ -490,10 +490,11 @@ public final class Harvester extends Observable {
      * @param response
      *            the HTTP response.
      * @return the content of the response's entity.
+     * @throws HarvesterHTTPStatusException
+     *             if the response's status code is not OK.
      * @throws HarvesterException
-     *             if the response's status code is not OK, the response's
-     *             entity is {@code null}, or if there's an error getting the
-     *             entity's content.
+     *             if the response's entity is {@code null}, or if there's an
+     *             error getting the entity's content.
      */
     private InputStream contentOf(final HttpResponse response) {
         try {
