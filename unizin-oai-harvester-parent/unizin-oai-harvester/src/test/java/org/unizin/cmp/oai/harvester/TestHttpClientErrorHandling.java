@@ -134,10 +134,8 @@ public final class TestHttpClientErrorHandling {
             if (e instanceof HarvesterHTTPStatusException) {
                 final HarvesterHTTPStatusException hhse =
                         (HarvesterHTTPStatusException)e;
-                System.out.println(hhse.getStatusLine());
                 Assert.assertEquals(hhse.getStatusLine().getStatusCode(),
                         status);
-                System.out.println(Arrays.asList(hhse.getHeaders()));
                 final Stream<Boolean> sb = Arrays.stream(hhse.getHeaders())
                         .map(x -> "content-type".equalsIgnoreCase(x.getName())
                                 && "text/plain".equals(x.getValue()));
