@@ -19,12 +19,16 @@ import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
 
-
-@JsonIgnoreProperties(ignoreUnknown=true)
+/**
+ * Status information for a single job.
+ * <p>
+ * Instances are responsible for reading and writing status information to and
+ * from the database.
+ * </p>
+ */
 public final class JobStatus {
     private final ConcurrentMap<String, Object> lastHarvestNotifications =
             new ConcurrentHashMap<>();
@@ -38,67 +42,77 @@ public final class JobStatus {
         this.dbi = dbi;
     }
 
+    /**
+     * Load status information from the database rows of a single job.
+     *
+     * @param result
+     *            the mapped database rows of a single job.
+     * @return {@code true} iff the list was nonempty.
+     */
+    public boolean loadFromResults(final List<Map<String, Object>> result) {
+        if (result.isEmpty()) {
+            return false;
+        }
+        final Map<String, Object> first = result.get(0);
+        final String jobName = String.valueOf(first.get("JOB_ID"));
+        final String jobStarted = formatInstant(
+                (Instant)first.get("JOB_START"));
+        final Instant ended = (Instant)first.get("JOB_END");
+        final String jobStackTrace =
+                (String)first.get("JOB_STACK_TRACE");
+        final Map<JobStatistic, Long> jobStats = new TreeMap<>();
+        jobStats.put(JobStatistic.RECORDS_RECEIVED,
+                (Long)first.get("JOB_RECORDS_RECEIVED"));
+        jobStats.put(JobStatistic.RECORD_BYTES_RECEIVED,
+                (Long)first.get("JOB_RECORD_BYTES_RECEIVED"));
+        jobStats.put(JobStatistic.BATCHES_ATTEMPTED,
+                (Long)first.get("JOB_BATCHES_ATTEMPTED"));
+        final Map<String, Object> status = jobStatusMap(jobName,
+                jobStarted, formatInstant(ended), false,
+                (jobStackTrace != null), jobStackTrace, jobStats);
+        final Map<String, Object> harvests = new TreeMap<>();
+        result.forEach(x -> {
+            final String harvestName =
+                    String.valueOf(x.get("HARVEST_ID"));
+            final String harvestStarted = formatInstant(
+                    (Instant)x.get("HARVEST_STARTED"));
+            final String harvestEnded = formatInstant(
+                    (Instant)x.get("HARVEST_ENDED"));
+            final String harvestStackTrace = (String)x.get(
+                    "HARVEST_STACK_TRACE");
+            final Map<HarvestStatistic, Long> harvestStats =
+                    new TreeMap<>();
+            harvestStats.put(HarvestStatistic.REQUEST_COUNT,
+                    (Long)x.get("HARVEST_REQUEST_COUNT"));
+            harvestStats.put(HarvestStatistic.RESPONSE_COUNT,
+                    (Long)x.get("HARVEST_RESPONSE_COUNT"));
+            harvestStats.put(HarvestStatistic.XML_EVENT_COUNT,
+                    (Long)x.get("HARVEST_XML_EVENT_COUNT"));
+            final Map<String, Object> harvest = harvestStatusMap(
+                    harvestStarted, harvestEnded, false,
+                    (Boolean)x.get("HARVEST_CANCELLED"),
+                    (Boolean)x.get("HARVEST_INTERRUPTED"),
+                    (Boolean)x.get("HARVEST_EXPLICITLY_STOPPED"),
+                    (harvestStackTrace != null), harvestStackTrace,
+                    (String)x.get("REPOSITORY_BASE_URI"),
+                    OAIVerb.valueOf((String)x.get("HARVEST_VERB")),
+                    (String)x.get("HARVEST_LAST_REQUEST_URI"),
+                    (String)x.get("HARVEST_LAST_REQUEST_PARAMETERS"),
+                    null, harvestStats, Optional.ofNullable(
+                            (Instant)x.get(
+                                    "HARVEST_LAST_RESPONSE_DATE")),
+                    null, Optional.empty(), Optional.empty(),
+                    Optional.empty());
+            harvests.put(harvestName, harvest);
+        });
+        status.put("harvests", harvests);
+        lastJobNotification = ImmutableMap.of(jobName, status);
+        return true;
+    }
+
     public boolean loadFromDB(final long jobID) {
-        final String jobName = String.valueOf(jobID);
         try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
-            final List<Map<String, Object>> result = jdbi.findJobByID(jobID);
-            boolean found = !result.isEmpty();
-            if (found) {
-                final Map<String, Object> first = result.get(0);
-                final String jobStarted = formatInstant(
-                        (Instant)first.get("JOB_START"));
-                final Instant ended = (Instant)first.get("JOB_END");
-                final String jobStackTrace =
-                        (String)first.get("JOB_STACK_TRACE");
-                final Map<JobStatistic, Long> jobStats = new TreeMap<>();
-                jobStats.put(JobStatistic.RECORDS_RECEIVED,
-                        (Long)first.get("JOB_RECORDS_RECEIVED"));
-                jobStats.put(JobStatistic.RECORD_BYTES_RECEIVED,
-                        (Long)first.get("JOB_RECORD_BYTES_RECEIVED"));
-                jobStats.put(JobStatistic.BATCHES_ATTEMPTED,
-                        (Long)first.get("JOB_BATCHES_ATTEMPTED"));
-                final Map<String, Object> status = jobStatusMap(jobName,
-                        jobStarted, formatInstant(ended), false,
-                        (jobStackTrace != null), jobStackTrace, jobStats);
-                final Map<String, Object> harvests = new TreeMap<>();
-                result.forEach(x -> {
-                    final String harvestName =
-                            String.valueOf(x.get("HARVEST_ID"));
-                    final String harvestStarted = formatInstant(
-                            (Instant)x.get("HARVEST_STARTED"));
-                    final String harvestEnded = formatInstant(
-                            (Instant)x.get("HARVEST_ENDED"));
-                    final String harvestStackTrace = (String)x.get(
-                            "HARVEST_STACK_TRACE");
-                    final Map<HarvestStatistic, Long> harvestStats =
-                            new TreeMap<>();
-                    harvestStats.put(HarvestStatistic.REQUEST_COUNT,
-                            (Long)x.get("HARVEST_REQUEST_COUNT"));
-                    harvestStats.put(HarvestStatistic.RESPONSE_COUNT,
-                            (Long)x.get("HARVEST_RESPONSE_COUNT"));
-                    harvestStats.put(HarvestStatistic.XML_EVENT_COUNT,
-                            (Long)x.get("HARVEST_XML_EVENT_COUNT"));
-                    final Map<String, Object> harvest = harvestStatusMap(
-                            harvestStarted, harvestEnded, false,
-                            (Boolean)x.get("HARVEST_CANCELLED"),
-                            (Boolean)x.get("HARVEST_INTERRUPTED"),
-                            (Boolean)x.get("HARVEST_EXPLICITLY_STOPPED"),
-                            (harvestStackTrace != null), harvestStackTrace,
-                            (String)x.get("REPOSITORY_BASE_URI"),
-                            OAIVerb.valueOf((String)x.get("HARVEST_VERB")),
-                            (String)x.get("HARVEST_LAST_REQUEST_URI"),
-                            (String)x.get("HARVEST_LAST_REQUEST_PARAMETERS"),
-                            null, harvestStats, Optional.ofNullable(
-                                    (Instant)x.get(
-                                            "HARVEST_LAST_RESPONSE_DATE")),
-                            null, Optional.empty(), Optional.empty(),
-                            Optional.empty());
-                    harvests.put(harvestName, harvest);
-                });
-                status.put("harvests", harvests);
-                lastJobNotification = ImmutableMap.of(jobName, status);
-            }
-            return found;
+            return loadFromResults(jdbi.findJobByID(jobID));
         }
     }
 
@@ -173,7 +187,8 @@ public final class JobStatus {
         maybeAddObject(stackTrace, "exception", status);
         maybeAddObject(lastRequestParams, "lastRequestParameters", status);
         maybeAddObject(lastRequestURI, "lastRequestURI", status);
-        maybeAdd(lastResponseDate, "lastResponseDate", status);
+        maybeAddObject(formatInstant(lastResponseDate), "lastResponseDate",
+                status);
 
         final Map<String, Object> rt = new TreeMap<>();
         maybeAddObject(resumptionToken, "token", rt);
