@@ -5,7 +5,6 @@ import static org.unizin.cmp.oai.harvester.ListResponses.DEFAULT_RESPONSE_COUNT;
 import static org.unizin.cmp.oai.harvester.ListResponses.FIRST_TOKEN;
 import static org.unizin.cmp.oai.harvester.ListResponses.RESUMPTION_TOKENS;
 import static org.unizin.cmp.oai.harvester.ListResponses.setupWithDefaultListRecordsResponse;
-import static org.unizin.cmp.oai.harvester.ListResponses.toMap;
 import static org.unizin.cmp.oai.harvester.Tests.newParams;
 import static org.unizin.cmp.oai.mocks.Mocks.inOrderVerify;
 
@@ -161,7 +160,7 @@ public final class TestListResponses {
     public void testListRecordsWithBadResumptionToken() throws Exception {
         // Build first response. No errors, just a record.
         final ListRecordsTemplate lrt = new ListRecordsTemplate()
-                .withResumptionToken(toMap(FIRST_TOKEN));
+                .withResumptionToken(FIRST_TOKEN.toMap());
         final Map<String, Object> record = new HashMap<>();
         record.put("metadata", new RecordMetadataTemplate().process());
         lrt.addRecord(record);

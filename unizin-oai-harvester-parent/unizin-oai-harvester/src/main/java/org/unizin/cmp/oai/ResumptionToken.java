@@ -1,8 +1,10 @@
 package org.unizin.cmp.oai;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
 
 /**
  * Container for information supplied as part of a <a href=
@@ -78,6 +80,30 @@ public final class ResumptionToken {
 
     public Optional<Instant> getExpirationDate() {
         return expirationDate;
+    }
+
+    /**
+     * Get a newly-created map containing this instance's information.
+     * <p>
+     * The keys are what you would expect given this class's method names and
+     * the Java bean conventions. Key/value pairs are added to the map only if
+     * the corresponding optional fields are present in this instance.
+     * </p>
+     * @return a map as described above.
+     */
+    public Map<String, Object> toMap() {
+        final Map<String, Object> map = new TreeMap<>();
+        map.put("token", getToken());
+        if (getCursor().isPresent()) {
+            map.put("cursor", getCursor().get());
+        }
+        if (getCompleteListSize().isPresent()) {
+            map.put("completeListSize", getCompleteListSize().get());
+        }
+        if (getExpirationDate().isPresent()) {
+            map.put("expirationDate", getExpirationDate().get());
+        }
+        return map;
     }
 
     @Override
