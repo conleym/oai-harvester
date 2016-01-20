@@ -11,6 +11,7 @@
 
   <properties>
     <dropwizard.version>0.9.1</dropwizard.version>
+    <dropwizard.java8.version>0.9.0-1</dropwizard.java8.version>
   </properties>
 
   <build>
@@ -255,6 +256,16 @@
     <dependency>
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard.modules</groupId>
+      <artifactId>dropwizard-java8-jdbi</artifactId>
+      <version>${dropwizard.java8.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard.modules</groupId>
+      <artifactId>dropwizard-java8</artifactId>
+      <version>${dropwizard.java8.version}</version>
     </dependency>
   </dependencies>
 </project>

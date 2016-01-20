@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.unizin.cmp.oai.OAIError;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 
 /**
@@ -45,7 +46,16 @@ public final class H2Functions {
         final long repositoryID = jdbi.findRepositoryIDByBaseURI(
                 params.getBaseURI().toString());
         return jdbi.createHarvest(jobID, repositoryID,
-                params.toString(), params.getVerb());
+                params.getParameters().toString(), params.getVerb());
+    }
+
+    public static void insertOAIErrors(final Connection c, final long harvestID,
+            final List<OAIError> errors) {
+        // Do not close the handle! causes exceptions.
+        final Handle h = DBI.open(c);
+        final JobJDBI jdbi = h.attach(JobJDBI.class);
+        errors.forEach(e -> jdbi.insertHarvestProtocolError(harvestID,
+                e.getMessage(), e.getErrorCodeString()));
     }
 
     /** No instances allowed. */

@@ -23,8 +23,12 @@ public final class HarvesterHTTPStatusException extends HarvesterException {
 
     // HttpEntity is not serializable.
     private transient final HttpEntity entity;
+    // All Header implementations are serializable.
     private final Header[] headers;
+    private final Header contentType;
+    private final Header contentEncoding;
     private final Locale locale;
+    // All StatusLine implementations are serializable.
     private final StatusLine statusLine;
 
 
@@ -35,6 +39,8 @@ public final class HarvesterHTTPStatusException extends HarvesterException {
         this.headers = response.getAllHeaders();
         this.locale = response.getLocale();
         this.statusLine = response.getStatusLine();
+        this.contentType = entity.getContentType();
+        this.contentEncoding = entity.getContentEncoding();
     }
 
     public void writeResponseBodyTo(final OutputStream out) throws IOException {
@@ -53,5 +59,13 @@ public final class HarvesterHTTPStatusException extends HarvesterException {
 
     public Locale getLocale() {
         return locale;
+    }
+
+    public Header getContentType() {
+        return contentType;
+    }
+
+    public Header getContentEncoding() {
+        return contentEncoding;
     }
 }

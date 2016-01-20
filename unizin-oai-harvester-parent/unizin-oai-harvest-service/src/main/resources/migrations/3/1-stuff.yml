@@ -1,0 +1,61 @@
+databaseChangeLog:
+  - changeSet:
+      id: 5
+      author: mconley
+      changes:
+        - createTable:
+            tableName: HARVEST_PROTOCOL_ERROR
+            columns:
+              - column:
+                  name: HARVEST_ID
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: HARVEST_PROTOCOL_ERROR_HARVEST_FK
+                    referencedTableName: HARVEST
+                    referencedColumnNames: HARVEST_ID
+              - column:
+                  name: HARVEST_PROTOCOL_ERROR_MESSAGE
+                  type: clob
+              - column:
+                  name: HARVEST_PROTOCOL_ERROR_CODE
+                  type: varchar(255)
+        - createTable:
+            tableName: HARVEST_HTTP_ERROR
+            columns:
+              - column:
+                  name: HARVEST_ID
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    unique: true
+                    foreignKeyName: HARVEST_HTTP_ERROR_HARVEST_FK
+                    referencedTableName: HARVEST
+                    referencedColumnNames: HARVEST_ID
+              - column:
+                  name: HARVEST_HTTP_ERROR_STATUS_CODE
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: HARVEST_HTTP_ERROR_RESPONSE_BODY
+                  type: blob
+              - column:
+                  name: HARVEST_HTTP_ERROR_CONTENT_ENCODING
+                  type: varchar(255)
+              - column:
+                  name: HARVEST_HTTP_ERROR_CONTENT_TYPE
+                  type: varchar(1024)
+              - column:
+                  name: HARVEST_HTTP_ERROR_HEADERS
+                  type: array
+
+        - createIndex:
+            indexName: HARVEST_HTTP_ERROR_STATUS_CODE_IDX
+            tableName: HARVEST_HTTP_ERROR
+            columns:
+              - column:
+                  name: HARVEST_HTTP_ERROR_STATUS_CODE
+
+        - tagDatabase:
+            tag: version_1.2

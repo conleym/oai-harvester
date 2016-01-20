@@ -6,7 +6,7 @@ import java.util.Set;
 import org.unizin.cmp.oai.harvester.Harvester;
 
 /**
- * Internal use only tracking of running harvesters for a given job.
+ * Internal-use-only tracking of running harvesters for a given job.
  * <p>
  * Instances are safe for use in multiple threads.
  * </p>

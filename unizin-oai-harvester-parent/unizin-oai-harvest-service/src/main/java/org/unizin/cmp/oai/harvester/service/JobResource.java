@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -69,12 +68,12 @@ public final class JobResource {
             new ConcurrentHashMap<>();
 
 
-    public JobResource(final DataSource ds,
+    public JobResource(final DBI dbi,
             final HarvestJobConfiguration jobConfig,
             final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final ExecutorService executor) {
-        this.dbi = new DBI(ds);
+        this.dbi = dbi;
         this.jobConfig = jobConfig;
         this.httpClient = httpClient;
         this.mapper = mapper;

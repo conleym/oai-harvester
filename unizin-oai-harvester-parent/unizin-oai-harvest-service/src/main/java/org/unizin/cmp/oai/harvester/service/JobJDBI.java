@@ -1,16 +1,25 @@
 package org.unizin.cmp.oai.harvester.service;
 
+import static org.unizin.cmp.oai.harvester.service.Status.formatHeaders;
+import static org.unizin.cmp.oai.harvester.service.Status.responseBody;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.apache.http.Header;
+import org.skife.jdbi.v2.DefaultMapper;
+import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.HashPrefixStatementRewriter;
 import org.skife.jdbi.v2.ResultSetMapperFactory;
 import org.skife.jdbi.v2.StatementContext;
@@ -19,19 +28,27 @@ import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
+import org.skife.jdbi.v2.sqlobject.Transaction;
 import org.skife.jdbi.v2.sqlobject.customizers.OverrideStatementRewriterWith;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
+import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.slf4j.Logger;
 import org.unizin.cmp.oai.OAIVerb;
+import org.unizin.cmp.oai.harvester.HarvestNotification;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
+import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
+import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 
 import com.google.common.io.CharStreams;
 
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
-public interface JobJDBI extends AutoCloseable {
+public abstract class JobJDBI implements AutoCloseable, GetHandle {
 
     public static final class Mapper
-        implements ResultSetMapper<Map<String, Object>> {
+    implements ResultSetMapper<Map<String, Object>> {
 
         private static final String toUpper(final String str) {
             return str == null ? null : str.toUpperCase();
@@ -82,6 +99,7 @@ public interface JobJDBI extends AutoCloseable {
 
     @SuppressWarnings("rawtypes")
     public static final class MapperFactory implements ResultSetMapperFactory {
+        DefaultMapper dm;
         private static final ResultSetMapper MAPPER = new Mapper();
         @Override
         public boolean accepts(final Class type, final StatementContext ctx) {
@@ -120,6 +138,19 @@ public interface JobJDBI extends AutoCloseable {
             "HARVEST_XML_EVENT_COUNT = #eventCount " +
             "where HARVEST_ID = #id";
 
+    public static final String INSERT_HARVEST_HTTP_ERROR = "insert into " +
+            "HARVEST_HTTP_ERROR(HARVEST_ID, HARVEST_HTTP_ERROR_STATUS_CODE, " +
+            "HARVEST_HTTP_ERROR_RESPONSE_BODY, " +
+            "HARVEST_HTTP_ERROR_CONTENT_ENCODING, " +
+            "HARVEST_HTTP_ERROR_CONTENT_TYPE, HARVEST_HTTP_ERROR_HEADERS) " +
+            "values (#jobID, #statusCode, #responseBody, #contentEncoding, " +
+            "#contentType, #headers)";
+
+    public static final String INSERT_HARVEST_PROTOCOL_ERROR = "insert into " +
+            "HARVEST_PROTOCOL_ERROR(HARVEST_ID, " +
+            "HARVEST_PROTOCOL_ERROR_MESSAGE, HARVEST_PROTOCOL_ERROR_CODE) " +
+            "values (#id, #errorMessage, #errorCode)";
+
     public static final String INSERT_HARVEST = "insert into HARVEST(" +
             "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS, " +
             " HARVEST_VERB) values (#jobID, #repoID, #initialParameters, " +
@@ -132,45 +163,113 @@ public interface JobJDBI extends AutoCloseable {
 
     @SqlUpdate("insert into JOB() values()")
     @GetGeneratedKeys
-    long createJob();
+    public abstract long createJob();
 
     @SqlUpdate(JOB_UPDATE)
-    void updateJob(@Bind("id") long id, @Bind("start") String start,
-            @Bind("end") String end, @Bind("stackTrace") String stackTrace,
+    public abstract void updateJob(@Bind("id") long id,
+            @Bind("start") Instant start,
+            @Bind("end") Optional<Instant> end,
+            @Bind("stackTrace") Optional<String> stackTrace,
             @Bind("recordsReceived") long recordsReceived,
             @Bind("recordBytesReceived") long recordBytesReceived,
             @Bind("batchesAttempted") long batchesAttempted);
 
     @SqlUpdate(INSERT_HARVEST)
     @GetGeneratedKeys
-    long createHarvest(@Bind("jobID") long jobID,
+    public abstract long createHarvest(@Bind("jobID") long jobID,
             @Bind("repoID") long repositoryID,
             @Bind("initialParameters") String initialParameters,
             @Bind("verb") OAIVerb verb);
 
     @SqlUpdate(HARVEST_UPDATE)
-    void updateHarvest(@Bind("id") long id, @Bind("start") String start,
-            @Bind("end") String end,
+    public abstract void updateHarvest(@Bind("id") long id,
+            @Bind("start") Instant start,
+            @Bind("end") Optional<Instant> end,
             @Bind("initialParameters") String initialParameters,
             @Bind("cancelled") boolean cancelled,
             @Bind("interrupted") boolean interrupted,
-            @Bind("lastRequestURI") String lastRequestURI,
-            @Bind("lastRequestParameters") String lastRequestParameters,
-            @Bind("stackTrace") String stackTrace,
-            @Bind("requestCount") long requestCount,
-            @Bind("responseCount") long responseCount,
-            @Bind("eventCount") long eventCount);
+            @Bind("lastRequestURI") Optional<String> lastRequestURI,
+            @Bind("lastRequestParameters")
+    Optional<String> lastRequestParameters,
+    @Bind("stackTrace") Optional<String> stackTrace,
+    @Bind("requestCount") long requestCount,
+    @Bind("responseCount") long responseCount,
+    @Bind("eventCount") long eventCount);
+
+    @SqlUpdate(INSERT_HARVEST_HTTP_ERROR)
+    public abstract void insertHarvestHTTPError(@Bind("id") long harvestID,
+            @Bind("headers") String[] headers,
+            @Bind("contentType") Optional<String> contentType,
+            @Bind("contentEncoding") Optional<String> contentEncoding,
+            @Bind("responseBody") InputStream body);
+
+    @SqlUpdate(INSERT_HARVEST_PROTOCOL_ERROR)
+    public abstract void insertHarvestProtocolError(@Bind("id") long harvestID,
+            @Bind("errorMessage") String errorMessage,
+            @Bind("errorCode") String errorCode);
 
     @SqlQuery("select REPOSITORY_ID from REPOSITORY " +
-                 "where REPOSITORY_BASE_URI = #baseURI")
-    long findRepositoryIDByBaseURI(
+            "where REPOSITORY_BASE_URI = #baseURI")
+    public abstract long findRepositoryIDByBaseURI(
             @Bind("baseURI") String baseURI);
 
     @SqlQuery(JOB_QUERY)
     @SingleValueResult(Map.class)
     @RegisterMapperFactory(MapperFactory.class)
-    List<Map<String, Object>> findJobByID(@Bind("id") long id);
+    public abstract List<Map<String, Object>> findJobByID(@Bind("id") long id);
 
     @Override
-    void close();
+    public abstract void close();
+
+    private static boolean writeExceptionInfo(
+            final HarvestNotification notification) {
+        return notification.getType() == HarvestNotificationType.HARVEST_ENDED
+                && notification.getException().isPresent();
+    }
+
+    private static Optional<String> headerValue(final Header h) {
+        if (h == null) {
+            return Optional.empty();
+        }
+        return Optional.of(h.getValue());
+    }
+
+    @Transaction
+    public void harvestDatabaseUpdate(final long harvestID,
+            final Optional<String> lastRequestURI,
+            final Optional<String> lastRequestParameters,
+            final Optional<String> stackTrace,
+            final HarvestNotification notification,
+            final Logger logger) {
+        updateHarvest(harvestID, notification.getStarted(),
+                notification.getEnded(),
+                notification.getHarvestParameters().toString(),
+                notification.isCancelled(),
+                notification.isInterrupted(),
+                lastRequestURI,
+                lastRequestParameters,
+                stackTrace,
+                notification.getStat(HarvestStatistic.REQUEST_COUNT),
+                notification.getStat(HarvestStatistic.RESPONSE_COUNT),
+                notification.getStat(HarvestStatistic.XML_EVENT_COUNT));
+        if (writeExceptionInfo(notification)) {
+            final Exception ex = notification.getException().get();
+            if (ex instanceof HarvesterHTTPStatusException) {
+                final HarvesterHTTPStatusException hhse =
+                        (HarvesterHTTPStatusException)ex;
+                insertHarvestHTTPError(harvestID,
+                        formatHeaders(hhse.getHeaders()),
+                        headerValue(hhse.getContentType()),
+                        headerValue(hhse.getContentEncoding()),
+                        responseBody(hhse, logger));
+            } else if (ex instanceof OAIProtocolException) {
+                final OAIProtocolException ope = (OAIProtocolException)ex;
+                final Handle h = getHandle();
+                h.createCall("call INSERT_OAI_ERRORS(:id, :errors)")
+                    .bind("id", harvestID)
+                    .bind("errors", ope.getOAIErrors())
+                    .invoke();
+            }
+        }
+    }
 }
