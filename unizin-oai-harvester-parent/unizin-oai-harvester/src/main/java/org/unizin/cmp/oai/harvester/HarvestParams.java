@@ -56,11 +56,10 @@ public final class HarvestParams implements Serializable {
                     /* Don't bother adding the verb. */
                     return;
                 }
-                try {
-                    OAIRequestParameter.valueOf(e.getKey());
-                    standardParameters.put(e.getKey(), e.getValue());
-                } catch (final IllegalArgumentException iae) {
+                if (OAIRequestParameter.fromParam(e.getKey()) == null) {
                     nonstandardParameters.put(e.getKey(), e.getValue());
+                } else {
+                    standardParameters.put(e.getKey(), e.getValue());
                 }
             });
             return this;
