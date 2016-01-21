@@ -56,6 +56,3 @@ databaseChangeLog:
             columns:
               - column:
                   name: HARVEST_HTTP_ERROR_STATUS_CODE
-
-        - tagDatabase:
-            tag: version_1.2

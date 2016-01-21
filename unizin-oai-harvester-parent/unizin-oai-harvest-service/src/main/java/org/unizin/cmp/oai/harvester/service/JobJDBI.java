@@ -85,7 +85,13 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
                     } else if (value instanceof Timestamp) {
                         value = ((Timestamp)value).toInstant();
                     }
-                    row.put(alias != null ? alias : key, value);
+                    final String s = alias == null ? key : alias;
+                    /*
+                     * Use putIfAbsent to make outer joins sensible. Otherwise
+                     * null values of columns used to join can show up in
+                     * results.
+                     */
+                    row.putIfAbsent(s, value);
                 }
             }
             catch (final SQLException e) {
@@ -143,7 +149,7 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             "HARVEST_HTTP_ERROR_RESPONSE_BODY, " +
             "HARVEST_HTTP_ERROR_CONTENT_ENCODING, " +
             "HARVEST_HTTP_ERROR_CONTENT_TYPE, HARVEST_HTTP_ERROR_HEADERS) " +
-            "values (#jobID, #statusCode, #responseBody, #contentEncoding, " +
+            "values (#id, #statusCode, #responseBody, #contentEncoding, " +
             "#contentType, #headers)";
 
     public static final String INSERT_HARVEST_PROTOCOL_ERROR = "insert into " +
@@ -151,15 +157,24 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             "HARVEST_PROTOCOL_ERROR_MESSAGE, HARVEST_PROTOCOL_ERROR_CODE) " +
             "values (#id, #errorMessage, #errorCode)";
 
+    public static final String PROTOCOL_ERROR_QUERY = "select " +
+            "HARVEST_PROTOCOL_ERROR_MESSAGE, HARVEST_PROTOCOL_ERROR_CODE " +
+            " from HARVEST_PROTOCOL_ERROR where HARVEST_ID = #id";
+
     public static final String INSERT_HARVEST = "insert into HARVEST(" +
             "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS, " +
             " HARVEST_VERB) values (#jobID, #repoID, #initialParameters, " +
             "#verb)";
 
-    public static final String JOB_QUERY = "select * from JOB inner join " +
-            "HARVEST on JOB.JOB_ID = HARVEST.JOB_ID inner join REPOSITORY on " +
-            "REPOSITORY.REPOSITORY_ID = HARVEST.REPOSITORY_ID " +
-            "where JOB.JOB_ID = #id";
+    public static final String JOB_QUERY = "select J.*, H.*, R.*, E.*, "
+            + "OAI_ERRORS(H.HARVEST_ID) as HARVEST_PROTOCOL_ERRORS from " +
+            "JOB J inner join HARVEST H on J.JOB_ID = H.JOB_ID " +
+            "inner join REPOSITORY R on R.REPOSITORY_ID = H.REPOSITORY_ID " +
+            "left outer join HARVEST_HTTP_ERROR E " +
+            "on H.HARVEST_ID = E.HARVEST_ID " +
+            "left outer join HARVEST_PROTOCOL_ERROR P " +
+            "on H.HARVEST_ID = P.HARVEST_ID " +
+            "where J.JOB_ID = #id";
 
     @SqlUpdate("insert into JOB() values()")
     @GetGeneratedKeys
@@ -217,6 +232,12 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
     @SingleValueResult(Map.class)
     @RegisterMapperFactory(MapperFactory.class)
     public abstract List<Map<String, Object>> findJobByID(@Bind("id") long id);
+
+    @SqlQuery(PROTOCOL_ERROR_QUERY)
+    @SingleValueResult(Map.class)
+    @RegisterMapperFactory(MapperFactory.class)
+    public abstract List<Map<String, Object>> readOAIErrors(
+            @Bind("id") long harvestID);
 
     @Override
     public abstract void close();

@@ -28,6 +28,9 @@ import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
+/**
+ *
+ */
 public final class HarvestServiceApplication
 extends Application<HarvestServiceConfiguration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(

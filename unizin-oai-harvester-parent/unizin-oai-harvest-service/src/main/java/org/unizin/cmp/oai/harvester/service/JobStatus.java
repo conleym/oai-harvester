@@ -2,12 +2,15 @@ package org.unizin.cmp.oai.harvester.service;
 
 import static org.unizin.cmp.oai.harvester.service.Status.addIfPresent;
 import static org.unizin.cmp.oai.harvester.service.Status.convertResumptionToken;
+import static org.unizin.cmp.oai.harvester.service.Status.formatHeaders;
 import static org.unizin.cmp.oai.harvester.service.Status.formatInstant;
 import static org.unizin.cmp.oai.harvester.service.Status.formatMap;
 import static org.unizin.cmp.oai.harvester.service.Status.formatStackTrace;
 import static org.unizin.cmp.oai.harvester.service.Status.formatURI;
 
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -18,9 +21,12 @@ import java.util.concurrent.ConcurrentMap;
 import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.unizin.cmp.oai.OAIError;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
+import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
+import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
 
@@ -37,6 +43,7 @@ import com.google.common.collect.ImmutableMap;
 public final class JobStatus {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             JobStatus.class);
+    private static final String[] EMPTY_STRING_ARRAY = new String[]{};
 
     private final ConcurrentMap<String, Object> lastHarvestNotifications =
             new ConcurrentHashMap<>();
@@ -48,6 +55,13 @@ public final class JobStatus {
 
     JobStatus(final DBI dbi) {
         this.dbi = dbi;
+    }
+
+    private static <T> List<T> toList(final T[] array) {
+        if (array == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(array);
     }
 
     /**
@@ -93,6 +107,9 @@ public final class JobStatus {
                     (Long)x.get("HARVEST_RESPONSE_COUNT"));
             harvestStats.put(HarvestStatistic.XML_EVENT_COUNT,
                     (Long)x.get("HARVEST_XML_EVENT_COUNT"));
+            @SuppressWarnings("unchecked")
+            final List<OAIError> protocolErrors =
+                    (List<OAIError>)x.get("HARVEST_PROTOCOL_ERRORS");
             final Map<String, Object> harvest = harvestStatusMap(harvestStarted,
                     harvestEnded, false, (Boolean)x.get("HARVEST_CANCELLED"),
                     (Boolean)x.get("HARVEST_INTERRUPTED"),
@@ -108,7 +125,11 @@ public final class JobStatus {
                     null, harvestStats,
                     Optional.ofNullable((Instant)x.get(
                             "HARVEST_LAST_ESPONSE_DATE")),
-                    Optional.empty());
+                    Optional.empty(),
+                    Optional.ofNullable(
+                            (Integer)x.get("HARVEST_HTTP_ERROR_STATUS_CODE")),
+                    toList((String[])x.get("HARVEST_HTTP_ERROR_HEADERS")),
+                    protocolErrors);
 
             harvests.put(harvestName, harvest);
         });
@@ -135,7 +156,10 @@ public final class JobStatus {
             final Map<String, String> tags,
             final Map<HarvestStatistic, Long> statistics,
             final Optional<Instant> lastResponseDate,
-            final Optional<Map<String, Object>> resumptionToken) {
+            final Optional<Map<String, Object>> resumptionToken,
+            final Optional<Integer> httpErrorStatus,
+            final List<String> httpErrorHeaders,
+            final List<OAIError> oaiErrors) {
         final Map<String, Object> status = new TreeMap<>();
         status.put("started", formatInstant(harvestStarted));
         addIfPresent(formatInstant(harvestEnded), "ended", status);
@@ -147,6 +171,7 @@ public final class JobStatus {
         addIfPresent(stackTrace, "exception", status);
         status.put("baseURI", baseURI);
         status.put("verb", verb);
+        status.put("firstRequestParams", initialParameters);
         addIfPresent(lastRequestURI, "lastRequestURI", status);
         addIfPresent(lastRequestParams, "lastRequestParameters", status);
         if (tags != null) {
@@ -156,6 +181,17 @@ public final class JobStatus {
         addIfPresent(formatInstant(lastResponseDate), "lastResponseDate",
                 status);
         addIfPresent(resumptionToken, "lastResumptionToken", status);
+        if (httpErrorStatus.isPresent()) {
+            final Map<String, Object> map = new TreeMap<>();
+            map.put("statusCode", httpErrorStatus.get());
+            if (! httpErrorHeaders.isEmpty()) {
+                status.put("headers", httpErrorHeaders);
+            }
+            status.put("httpError", map);
+        }
+        if (! oaiErrors.isEmpty()) {
+            status.put("oaiProtocolErrors", oaiErrors);
+        }
         return status;
     }
 
@@ -167,8 +203,23 @@ public final class JobStatus {
                 notification.getLastRequestURI());
         final Optional<String> lastRequestParameters = formatMap(
                 notification.getLastRequestParameters());
-        final Optional<String> stackTrace = formatStackTrace(
+        Optional<String> stackTrace = formatStackTrace(
                 notification.getException());
+        Optional<Integer> httpStatus = Optional.empty();
+        String[] httpHeaders = EMPTY_STRING_ARRAY;
+        List<OAIError> oaiErrors = Collections.emptyList();
+        if (notification.getException().isPresent()) {
+            final Exception ex = notification.getException().get();
+            if (ex instanceof HarvesterHTTPStatusException) {
+                final HarvesterHTTPStatusException hhse =
+                        (HarvesterHTTPStatusException)ex;
+                httpStatus = Optional.of(hhse.getStatusLine().getStatusCode());
+                httpHeaders = formatHeaders(hhse.getHeaders());
+            } else if (ex instanceof OAIProtocolException) {
+                oaiErrors = ((OAIProtocolException)ex)
+                        .getOAIErrors();
+            }
+        }
         final String initialParameters = notification.getHarvestParameters()
                 .getParameters().toString();
         final Map<String, Object> status = harvestStatusMap(
@@ -181,7 +232,9 @@ public final class JobStatus {
                 notification.getVerb(), initialParameters, lastRequestURI,
                 lastRequestParameters, tags, notification.getStats(),
                 notification.getLastReponseDate(),
-                convertResumptionToken(notification.getResumptionToken()));
+                convertResumptionToken(notification.getResumptionToken()),
+                httpStatus, Arrays.asList(httpHeaders),
+                oaiErrors);
         // Update running harvest status.
         lastHarvestNotifications.put(harvestName, status);
         try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {

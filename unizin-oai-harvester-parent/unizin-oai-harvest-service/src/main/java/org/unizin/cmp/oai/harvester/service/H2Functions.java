@@ -58,6 +58,19 @@ public final class H2Functions {
                 e.getMessage(), e.getErrorCodeString()));
     }
 
+    public static List<OAIError> readOAIErrors(final Connection c,
+            final long harvestID) {
+       final Handle h = DBI.open(c);
+       final JobJDBI jdbi = h.attach(JobJDBI.class);
+       final List<OAIError> errors = new ArrayList<>();
+       jdbi.readOAIErrors(harvestID).forEach(m -> {
+           errors.add(new OAIError(
+                   (String)m.get("HARVEST_PROTOCOL_ERROR_CODE"),
+                   (String)m.get("HARVEST_PROTOCOL_ERROR_MESSAGE")));
+       });
+       return errors;
+    }
+
     /** No instances allowed. */
     private H2Functions() { }
 }
