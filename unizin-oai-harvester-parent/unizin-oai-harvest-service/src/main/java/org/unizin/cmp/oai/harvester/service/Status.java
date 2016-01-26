@@ -1,10 +1,5 @@
 package org.unizin.cmp.oai.harvester.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
@@ -18,9 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.http.Header;
-import org.slf4j.Logger;
 import org.unizin.cmp.oai.ResumptionToken;
-import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 
 
 /**
@@ -142,21 +135,6 @@ final class Status {
         if (optional.isPresent()) {
             map.put(key, optional.get());
         }
-    }
-
-    static InputStream responseBody(final HarvesterHTTPStatusException ex,
-            final Logger logger) {
-        final PipedInputStream pis = new PipedInputStream();
-        final PipedOutputStream pos = new PipedOutputStream();
-        new Thread(() -> {
-            try (final OutputStream out = pos) {
-                pos.connect(pis);
-                ex.writeResponseBodyTo(out);
-            } catch (final IOException e) {
-                logger.error("Error writing response body to database.", e);
-            }
-        }).start();
-        return pis;
     }
 
     /**

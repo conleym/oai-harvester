@@ -2,10 +2,12 @@ package org.unizin.cmp.oai.harvester.service;
 
 import static org.unizin.cmp.oai.harvester.service.Status.formatHeaders;
 import static org.unizin.cmp.oai.harvester.service.Status.headerValue;
-import static org.unizin.cmp.oai.harvester.service.Status.responseBody;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.io.Reader;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -67,7 +69,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
      * make field names more noticeable in the code).</li>
      * <li>Timestamps are converted to Java 8 instants.</li>
      * <li>Clobs are converted to strings.</li>
-     * <li>Blobs are converted to {@link BlobWrapper BlobWrappers}.</li>
      * <li>Outer joins are handled correctly -- the default mapper can overwrite
      * a non-null value in the resulting map with null in some cases.</li>
      * </ul>
@@ -298,6 +299,21 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
                 && notification.getException().isPresent();
     }
 
+    private static InputStream responseBody(
+            final HarvesterHTTPStatusException ex, final Logger logger) {
+        final PipedInputStream pis = new PipedInputStream();
+        final PipedOutputStream pos = new PipedOutputStream();
+        new Thread(() -> {
+            try (final OutputStream out = pos) {
+                pos.connect(pis);
+                ex.writeResponseBodyTo(out);
+            } catch (final IOException e) {
+                logger.error("Error writing response body to database.", e);
+            }
+        }).start();
+        return pis;
+    }
+
     @Transaction
     public void harvestDatabaseUpdate(final long harvestID,
             final Optional<String> lastRequestURI,
@@ -321,7 +337,7 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
                 final HarvesterHTTPStatusException hhse =
                         (HarvesterHTTPStatusException)ex;
                 try (final InputStream in = responseBody(hhse, logger)) {
-                insertHarvestHTTPError(harvestID,
+                    insertHarvestHTTPError(harvestID,
                         hhse.getStatusLine().getStatusCode(),
                         formatHeaders(hhse.getHeaders()),
                         headerValue(hhse.getContentType()),

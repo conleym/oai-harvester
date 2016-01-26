@@ -2,7 +2,6 @@ package org.unizin.cmp.oai.harvester.service;
 
 import java.io.Serializable;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,12 +38,9 @@ public final class H2Functions {
      * @param params
      *            the list of parameters for harvests in this job.
      * @return the id of the new JOB row and of each of the HARVEST rows.
-     *
-     * @throws SQLException
-     *             if there's an error adding the job.
      */
     public static JobInfo createJob(final Connection c,
-            final List<HarvestParams> params) throws SQLException {
+            final List<HarvestParams> params) {
         // Do not close the handle! causes exceptions.
         final Handle h = DBI.open(c);
         final JobJDBI jdbi = h.attach(JobJDBI.class);
@@ -55,6 +51,17 @@ public final class H2Functions {
         return info;
     }
 
+    /**
+     * Create a new harvest.
+     *
+     * @param c
+     *            the database connection (supplied by H2).
+     * @param jobID
+     *            the id of the job of which this harvest is a part.
+     * @param params
+     *            the parameters of the harvest.
+     * @return the new harvest's database identifier.
+     */
     public static long createHarvest(final Connection c,
             final long jobID, final HarvestParams params) {
         // Do not close the handle! causes exceptions.
@@ -66,6 +73,16 @@ public final class H2Functions {
                 params.getParameters().toString(), params.getVerb());
     }
 
+    /**
+     * Record OAI protocol errors for a harvest.
+     *
+     * @param c
+     *            the database connection (supplied by H2).
+     * @param harvestID
+     *            the id of the harvest that had the errors.
+     * @param errors
+     *            the OAI errors to record.
+     */
     public static void insertOAIErrors(final Connection c, final long harvestID,
             final List<OAIError> errors) {
         // Do not close the handle! causes exceptions.
@@ -87,6 +104,7 @@ public final class H2Functions {
      */
     public static List<OAIError> readOAIErrors(final Connection c,
             final long harvestID) {
+       // Do not close the handle! causes exceptions.
        final Handle h = DBI.open(c);
        final JobJDBI jdbi = h.attach(JobJDBI.class);
        final List<OAIError> errors = new ArrayList<>();

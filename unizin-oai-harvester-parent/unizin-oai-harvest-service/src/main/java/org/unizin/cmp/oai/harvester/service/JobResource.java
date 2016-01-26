@@ -24,11 +24,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
@@ -58,9 +56,6 @@ public final class JobResource {
     }
 
     public static final String PATH = "/job/";
-
-    @Context
-    private UriInfo uriInfo;
 
     private final DBI dbi;
     private final HarvestJobConfiguration jobConfig;
