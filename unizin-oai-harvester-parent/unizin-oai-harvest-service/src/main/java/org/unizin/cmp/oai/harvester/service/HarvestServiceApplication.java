@@ -1,5 +1,8 @@
 package org.unizin.cmp.oai.harvester.service;
 
+import java.io.IOException;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -19,7 +22,12 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
 import com.amazonaws.services.dynamodbv2.model.StreamSpecification;
 import com.amazonaws.services.dynamodbv2.model.StreamViewType;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
@@ -57,6 +65,25 @@ extends Application<HarvestServiceConfiguration> {
                     }
                 });
         objectMapper = bootstrap.getObjectMapper();
+        final SimpleModule m = new SimpleModule();
+        m.addSerializer(new JsonSerializer<Blob>() {
+            @Override
+            public void serialize(final Blob value, final JsonGenerator gen,
+                    final SerializerProvider serializers)
+                    throws IOException, JsonProcessingException {
+                try {
+                    gen.writeBinary(value.getBinaryStream(), -1);
+                } catch (final SQLException e) {
+                    throw new IOException(e);
+                }
+            }
+
+            @Override
+            public Class<Blob> handledType() {
+                return Blob.class;
+            }
+        });
+        objectMapper.registerModule(m);
     }
 
     private void createMapper(
@@ -107,7 +134,7 @@ extends Application<HarvestServiceConfiguration> {
         createMapper(dynamo);
         createDynamoDBTable(dynamo);
         startH2Servers(conf, env);
-        final JobResource jr = new JobResource(jdbi, objectMapper,
+        final JobResource jr = new JobResource(jdbi,
                 conf.getJobConfiguration(), httpClient, dynamoDBMapper,
                 executor);
         env.jersey().register(jr);

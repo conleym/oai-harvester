@@ -1,9 +1,5 @@
 package org.unizin.cmp.oai.harvester.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
@@ -20,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,12 +24,10 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.http.client.HttpClient;
@@ -51,16 +44,9 @@ import org.unizin.cmp.oai.harvester.job.JobHarvestSpec;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
 import org.unizin.cmp.oai.harvester.service.H2Functions.JobInfo;
-import org.unizin.cmp.oai.harvester.service.JobJDBI.BlobWrapper;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.MappingJsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.CaseFormat;
 
 @Path(JobResource.PATH)
 @Produces(MediaType.APPLICATION_JSON)
@@ -71,15 +57,12 @@ public final class JobResource {
         List<HarvestParams> valid = new ArrayList<>();
     }
 
-    private static final Pattern REMOVE_HARVEST = Pattern.compile("^HARVEST_");
-
     public static final String PATH = "/job/";
 
     @Context
     private UriInfo uriInfo;
 
     private final DBI dbi;
-    private final JsonFactory jsonFactory;
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
@@ -90,13 +73,12 @@ public final class JobResource {
             new ConcurrentHashMap<>();
 
 
-    public JobResource(final DBI dbi, final ObjectMapper objectMapper,
+    public JobResource(final DBI dbi,
             final HarvestJobConfiguration jobConfig,
             final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final ExecutorService executor) {
         this.dbi = dbi;
-        this.jsonFactory = new MappingJsonFactory(objectMapper);
         this.jobConfig = jobConfig;
         this.httpClient = httpClient;
         this.mapper = mapper;
@@ -244,58 +226,6 @@ public final class JobResource {
             }
         }
         return Response.ok(status).build();
-    }
-
-    private String harvestFieldName(final String databaseName) {
-        final String step1 = REMOVE_HARVEST.matcher(databaseName)
-                .replaceFirst("");
-        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, step1);
-    }
-
-    private void writeHarvestField(final JsonGenerator jg,
-            final Map.Entry<String, Object> thing) {
-        if (thing == null || thing.getValue() == null ||
-                "HARVEST_ID".equals(thing.getKey())) {
-            return;
-        }
-        final String fieldName = harvestFieldName(thing.getKey());
-        try {
-            if (thing.getValue() instanceof BlobWrapper) {
-                jg.writeFieldName(fieldName);
-                final InputStream in = ((BlobWrapper)thing.getValue())
-                        .getStream();
-                jg.writeBinary(in, -1);
-            } else {
-                jg.writeObjectField(fieldName, thing.getValue());
-            }
-        } catch (final IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    @GET
-    @Path("httpErrorResponse/{harvestID}")
-    public Response httpErrorResponse(
-            final @PathParam("harvestID") long harvestID) {
-        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
-            final Map<String, Object> m = jdbi.readHttpError(harvestID);
-            if (m == null) {
-                return Response.status(Status.NOT_FOUND).build();
-            }
-            return Response.ok(new StreamingOutput() {
-                @Override
-                public void write(final OutputStream output)
-                        throws IOException, WebApplicationException {
-                    try (final JsonGenerator jg = jsonFactory.createGenerator(
-                            output, JsonEncoding.UTF8)) {
-                        jg.writeStartObject();
-                        m.entrySet().forEach(e -> writeHarvestField(jg, e));
-                        jg.writeEndObject();
-                        output.flush();
-                    }
-                }
-            }).build();
-        }
     }
 
     @PUT

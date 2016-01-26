@@ -7,7 +7,6 @@ import static org.unizin.cmp.oai.harvester.service.Status.responseBody;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
-import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -24,7 +23,6 @@ import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.HashPrefixStatementRewriter;
 import org.skife.jdbi.v2.ResultSetMapperFactory;
 import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.exceptions.DBIException;
 import org.skife.jdbi.v2.exceptions.ResultSetException;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
@@ -44,7 +42,6 @@ import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 
-import com.google.common.io.ByteStreams;
 import com.google.common.io.CharStreams;
 
 /**
@@ -56,47 +53,6 @@ import com.google.common.io.CharStreams;
  */
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
 public abstract class JobJDBI implements AutoCloseable, GetHandle {
-
-    public static final class BlobRetrievalException extends DBIException {
-        private static final long serialVersionUID = 1L;
-
-        public BlobRetrievalException(final Throwable cause) {
-            super(cause);
-        }
-    }
-
-    public static final class BlobWrapper {
-        private final Blob blob;
-        private final long limit;
-        private final boolean limitNeeded;
-
-        public BlobWrapper(final Blob blob, final long limit)
-                throws SQLException {
-            this.blob = blob;
-            this.limit = limit;
-            this.limitNeeded = (limit > blob.length());
-        }
-
-        public InputStream getLimitedStream()  {
-            return limitNeeded ?
-                    ByteStreams.limit(getStream(), limit) :
-                        getStream();
-        }
-
-        public InputStream getStream() {
-            try {
-                return blob.getBinaryStream();
-            } catch (final SQLException e) {
-                throw new BlobRetrievalException(e);
-            }
-        }
-
-        public boolean isLimited() {
-            return limitNeeded;
-        }
-    }
-
-
     /**
      * A minimal JDBI result set mapper.
      * <p>
@@ -118,8 +74,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
      */
     public static final class Mapper
     implements ResultSetMapper<Map<String, Object>> {
-        private static final long BLOB_LIMIT = 1024 * 1024;
-
         private static final String toUpper(final String str) {
             return str == null ? null : str.toUpperCase();
         }
@@ -171,8 +125,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
                         value = fromClob((Clob)value, ctx);
                     } else if (value instanceof Timestamp) {
                         value = ((Timestamp)value).toInstant();
-                    } else if (value instanceof Blob) {
-                        value = new BlobWrapper((Blob)value, BLOB_LIMIT);
                     }
                     final String s = alias == null ? key : alias;
                     /*
@@ -265,9 +217,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             "on H.HARVEST_ID = P.HARVEST_ID " +
             "where J.JOB_ID = #id";
 
-    private static final String HTTP_ERROR_RESPONSE_QUERY = "select * from " +
-            "HARVEST_HTTP_ERROR where HARVEST_ID = #id";
-
     @SqlUpdate("insert into JOB() values()")
     @GetGeneratedKeys
     public abstract long createJob();
@@ -329,11 +278,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
     @SingleValueResult(Map.class)
     @RegisterMapperFactory(MapperFactory.class)
     public abstract List<Map<String, Object>> readOAIErrors(
-            @Bind("id") long harvestID);
-
-    @SqlQuery(HTTP_ERROR_RESPONSE_QUERY)
-    @RegisterMapperFactory(MapperFactory.class)
-    public abstract Map<String, Object> readHttpError(
             @Bind("id") long harvestID);
 
     @Override

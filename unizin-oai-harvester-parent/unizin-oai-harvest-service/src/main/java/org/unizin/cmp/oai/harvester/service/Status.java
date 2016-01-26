@@ -8,7 +8,6 @@ import java.io.PipedOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -22,9 +21,6 @@ import org.apache.http.Header;
 import org.slf4j.Logger;
 import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
-import org.unizin.cmp.oai.harvester.service.JobJDBI.BlobWrapper;
-
-import com.google.common.io.ByteStreams;
 
 
 /**
@@ -81,26 +77,6 @@ final class Status {
     static Optional<String> formatInstant(final Optional<Instant> optional) {
         return withOptional(optional, instant -> formatInstant(instant));
     }
-
-    private static String charset(final Optional<String> charset) {
-        return charset.orElse(StandardCharsets.ISO_8859_1.name());
-    }
-
-    static Optional<String> formatLimitedBlob(final BlobWrapper wrapper,
-            final Optional<String> charset, final Logger logger) {
-        if (wrapper == null) {
-            return Optional.empty();
-        }
-        try {
-            final byte[] body = ByteStreams.toByteArray(
-                    wrapper.getLimitedStream());
-            return Optional.of(new String(body, charset(charset)));
-        } catch (final Exception e) {
-            logger.warn("Error reading blob contents.", e);
-            return Optional.empty();
-        }
-    }
-
 
     /**
      * Format an optional URI.
