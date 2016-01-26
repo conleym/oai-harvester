@@ -1,6 +1,7 @@
 package org.unizin.cmp.oai.harvester.service;
 
 import static org.unizin.cmp.oai.harvester.service.Status.formatHeaders;
+import static org.unizin.cmp.oai.harvester.service.Status.headerValue;
 import static org.unizin.cmp.oai.harvester.service.Status.responseBody;
 
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.apache.http.Header;
 import org.skife.jdbi.v2.DefaultMapper;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.HashPrefixStatementRewriter;
@@ -44,9 +44,34 @@ import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 
 import com.google.common.io.CharStreams;
 
+/**
+* JDBI database access methods.
+*/
+/*
+ * Hash prefix should make converting to PostgreSQL easier, should it ever be
+ * necessary.
+ */
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
 public abstract class JobJDBI implements AutoCloseable, GetHandle {
 
+    /**
+     * A minimal JDBI result set mapper.
+     * <p>
+     * This mapper differs from {@link org.skife.jdbi.v2.DefaultMapper} in the
+     * following ways:
+     * </p>
+     * <ul>
+     * <li>Jackson can serialize the maps produced by this mapper, whereas it
+     * seems unable to serialize those produced by the default mapper.</li>
+     * <li>The names of columns in the maps are capitalized here, whereas
+     * they're lower case in the default (this is just my personal preference to
+     * make field names more noticeable in the code).</li>
+     * <li>Timestamps are converted to Java 8 instants.</li>
+     * <li>Clobs are converted to strings.</li>
+     * <li>Outer joins are handled correctly -- the default mapper can overwrite
+     * a non-null value in the resulting map with null in some cases.</li>
+     * </ul>
+     */
     public static final class Mapper
     implements ResultSetMapper<Map<String, Object>> {
 
@@ -54,6 +79,23 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             return str == null ? null : str.toUpperCase();
         }
 
+        /**
+         * Convert a clob to a string.
+         * <p>
+         * We use clobs for a variety of fields that could be somewhat large,
+         * but none so large that reading them into memory could cause problems.
+         * It makes sense, therefore, to simplify the database interface by
+         * converting them to strings.
+         * </p>
+         *
+         * @param clob
+         *            the clob to convert.
+         * @param ctx
+         *            the JDBI context.
+         * @return the contents of the given clob as a string.
+         * @throws SQLException
+         *             if there's an error reading the clob from the database.
+         */
         private static final String fromClob(final Clob clob,
                 final StatementContext ctx) throws SQLException {
             try (final Reader reader = clob.getCharacterStream()) {
@@ -103,7 +145,8 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
         }
     }
 
-    @SuppressWarnings("rawtypes")
+    /** A factory that produces {@link Mapper} instances. */
+    @SuppressWarnings("rawtypes") // Alas, the interface specifies them.
     public static final class MapperFactory implements ResultSetMapperFactory {
         DefaultMapper dm;
         private static final ResultSetMapper MAPPER = new Mapper();
@@ -120,7 +163,7 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
     }
 
 
-    public static final String JOB_UPDATE = "update JOB " +
+    private static final String JOB_UPDATE = "update JOB " +
             "set JOB_START = #start," +
             "JOB_END = #end, " +
             "JOB_LAST_UPDATE = now(), " +
@@ -129,11 +172,10 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             "JOB_BATCHES_ATTEMPTED = #batchesAttempted " +
             "where JOB_ID = #id";
 
-    public static final String HARVEST_UPDATE = "update HARVEST " +
+    private static final String HARVEST_UPDATE = "update HARVEST " +
             "set HARVEST_START = #start, " +
             "HARVEST_END = #end, " +
             "HARVEST_LAST_UPDATE = now(), " +
-            "HARVEST_INITIAL_PARAMETERS = #initialParameters, " +
             "HARVEST_CANCELLED = #cancelled, " +
             "HARVEST_INTERRUPTED = #interrupted, " +
             "HARVEST_LAST_REQUEST_URI = #lastRequestURI," +
@@ -144,7 +186,7 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             "HARVEST_XML_EVENT_COUNT = #eventCount " +
             "where HARVEST_ID = #id";
 
-    public static final String INSERT_HARVEST_HTTP_ERROR = "insert into " +
+    private static final String INSERT_HARVEST_HTTP_ERROR = "insert into " +
             "HARVEST_HTTP_ERROR(HARVEST_ID, HARVEST_HTTP_ERROR_STATUS_CODE, " +
             "HARVEST_HTTP_ERROR_RESPONSE_BODY, " +
             "HARVEST_HTTP_ERROR_CONTENT_ENCODING, " +
@@ -152,21 +194,21 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             "values (#id, #statusCode, #responseBody, #contentEncoding, " +
             "#contentType, #headers)";
 
-    public static final String INSERT_HARVEST_PROTOCOL_ERROR = "insert into " +
+    private static final String INSERT_HARVEST_PROTOCOL_ERROR = "insert into " +
             "HARVEST_PROTOCOL_ERROR(HARVEST_ID, " +
             "HARVEST_PROTOCOL_ERROR_MESSAGE, HARVEST_PROTOCOL_ERROR_CODE) " +
             "values (#id, #errorMessage, #errorCode)";
 
-    public static final String PROTOCOL_ERROR_QUERY = "select " +
+    private static final String PROTOCOL_ERROR_QUERY = "select " +
             "HARVEST_PROTOCOL_ERROR_MESSAGE, HARVEST_PROTOCOL_ERROR_CODE " +
             " from HARVEST_PROTOCOL_ERROR where HARVEST_ID = #id";
 
-    public static final String INSERT_HARVEST = "insert into HARVEST(" +
+    private static final String INSERT_HARVEST = "insert into HARVEST(" +
             "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS, " +
             " HARVEST_VERB) values (#jobID, #repoID, #initialParameters, " +
             "#verb)";
 
-    public static final String JOB_QUERY = "select J.*, H.*, R.*, E.*, "
+    private static final String JOB_QUERY = "select J.*, H.*, R.*, E.*, "
             + "OAI_ERRORS(H.HARVEST_ID) as HARVEST_PROTOCOL_ERRORS from " +
             "JOB J inner join HARVEST H on J.JOB_ID = H.JOB_ID " +
             "inner join REPOSITORY R on R.REPOSITORY_ID = H.REPOSITORY_ID " +
@@ -200,7 +242,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
     public abstract void updateHarvest(@Bind("id") long id,
             @Bind("start") Instant start,
             @Bind("end") Optional<Instant> end,
-            @Bind("initialParameters") String initialParameters,
             @Bind("cancelled") boolean cancelled,
             @Bind("interrupted") boolean interrupted,
             @Bind("lastRequestURI") Optional<String> lastRequestURI,
@@ -213,6 +254,7 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
 
     @SqlUpdate(INSERT_HARVEST_HTTP_ERROR)
     public abstract void insertHarvestHTTPError(@Bind("id") long harvestID,
+            @Bind("statusCode") int statusCode,
             @Bind("headers") String[] headers,
             @Bind("contentType") Optional<String> contentType,
             @Bind("contentEncoding") Optional<String> contentEncoding,
@@ -242,17 +284,19 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
     @Override
     public abstract void close();
 
+    /**
+     * Ensure that exceptions are written only once, as there's no facility
+     * within the database or the application to constrain duplicate entries.
+     *
+     * @param notification
+     *            the notification to check.
+     * @return {@code true} iff the notification has an exception and is
+     *         reporting the end of the harvest.
+     */
     private static boolean writeExceptionInfo(
             final HarvestNotification notification) {
         return notification.getType() == HarvestNotificationType.HARVEST_ENDED
                 && notification.getException().isPresent();
-    }
-
-    private static Optional<String> headerValue(final Header h) {
-        if (h == null) {
-            return Optional.empty();
-        }
-        return Optional.of(h.getValue());
     }
 
     @Transaction
@@ -264,7 +308,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             final Logger logger) {
         updateHarvest(harvestID, notification.getStarted(),
                 notification.getEnded(),
-                notification.getHarvestParameters().toString(),
                 notification.isCancelled(),
                 notification.isInterrupted(),
                 lastRequestURI,
@@ -278,15 +321,23 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             if (ex instanceof HarvesterHTTPStatusException) {
                 final HarvesterHTTPStatusException hhse =
                         (HarvesterHTTPStatusException)ex;
+                try (final InputStream in = responseBody(hhse, logger)) {
                 insertHarvestHTTPError(harvestID,
+                        hhse.getStatusLine().getStatusCode(),
                         formatHeaders(hhse.getHeaders()),
                         headerValue(hhse.getContentType()),
                         headerValue(hhse.getContentEncoding()),
-                        responseBody(hhse, logger));
+                        in);
+                } catch (final IOException e) {
+                    logger.warn(
+                            "Error closing HTTP error response body stream.",
+                            e);
+                }
             } else if (ex instanceof OAIProtocolException) {
                 final OAIProtocolException ope = (OAIProtocolException)ex;
                 final Handle h = getHandle();
-                h.createCall("call INSERT_OAI_ERRORS(:id, :errors)")
+                h.setStatementRewriter(new HashPrefixStatementRewriter());
+                h.createCall("call INSERT_OAI_ERRORS(#id, #errors)")
                     .bind("id", harvestID)
                     .bind("errors", ope.getOAIErrors())
                     .invoke();

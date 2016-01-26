@@ -20,12 +20,29 @@ import org.unizin.cmp.oai.harvester.HarvestParams;
  * </p>
  */
 public final class H2Functions {
+    /**
+     * Information about a newly-created job, including the identifiers of all
+     * harvests which are part of it.
+     */
     public static final class JobInfo implements Serializable {
         private static final long serialVersionUID = 1L;
         long id;
         List<Long> harvestIDs = new ArrayList<>();
     }
 
+    /**
+     * Create a new JOB row and a corresponding HARVEST row for each set of
+     * harvest parameters supplied.
+     *
+     * @param c
+     *            the database connection (supplied by H2).
+     * @param params
+     *            the list of parameters for harvests in this job.
+     * @return the id of the new JOB row and of each of the HARVEST rows.
+     *
+     * @throws SQLException
+     *             if there's an error adding the job.
+     */
     public static JobInfo createJob(final Connection c,
             final List<HarvestParams> params) throws SQLException {
         // Do not close the handle! causes exceptions.
@@ -58,6 +75,16 @@ public final class H2Functions {
                 e.getMessage(), e.getErrorCodeString()));
     }
 
+    /**
+     * Get the list of OAI protocol errors for a given harvest.
+     *
+     * @param c
+     *            the database connection (supplied by H2).
+     *
+     * @param harvestID
+     *            the harvest id.
+     * @return a list of the OAI protocol errors for this harvest.
+     */
     public static List<OAIError> readOAIErrors(final Connection c,
             final long harvestID) {
        final Handle h = DBI.open(c);

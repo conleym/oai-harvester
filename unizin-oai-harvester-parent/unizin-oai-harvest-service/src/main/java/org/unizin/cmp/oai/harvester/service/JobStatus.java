@@ -128,7 +128,7 @@ public final class JobStatus {
                     Optional.empty(),
                     Optional.ofNullable(
                             (Integer)x.get("HARVEST_HTTP_ERROR_STATUS_CODE")),
-                    toList((String[])x.get("HARVEST_HTTP_ERROR_HEADERS")),
+                    toList((Object[])x.get("HARVEST_HTTP_ERROR_HEADERS")),
                     protocolErrors);
 
             harvests.put(harvestName, harvest);
@@ -158,7 +158,7 @@ public final class JobStatus {
             final Optional<Instant> lastResponseDate,
             final Optional<Map<String, Object>> resumptionToken,
             final Optional<Integer> httpErrorStatus,
-            final List<String> httpErrorHeaders,
+            final List<?> httpErrorHeaders,
             final List<OAIError> oaiErrors) {
         final Map<String, Object> status = new TreeMap<>();
         status.put("started", formatInstant(harvestStarted));
@@ -185,7 +185,7 @@ public final class JobStatus {
             final Map<String, Object> map = new TreeMap<>();
             map.put("statusCode", httpErrorStatus.get());
             if (! httpErrorHeaders.isEmpty()) {
-                status.put("headers", httpErrorHeaders);
+                map.put("headers", httpErrorHeaders);
             }
             status.put("httpError", map);
         }

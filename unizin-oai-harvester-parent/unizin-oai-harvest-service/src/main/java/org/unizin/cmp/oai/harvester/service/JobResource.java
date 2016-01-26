@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.HashPrefixStatementRewriter;
 import org.slf4j.MDC;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
@@ -82,7 +83,8 @@ public final class JobResource {
 
     private JobInfo createJob(final List<HarvestParams> harvests) {
         try (final Handle handle = dbi.open()) {
-            return handle.createCall(":info = call CREATE_JOB(:paramList)")
+            handle.setStatementRewriter(new HashPrefixStatementRewriter());
+            return handle.createCall("#info = call CREATE_JOB(#paramList)")
                     .bind("paramList", harvests)
                     .registerOutParameter("info", Types.OTHER)
                     .invoke().getObject("info", JobInfo.class);

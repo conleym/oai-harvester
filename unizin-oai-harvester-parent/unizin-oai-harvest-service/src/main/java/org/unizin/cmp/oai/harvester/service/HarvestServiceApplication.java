@@ -29,7 +29,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
 /**
- *
+ * The dropwizard application class for the harvest service.
  */
 public final class HarvestServiceApplication
 extends Application<HarvestServiceConfiguration> {
