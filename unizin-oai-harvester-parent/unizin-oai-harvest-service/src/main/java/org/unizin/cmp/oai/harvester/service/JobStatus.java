@@ -4,6 +4,7 @@ import static org.unizin.cmp.oai.harvester.service.Status.addIfPresent;
 import static org.unizin.cmp.oai.harvester.service.Status.convertResumptionToken;
 import static org.unizin.cmp.oai.harvester.service.Status.formatHeaders;
 import static org.unizin.cmp.oai.harvester.service.Status.formatInstant;
+import static org.unizin.cmp.oai.harvester.service.Status.formatLimitedBlob;
 import static org.unizin.cmp.oai.harvester.service.Status.formatMap;
 import static org.unizin.cmp.oai.harvester.service.Status.formatStackTrace;
 import static org.unizin.cmp.oai.harvester.service.Status.formatURI;
@@ -29,6 +30,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
+import org.unizin.cmp.oai.harvester.service.JobJDBI.BlobWrapper;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
@@ -110,6 +112,16 @@ public final class JobStatus {
             @SuppressWarnings("unchecked")
             final List<OAIError> protocolErrors =
                     (List<OAIError>)x.get("HARVEST_PROTOCOL_ERRORS");
+            final Optional<String> httpErrorContentEncoding =
+                    Optional.ofNullable(
+                            (String)x.get(
+                                    "HARVEST_HTTP_ERROR_CONTENT_ENCODING"));
+            final BlobWrapper responseBody = (BlobWrapper)x.get(
+                    "HARVEST_HTTP_ERROR_RESPONSE_BODY");
+            final Optional<String> httpErrorResponseBody = formatLimitedBlob(
+                    responseBody, httpErrorContentEncoding, LOGGER);
+            final boolean httpErrorResponseBodyIsLimited =
+                    (responseBody == null) ? false : responseBody.isLimited();
             final Map<String, Object> harvest = harvestStatusMap(harvestStarted,
                     harvestEnded, false, (Boolean)x.get("HARVEST_CANCELLED"),
                     (Boolean)x.get("HARVEST_INTERRUPTED"),
@@ -129,6 +141,7 @@ public final class JobStatus {
                     Optional.ofNullable(
                             (Integer)x.get("HARVEST_HTTP_ERROR_STATUS_CODE")),
                     toList((Object[])x.get("HARVEST_HTTP_ERROR_HEADERS")),
+                    httpErrorResponseBody, httpErrorResponseBodyIsLimited,
                     protocolErrors);
 
             harvests.put(harvestName, harvest);
@@ -159,6 +172,8 @@ public final class JobStatus {
             final Optional<Map<String, Object>> resumptionToken,
             final Optional<Integer> httpErrorStatus,
             final List<?> httpErrorHeaders,
+            final Optional<String> httpErrorResponseBody,
+            final boolean httpErrorResponseBodyIsLimited,
             final List<OAIError> oaiErrors) {
         final Map<String, Object> status = new TreeMap<>();
         status.put("started", formatInstant(harvestStarted));
@@ -186,6 +201,10 @@ public final class JobStatus {
             map.put("statusCode", httpErrorStatus.get());
             if (! httpErrorHeaders.isEmpty()) {
                 map.put("headers", httpErrorHeaders);
+            }
+            addIfPresent(httpErrorResponseBody, "responseBody", map);
+            if (httpErrorResponseBodyIsLimited) {
+                // TODO tell people about this, provide link to full response.
             }
             status.put("httpError", map);
         }
@@ -222,6 +241,12 @@ public final class JobStatus {
         }
         final String initialParameters = notification.getHarvestParameters()
                 .getParameters().toString();
+        /*
+         * The response body can be read reliably only once, so it will always
+         * be empty while the harvest is running (we need use that read to write
+         * it to the database). It can be read only from the database.
+         */
+        final Optional<String> httpErrorResponseBody = Optional.empty();
         final Map<String, Object> status = harvestStatusMap(
                 notification.getStarted(), notification.getEnded(),
                 notification.isRunning(), notification.isCancelled(),
@@ -233,8 +258,8 @@ public final class JobStatus {
                 lastRequestParameters, tags, notification.getStats(),
                 notification.getLastReponseDate(),
                 convertResumptionToken(notification.getResumptionToken()),
-                httpStatus, Arrays.asList(httpHeaders),
-                oaiErrors);
+                httpStatus, Arrays.asList(httpHeaders), httpErrorResponseBody,
+                false, oaiErrors);
         // Update running harvest status.
         lastHarvestNotifications.put(harvestName, status);
         try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {

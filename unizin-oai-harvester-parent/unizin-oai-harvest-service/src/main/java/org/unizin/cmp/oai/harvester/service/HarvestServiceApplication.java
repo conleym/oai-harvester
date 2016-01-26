@@ -19,6 +19,7 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
 import com.amazonaws.services.dynamodbv2.model.StreamSpecification;
 import com.amazonaws.services.dynamodbv2.model.StreamViewType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
@@ -40,6 +41,7 @@ extends Application<HarvestServiceConfiguration> {
 
     private AmazonDynamoDB dynamoDBClient;
     private DynamoDBMapper dynamoDBMapper;
+    private ObjectMapper objectMapper;
 
     @Override
     public void initialize(
@@ -54,6 +56,7 @@ extends Application<HarvestServiceConfiguration> {
                         return configuration.getDataSourceFactory();
                     }
                 });
+        objectMapper = bootstrap.getObjectMapper();
     }
 
     private void createMapper(
@@ -104,7 +107,7 @@ extends Application<HarvestServiceConfiguration> {
         createMapper(dynamo);
         createDynamoDBTable(dynamo);
         startH2Servers(conf, env);
-        final JobResource jr = new JobResource(jdbi,
+        final JobResource jr = new JobResource(jdbi, objectMapper,
                 conf.getJobConfiguration(), httpClient, dynamoDBMapper,
                 executor);
         env.jersey().register(jr);
