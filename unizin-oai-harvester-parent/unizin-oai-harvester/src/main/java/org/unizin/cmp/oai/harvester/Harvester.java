@@ -90,7 +90,7 @@ public final class Harvester extends Observable {
      * @see RequestConfig#getSocketTimeout()
      * @see SocketConfig#getSoTimeout()
      */
-    private static final int DEFAULT_SO_TIMEOUT = 100;
+    private static final int DEFAULT_SO_TIMEOUT = 1000;
 
     /**
      * Connection request timeout (the amount of time {@code HttpClient} will
@@ -99,7 +99,7 @@ public final class Harvester extends Observable {
      *
      * @see RequestConfig#getConnectionRequestTimeout()
      */
-    private static final int DEFAULT_CONN_REQ_TIMEOUT = 100;
+    private static final int DEFAULT_CONN_REQ_TIMEOUT = 1000;
 
     /**
      * Connection timeout (the amount of time {@code HttpClient} will wait for a
@@ -108,7 +108,7 @@ public final class Harvester extends Observable {
      *
      * @see RequestConfig#getConnectTimeout()
      */
-    private static final int DEFAULT_CONNECT_TIMEOUT = 100;
+    private static final int DEFAULT_CONNECT_TIMEOUT = 1000;
 
     /**
      * Create an HTTP client builder instance.
@@ -331,10 +331,15 @@ public final class Harvester extends Observable {
      * @throws IllegalStateException
      *             if this method is called while another harvest is already in
      *             progress.
+     * @throws NullPointerException
+     *             if any of the arguments to this method is {@code null}.
      */
     public void start(final HarvestParams params,
             final OAIResponseHandler responseHandler,
             final Map<String, String> tags) {
+        Objects.requireNonNull(params, "params");
+        Objects.requireNonNull(responseHandler, "responseHandler");
+        Objects.requireNonNull(tags, "tags");
         if (this.harvest.hasNext()) {
             throw new IllegalStateException(
                     "Cannot start a new harvest while one is in progress.");
