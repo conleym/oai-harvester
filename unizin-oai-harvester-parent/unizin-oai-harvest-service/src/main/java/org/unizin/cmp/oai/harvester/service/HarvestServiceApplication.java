@@ -1,9 +1,10 @@
 package org.unizin.cmp.oai.harvester.service;
 
+import java.io.IOException;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-
-import javax.sql.DataSource;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
@@ -21,34 +22,40 @@ import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
 import com.amazonaws.services.dynamodbv2.model.StreamSpecification;
 import com.amazonaws.services.dynamodbv2.model.StreamViewType;
-import com.codahale.metrics.MetricRegistry;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
-import io.dropwizard.db.ManagedDataSource;
-import io.dropwizard.jdbi.DBIHealthCheck;
+import io.dropwizard.java8.Java8Bundle;
+import io.dropwizard.java8.jdbi.DBIFactory;
 import io.dropwizard.migrations.MigrationsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 
+/**
+ * The dropwizard application class for the harvest service.
+ */
 public final class HarvestServiceApplication
 extends Application<HarvestServiceConfiguration> {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             HarvestServiceApplication.class);
-    private static final String CONNECTION_POOL_NAME =
-            "HarvestService Database Connection Pool";
     private static final String HTTP_CLIENT_NAME =
             "HarvestService HTTP Client";
 
-    private Bootstrap<HarvestServiceConfiguration> bootstrap;
     private AmazonDynamoDB dynamoDBClient;
     private DynamoDBMapper dynamoDBMapper;
+    private ObjectMapper objectMapper;
 
     @Override
     public void initialize(
             final Bootstrap<HarvestServiceConfiguration> bootstrap) {
         super.initialize(bootstrap);
-        this.bootstrap = bootstrap;
+        bootstrap.addBundle(new Java8Bundle());
         bootstrap.addBundle(
                 new MigrationsBundle<HarvestServiceConfiguration>() {
                     @Override
@@ -57,18 +64,26 @@ extends Application<HarvestServiceConfiguration> {
                         return configuration.getDataSourceFactory();
                     }
                 });
-    }
+        objectMapper = bootstrap.getObjectMapper();
+        final SimpleModule m = new SimpleModule();
+        m.addSerializer(new JsonSerializer<Blob>() {
+            @Override
+            public void serialize(final Blob value, final JsonGenerator gen,
+                    final SerializerProvider serializers)
+                    throws IOException, JsonProcessingException {
+                try {
+                    gen.writeBinary(value.getBinaryStream(), -1);
+                } catch (final SQLException e) {
+                    throw new IOException(e);
+                }
+            }
 
-    private DataSource createConnectionPool(
-            final HarvestServiceConfiguration configuration,
-            final Environment environment) {
-        final DataSourceFactory dsf = configuration.getDataSourceFactory();
-        final MetricRegistry mr = bootstrap.getMetricRegistry();
-        final ManagedDataSource ds = dsf.build(mr, CONNECTION_POOL_NAME);
-        environment.lifecycle().manage(ds);
-        environment.healthChecks().register(CONNECTION_POOL_NAME,
-                new DBIHealthCheck(new DBI(ds), dsf.getValidationQuery()));
-        return ds;
+            @Override
+            public Class<Blob> handledType() {
+                return Blob.class;
+            }
+        });
+        objectMapper.registerModule(m);
     }
 
     private void createMapper(
@@ -108,7 +123,8 @@ extends Application<HarvestServiceConfiguration> {
     @Override
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
-        final DataSource ds = createConnectionPool(conf, env);
+        final DBI jdbi = new DBIFactory().build(env,
+                conf.getDataSourceFactory(), "database");
         final HttpClient httpClient = new HarvestHttpClientBuilder(env)
                 .using(conf.getHttpClientConfiguration())
                 .build(HTTP_CLIENT_NAME);
@@ -118,8 +134,9 @@ extends Application<HarvestServiceConfiguration> {
         createMapper(dynamo);
         createDynamoDBTable(dynamo);
         startH2Servers(conf, env);
-        final JobResource jr = new JobResource(ds, conf.getJobConfiguration(),
-                httpClient, dynamoDBMapper, executor);
+        final JobResource jr = new JobResource(jdbi,
+                conf.getJobConfiguration(), httpClient, dynamoDBMapper,
+                executor);
         env.jersey().register(jr);
     }
 

@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import javax.sql.DataSource;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -32,6 +31,7 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.HashPrefixStatementRewriter;
 import org.slf4j.MDC;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
@@ -57,7 +57,6 @@ public final class JobResource {
 
     public static final String PATH = "/job/";
 
-
     private final DBI dbi;
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
@@ -69,12 +68,12 @@ public final class JobResource {
             new ConcurrentHashMap<>();
 
 
-    public JobResource(final DataSource ds,
+    public JobResource(final DBI dbi,
             final HarvestJobConfiguration jobConfig,
             final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final ExecutorService executor) {
-        this.dbi = new DBI(ds);
+        this.dbi = dbi;
         this.jobConfig = jobConfig;
         this.httpClient = httpClient;
         this.mapper = mapper;
@@ -83,16 +82,45 @@ public final class JobResource {
 
     private JobInfo createJob(final List<HarvestParams> harvests) {
         try (final Handle handle = dbi.open()) {
-            return handle.createCall(":info = call CREATE_JOB(:paramList)")
+            handle.setStatementRewriter(new HashPrefixStatementRewriter());
+            return handle.createCall("#info = call CREATE_JOB(#paramList)")
                     .bind("paramList", harvests)
                     .registerOutParameter("info", Types.OTHER)
                     .invoke().getObject("info", JobInfo.class);
         }
     }
 
-    private List<HarvestParams> removeDuplicates(
-            final List<HarvestParams> harvests) {
-        return new ArrayList<>(new HashSet<>(harvests));
+    private static OAIVerb verbOf(final String string) {
+        switch(string) {
+        case "ListRecords": return OAIVerb.LIST_RECORDS;
+        case "GetRecord": return OAIVerb.GET_RECORD;
+        default: return null;
+        }
+    }
+
+    private static Harvests params(final List<Map<String, String>> harvests) {
+        final Harvests h = new Harvests();
+        for (final Map<String, String> harvest : harvests) {
+            final OAIVerb verb = verbOf(harvest.remove("verb"));
+            if (verb == null) {
+                h.invalid.add(harvest);
+                continue;
+            }
+            try {
+                final URI baseURI = new URI(harvest.remove("baseURI"));
+                final HarvestParams params = new HarvestParams.Builder(baseURI,
+                        verb).withMap(harvest).build();
+                if (! params.areValid()) {
+                    h.invalid.add(harvest);
+                } else {
+                    h.valid.add(params);
+                }
+            } catch (final URISyntaxException e) {
+                h.invalid.add(harvest);
+                continue;
+            }
+        }
+        return h;
     }
 
     private List<JobHarvestSpec> buildSpecs(final String jobName,
@@ -106,6 +134,12 @@ public final class JobResource {
         });
         return specs;
     }
+
+    private List<HarvestParams> removeDuplicates(
+            final List<HarvestParams> harvests) {
+        return new ArrayList<>(new HashSet<>(harvests));
+    }
+
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -141,39 +175,6 @@ public final class JobResource {
         return Response.created(new URI(PATH + jobName)).build();
     }
 
-    private static Harvests params(final List<Map<String, String>> harvests) {
-        final Harvests h = new Harvests();
-        for (final Map<String, String> harvest : harvests) {
-            final OAIVerb verb = verbOf(harvest.remove("verb"));
-            if (verb == null) {
-                h.invalid.add(harvest);
-                continue;
-            }
-            try {
-                final URI baseURI = new URI(harvest.remove("baseURI"));
-                final HarvestParams params = new HarvestParams.Builder(baseURI,
-                        verb).withMap(harvest).build();
-                if (! params.areValid()) {
-                    h.invalid.add(harvest);
-                } else {
-                    h.valid.add(params);
-                }
-            } catch (final URISyntaxException e) {
-                h.invalid.add(harvest);
-                continue;
-            }
-        }
-        return h;
-    }
-
-    private static OAIVerb verbOf(final String string) {
-        switch(string) {
-        case "ListRecords": return OAIVerb.LIST_RECORDS;
-        case "GetRecord": return OAIVerb.GET_RECORD;
-        default: return null;
-        }
-    }
-
     private void jobUpdate(final String jobName, final Object o,
             final Object arg) {
         if (o instanceof HarvestJob && arg instanceof JobNotification) {
@@ -204,6 +205,11 @@ public final class JobResource {
         return Response.ok(jobStatus).build();
     }
 
+    private Object readStatusFromDatabase(final long jobID) {
+        final JobStatus status = new JobStatus(dbi);
+        return status.loadFromDB(jobID) ? status : null;
+    }
+
     @GET
     @Path("{jobID}")
     public Response status(final @PathParam("jobID") long jobID) {
@@ -215,11 +221,6 @@ public final class JobResource {
             }
         }
         return Response.ok(status).build();
-    }
-
-    private Object readStatusFromDatabase(final long jobID) {
-        final JobStatus status = new JobStatus(dbi);
-        return status.loadFromDB(jobID) ? status : null;
     }
 
     @PUT

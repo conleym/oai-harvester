@@ -38,13 +38,28 @@ import freemarker.template.TemplateException;
 /** Test utilities. */
 public final class Tests {
     public static final String DEFAULT_DYNAMO_PORT = "8000";
-    public static final String DYNAMO_PORT = System.getProperty(
-            "dynamodb.port", DEFAULT_DYNAMO_PORT);
+    public static final String DYNAMO_PORT;
+    static {
+        // For some reason, System.getProperty("prop", "default")
+        // returns "" when we run in IntelliJ, so I guess we need
+        // to be explicit.
+        String prop = System.getProperty("dynamodb.port");
+        if (prop == null || "".equals(prop.trim())) {
+            prop = DEFAULT_DYNAMO_PORT;
+        }
+        DYNAMO_PORT = prop;
+    }
 
     public static final int DEFAULT_WIREMOCK_PORT = 9000;
-    public static final int WIREMOCK_PORT = Integer.parseInt(
-            System.getProperty("wiremock.port",
-                    String.valueOf(DEFAULT_WIREMOCK_PORT)));
+    public static final int WIREMOCK_PORT;
+    static {
+        // See DYNAMO_PORT for explanation.
+        String prop = System.getProperty("wiremock.port");
+        if (prop == null || "".equals(prop.trim())) {
+            prop = String.valueOf(DEFAULT_WIREMOCK_PORT);
+        }
+        WIREMOCK_PORT = Integer.parseInt(prop);
+    }
 
     public static final String MOCK_OAI_BASE_URI =
             String.format("http://0.0.0.0:%d/oai", Tests.WIREMOCK_PORT);

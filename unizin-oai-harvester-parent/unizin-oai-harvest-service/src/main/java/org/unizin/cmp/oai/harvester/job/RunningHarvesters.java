@@ -5,6 +5,12 @@ import java.util.Set;
 
 import org.unizin.cmp.oai.harvester.Harvester;
 
+/**
+ * Internal-use-only tracking of running harvesters for a given job.
+ * <p>
+ * Instances are safe for use in multiple threads.
+ * </p>
+ */
 final class RunningHarvesters {
     private final Object lock = new Object();
     private final Set<Harvester> harvesters = new HashSet<>();
@@ -15,7 +21,7 @@ final class RunningHarvesters {
         }
     }
 
-    boolean remove(final Harvester harvester) {
+    private boolean remove(final Harvester harvester) {
         synchronized(lock) {
             return harvesters.remove(harvester);
         }
@@ -29,13 +35,6 @@ final class RunningHarvesters {
     boolean isEmpty() {
         synchronized(lock) {
             return harvesters.isEmpty();
-        }
-    }
-
-    /** Clear the running harvests. */
-    void clear() {
-        synchronized(lock) {
-            harvesters.clear();
         }
     }
 

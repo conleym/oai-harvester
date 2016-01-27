@@ -31,22 +31,6 @@ public final class ListResponses {
             Collections.unmodifiableList(Arrays.asList(
                     FIRST_TOKEN, LAST_TOKEN));
 
-    public static Map<String, Object> toMap(final ResumptionToken token) {
-        final Map<String, Object> m = new HashMap<>();
-        m.put("token", token.getToken());
-        if (token.getCursor().isPresent()) {
-            m.put("cursor", token.getCursor().get());
-        }
-        if (token.getCompleteListSize().isPresent()) {
-            m.put("completeListSize",
-                    token.getCompleteListSize().get());
-        }
-        if (token.getExpirationDate().isPresent()) {
-            m.put("expirationDate", token.getExpirationDate().get());
-        }
-        return m;
-    }
-
     private static void addRecord(final ListRecordsTemplate listRecordsTemplate,
             final String identifier,
             final RecordMetadataTemplate recordMetadataTemplate)
@@ -99,7 +83,7 @@ public final class ListResponses {
             final boolean sendFinalResumptionToken)
                     throws TemplateException, IOException {
         ListRecordsTemplate listRecordsTemplate = new ListRecordsTemplate()
-                .withResumptionToken(toMap(FIRST_TOKEN));
+                .withResumptionToken(FIRST_TOKEN.toMap());
         RecordMetadataTemplate recordMetadataTemplate =
                 new RecordMetadataTemplate()
                 .addTitle("A Title")
@@ -117,7 +101,7 @@ public final class ListResponses {
 
         listRecordsTemplate = new ListRecordsTemplate();
         if (sendFinalResumptionToken) {
-            listRecordsTemplate.withResumptionToken(toMap(LAST_TOKEN));
+            listRecordsTemplate.withResumptionToken(LAST_TOKEN.toMap());
         }
         recordMetadataTemplate = new RecordMetadataTemplate()
                 .addTitle("Such Title Wow");
