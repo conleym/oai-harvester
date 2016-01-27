@@ -213,7 +213,7 @@ public final class JobResource {
     @GET
     @Path("{jobID}")
     public Response status(final @PathParam("jobID") long jobID) {
-        Object status = jobStatus.get(jobID);
+        Object status = jobStatus.get(String.valueOf(jobID));
         if (status == null) {
             status = readStatusFromDatabase(jobID);
             if (status == null) {

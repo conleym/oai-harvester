@@ -28,7 +28,7 @@ final class Harvest {
      * <p>
      * These are grouped solely because it makes implementation slightly simpler
      * (in particular, it simplifies
-     * {@link HarvestNotification#HarvestNotification(HarvestNotificationType, Map, State, Exception, ResumptionToken, Instant, HarvestParams, Map, URI, SortedMap, Instant, Instant)}
+     * {@link HarvestNotification#HarvestNotification(HarvestNotificationType, Map, State, Exception, ResumptionToken, Instant, HarvestParams, Map, URI, SortedMap, Instant, Instant)}).
      */
     static final class State {
         volatile boolean running;
@@ -37,7 +37,7 @@ final class Harvest {
         /*
          * Doesn't need to be volatile, because this is only written from the
          * same thread in which the harvester runs, and other threads see only
-         * copies created from that same thread.
+         * copies created by that same thread.
          */
         boolean interrupted;
     }
