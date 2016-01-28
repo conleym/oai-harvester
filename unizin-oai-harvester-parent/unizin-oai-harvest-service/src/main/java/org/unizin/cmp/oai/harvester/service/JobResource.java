@@ -46,6 +46,9 @@ import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 
+/**
+ * Resource responsible for creating jobs and reporting on their statuses.
+ */
 @Path(JobResource.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 public final class JobResource {
@@ -140,6 +143,29 @@ public final class JobResource {
         return new ArrayList<>(new HashSet<>(harvests));
     }
 
+    private void harvestUpdate(final String jobName, final Object o,
+            final Object arg) {
+        if (o instanceof Harvester && arg instanceof HarvestNotification) {
+            final JobStatus status = jobStatus.get(jobName);
+            status.harvestUpdate((HarvestNotification)arg);
+            jobStatus.put(jobName, status);
+        }
+    }
+
+    private void jobUpdate(final String jobName, final Object o,
+            final Object arg) {
+        if (o instanceof HarvestJob && arg instanceof JobNotification) {
+            final JobNotification notification = (JobNotification)arg;
+            if (notification.getType() == JobNotificationType.STOPPED) {
+                jobStatus.get(jobName).jobUpdate(notification);
+                jobStatus.remove(jobName);
+            } else {
+                final JobStatus status = jobStatus.get(jobName);
+                status.jobUpdate(notification);
+                jobStatus.put(jobName, status);
+            }
+        }
+    }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -149,8 +175,7 @@ public final class JobResource {
         if (!h.invalid.isEmpty()) {
             final Map<String, Object> m = new HashMap<>(1);
             m.put("invalidHarvests", h.invalid);
-            return Response.status(Status.BAD_REQUEST)
-                    .entity(m).build();
+            return Response.status(Status.BAD_REQUEST).entity(m).build();
         }
         final JobInfo jobInfo = createJob(removeDuplicates(h.valid));
         final String jobName = String.valueOf(jobInfo.id);
@@ -173,30 +198,6 @@ public final class JobResource {
             return Response.status(Status.SERVICE_UNAVAILABLE).build();
         }
         return Response.created(new URI(PATH + jobName)).build();
-    }
-
-    private void jobUpdate(final String jobName, final Object o,
-            final Object arg) {
-        if (o instanceof HarvestJob && arg instanceof JobNotification) {
-            final JobNotification notification = (JobNotification)arg;
-            if (notification.getType() == JobNotificationType.STOPPED) {
-                jobStatus.get(jobName).jobUpdate(notification);
-                jobStatus.remove(jobName);
-            } else {
-                final JobStatus status = jobStatus.get(jobName);
-                status.jobUpdate(notification);
-                jobStatus.put(jobName, status);
-            }
-        }
-    }
-
-    private void harvestUpdate(final String jobName, final Object o,
-            final Object arg) {
-        if (o instanceof Harvester && arg instanceof HarvestNotification) {
-            final JobStatus status = jobStatus.get(jobName);
-            status.harvestUpdate((HarvestNotification)arg);
-            jobStatus.put(jobName, status);
-        }
     }
 
     @GET

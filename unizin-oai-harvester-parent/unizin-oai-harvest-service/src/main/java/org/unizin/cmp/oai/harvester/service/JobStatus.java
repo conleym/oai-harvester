@@ -266,6 +266,8 @@ public final class JobStatus {
         try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
             jdbi.harvestDatabaseUpdate(harvestID, lastRequestURI,
                     lastRequestParameters, stackTrace, notification, LOGGER);
+        } catch (final Exception e) {
+            LOGGER.error("Error updating harvest status database.", e);
         }
     }
 
@@ -304,6 +306,8 @@ public final class JobStatus {
                     notification.getStat(JobStatistic.RECORDS_RECEIVED),
                     notification.getStat(JobStatistic.RECORD_BYTES_RECEIVED),
                     notification.getStat(JobStatistic.BATCHES_ATTEMPTED));
+        } catch (final Exception e) {
+            LOGGER.error("Error updating job status database.", e);
         }
     }
 }
