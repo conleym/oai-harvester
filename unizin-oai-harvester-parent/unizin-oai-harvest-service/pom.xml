@@ -10,6 +10,7 @@
   <description>Dropwizard web service for harvesting metadata</description>
 
   <properties>
+    <aws-sdk.version>1.10.50</aws-sdk.version>
     <dropwizard.version>0.9.2</dropwizard.version>
     <dropwizard.java8.version>0.9.0-1</dropwizard.java8.version>
   </properties>

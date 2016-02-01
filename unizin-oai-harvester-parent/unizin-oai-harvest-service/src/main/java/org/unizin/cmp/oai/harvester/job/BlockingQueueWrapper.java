@@ -1,7 +1,6 @@
 package org.unizin.cmp.oai.harvester.job;
 
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -25,16 +24,12 @@ public final class BlockingQueueWrapper<T> {
         this.pollTimeout = pollTimeout;
     }
 
-    private static long nanosOf(final Duration duration) {
-        return duration.get(ChronoUnit.NANOS);
-    }
-
     public T poll() throws InterruptedException {
-        return queue.poll(nanosOf(pollTimeout), TimeUnit.NANOSECONDS);
+        return queue.poll(pollTimeout.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     public boolean offer(final T t) throws InterruptedException {
-        return queue.offer(t, nanosOf(offerTimeout), TimeUnit.NANOSECONDS);
+        return queue.offer(t, offerTimeout.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     public int size() {

@@ -61,7 +61,7 @@ public final class HarvestJobConfiguration {
     @NotEmpty
     private String nameFormat = "harvest-job-%s";
 
-    public ExecutorService buildExecutorService(final Environment env) {
+    public ExecutorService executorService(final Environment env) {
         final ExecutorServiceBuilder b = env.lifecycle()
                 .executorService(nameFormat);
         if (minThreads != null) {
@@ -76,7 +76,7 @@ public final class HarvestJobConfiguration {
         return b.build();
     }
 
-    public HarvestJob buildJob(final HttpClient httpClient,
+    public HarvestJob job(final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final ExecutorService executor,
             final String name,

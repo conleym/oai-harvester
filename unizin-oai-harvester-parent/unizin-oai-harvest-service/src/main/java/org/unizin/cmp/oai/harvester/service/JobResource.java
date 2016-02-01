@@ -184,7 +184,7 @@ public final class JobResource {
         };
         final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo,
                 h.valid);
-        final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
+        final HarvestJob job = jobConfig.job(httpClient, mapper, executor,
                 jobName, specs, Collections.singletonList(observeHarvests));
         job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
         jobStatus.put(jobName, new JobStatus(dbi));

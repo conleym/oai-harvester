@@ -13,7 +13,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.client.HttpClientConfiguration;
 
-public final class HarvestHttpClientConfiguration extends HttpClientConfiguration {
+public final class HarvestHttpClientConfiguration
+extends HttpClientConfiguration {
 
     @JsonProperty("defaultHeaders")
     private Collection<? extends Header> defaultHeaders;
