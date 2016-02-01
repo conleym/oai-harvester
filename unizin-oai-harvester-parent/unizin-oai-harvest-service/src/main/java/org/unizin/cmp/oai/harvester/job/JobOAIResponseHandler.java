@@ -3,7 +3,9 @@ package org.unizin.cmp.oai.harvester.job;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -24,12 +26,12 @@ implements Consumer<HarvestedOAIRecord> {
     private final JobOAIEventHandler handler;
 
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
-    private final Timeout offerTimeout;
+    private final Duration offerTimeout;
 
 
     public JobOAIResponseHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
-            final Timeout offerTimeout)
+            final Duration offerTimeout)
                     throws NoSuchAlgorithmException {
         this(baseURI, harvestedRecordQueue, offerTimeout,
                 JobOAIEventHandler.defaultOutputFactory(), HarvestJob.digest());
@@ -37,7 +39,7 @@ implements Consumer<HarvestedOAIRecord> {
 
     public JobOAIResponseHandler(final URI baseURI,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
-            final Timeout offerTimeout,
+            final Duration offerTimeout,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
         handler = new JobOAIEventHandler(baseURI, this, outputFactory,
@@ -55,8 +57,8 @@ implements Consumer<HarvestedOAIRecord> {
     @Override
     public void accept(final HarvestedOAIRecord record) {
         try {
-            if (!harvestedRecordQueue.offer(record, offerTimeout.getTime(),
-                    offerTimeout.getUnit())) {
+            if (!harvestedRecordQueue.offer(record, offerTimeout.getNano(),
+                    TimeUnit.NANOSECONDS)) {
                 throw new HarvesterException(String.format(
                         "Timed out after %s trying to offer record.",
                         offerTimeout));

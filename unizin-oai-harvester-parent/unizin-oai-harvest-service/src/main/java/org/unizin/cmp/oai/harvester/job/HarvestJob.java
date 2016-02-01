@@ -3,6 +3,7 @@ package org.unizin.cmp.oai.harvester.job;
 import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,15 +72,14 @@ public final class HarvestJob extends Observable {
          * send in one API request.
          */
         private static final int DEFAULT_BATCH_SIZE = 25;
-        private static final Timeout DEFAULT_TIMEOUT = new Timeout(5000,
-                TimeUnit.MILLISECONDS);
+        private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(5000);
         private static final int DEFAULT_QUEUE_CAPACITY = 10 * 1000;
 
         private final DynamoDBMapper mapper;
 
         private int batchSize = DEFAULT_BATCH_SIZE;
-        private Timeout offerTimeout;
-        private Timeout pollTimeout;
+        private Duration offerTimeout;
+        private Duration pollTimeout;
         private HttpClient httpClient;
         private BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
         private ExecutorService executorService;
@@ -124,12 +124,12 @@ public final class HarvestJob extends Observable {
             return this;
         }
 
-        public Builder withOfferTimeout(final Timeout timeout) {
+        public Builder withOfferTimeout(final Duration timeout) {
             this.offerTimeout = timeout;
             return this;
         }
 
-        public Builder withPollTimeout(final Timeout timeout) {
+        public Builder withPollTimeout(final Duration timeout) {
             this.pollTimeout = timeout;
             return this;
         }
@@ -205,8 +205,8 @@ public final class HarvestJob extends Observable {
     private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
     private final List<Runnable> tasks = new ArrayList<>();
     private final ExecutorService executorService;
-    private final Timeout offerTimeout;
-    private final Timeout pollTimeout;
+    private final Duration offerTimeout;
+    private final Duration pollTimeout;
     private final int batchSize;
     private final String name;
     private final RunningHarvesters runningHarvesters =
@@ -267,8 +267,8 @@ public final class HarvestJob extends Observable {
             final DynamoDBMapper mapper,
             final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
             final ExecutorService executorService,
-            final Timeout offerTimeout,
-            final Timeout pollTimeout,
+            final Duration offerTimeout,
+            final Duration pollTimeout,
             final int batchSize,
             final String name,
             final List<JobHarvestSpec> harvests,
@@ -425,8 +425,8 @@ public final class HarvestJob extends Observable {
     }
 
     private HarvestedOAIRecord poll() throws InterruptedException {
-        return harvestedRecordQueue.poll(pollTimeout.getTime(),
-                pollTimeout.getUnit());
+        return harvestedRecordQueue.poll(pollTimeout.getNano(),
+                TimeUnit.NANOSECONDS);
     }
 
     /**

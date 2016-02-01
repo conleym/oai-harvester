@@ -13,6 +13,7 @@ import static org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord.XML_ATTRIB;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpStatus;
 import org.junit.Assert;
@@ -33,10 +33,6 @@ import org.unizin.cmp.oai.OAI2Constants;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
-import org.unizin.cmp.oai.harvester.job.HarvestJob;
-import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
-import org.unizin.cmp.oai.harvester.job.JobOAIResponseHandler;
-import org.unizin.cmp.oai.harvester.job.Timeout;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
@@ -98,7 +94,7 @@ public final class TestJobOAIEventHandler {
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
                 new ArrayBlockingQueue<>(Tests.TEST_RECORD_COUNT);
         harvester.start(p, new JobOAIResponseHandler(uri,
-                harvestedRecordQueue, new Timeout(0, TimeUnit.SECONDS)));
+                harvestedRecordQueue, Duration.ofNanos(0)));
 
         Assert.assertEquals(Tests.TEST_RECORD_COUNT,
                 harvestedRecordQueue.size());
