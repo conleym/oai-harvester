@@ -3,9 +3,7 @@ package org.unizin.cmp.oai.harvester.job;
 import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -24,28 +22,23 @@ import org.unizin.cmp.oai.harvester.response.OAIEventHandler;
 public final class JobOAIResponseHandler extends AbstractOAIResponseHandler
 implements Consumer<HarvestedOAIRecord> {
     private final JobOAIEventHandler handler;
-
-    private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
-    private final Duration offerTimeout;
+    private final BlockingQueueWrapper<HarvestedOAIRecord> harvestedRecordQueue;
 
 
     public JobOAIResponseHandler(final URI baseURI,
-            final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
-            final Duration offerTimeout)
+            final BlockingQueueWrapper<HarvestedOAIRecord> harvestedRecordQueue)
                     throws NoSuchAlgorithmException {
-        this(baseURI, harvestedRecordQueue, offerTimeout,
+        this(baseURI, harvestedRecordQueue,
                 JobOAIEventHandler.defaultOutputFactory(), HarvestJob.digest());
     }
 
     public JobOAIResponseHandler(final URI baseURI,
-            final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
-            final Duration offerTimeout,
+            final BlockingQueueWrapper<HarvestedOAIRecord> harvestedRecordQueue,
             final XMLOutputFactory outputFactory,
             final MessageDigest messageDigest) {
         handler = new JobOAIEventHandler(baseURI, this, outputFactory,
                 messageDigest);
         this.harvestedRecordQueue = harvestedRecordQueue;
-        this.offerTimeout = offerTimeout;
     }
 
     @Override
@@ -57,11 +50,10 @@ implements Consumer<HarvestedOAIRecord> {
     @Override
     public void accept(final HarvestedOAIRecord record) {
         try {
-            if (!harvestedRecordQueue.offer(record, offerTimeout.getNano(),
-                    TimeUnit.NANOSECONDS)) {
+            if (!harvestedRecordQueue.offer(record)) {
                 throw new HarvesterException(String.format(
                         "Timed out after %s trying to offer record.",
-                        offerTimeout));
+                        harvestedRecordQueue.getOfferTimeout()));
             }
         } catch (final InterruptedException e) {
             // Interrupting the thread ensures that the harvest ends

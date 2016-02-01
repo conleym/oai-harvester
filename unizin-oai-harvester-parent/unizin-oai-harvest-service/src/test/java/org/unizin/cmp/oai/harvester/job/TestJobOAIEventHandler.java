@@ -94,7 +94,8 @@ public final class TestJobOAIEventHandler {
         final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue =
                 new ArrayBlockingQueue<>(Tests.TEST_RECORD_COUNT);
         harvester.start(p, new JobOAIResponseHandler(uri,
-                harvestedRecordQueue, Duration.ofNanos(0)));
+                new BlockingQueueWrapper<>(harvestedRecordQueue,
+                        Duration.ofMillis(0), Duration.ofMillis(0))));
 
         Assert.assertEquals(Tests.TEST_RECORD_COUNT,
                 harvestedRecordQueue.size());

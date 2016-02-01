@@ -20,7 +20,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.Header;
 import org.apache.http.client.HttpClient;
@@ -181,9 +180,11 @@ public final class HarvestJob extends Observable {
             if (harvestObservers == null) {
                 harvestObservers = Collections.emptyList();
             }
-            return new HarvestJob(httpClient, mapper, harvestedRecordQueue,
-                    executorService, offerTimeout, pollTimeout, batchSize,
-                    name, specs, harvestObservers);
+            final BlockingQueueWrapper<HarvestedOAIRecord> wrapper =
+                    new BlockingQueueWrapper<>(harvestedRecordQueue,
+                            offerTimeout, pollTimeout);
+            return new HarvestJob(httpClient, mapper, wrapper,
+                    executorService, batchSize, name, specs, harvestObservers);
         }
     }
 
@@ -202,11 +203,9 @@ public final class HarvestJob extends Observable {
 
     private final HttpClient httpClient;
     private final DynamoDBMapper mapper;
-    private final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue;
+    private final BlockingQueueWrapper<HarvestedOAIRecord> harvestedRecordQueue;
     private final List<Runnable> tasks = new ArrayList<>();
     private final ExecutorService executorService;
-    private final Duration offerTimeout;
-    private final Duration pollTimeout;
     private final int batchSize;
     private final String name;
     private final RunningHarvesters runningHarvesters =
@@ -265,10 +264,8 @@ public final class HarvestJob extends Observable {
      */
     public HarvestJob(final HttpClient httpClient,
             final DynamoDBMapper mapper,
-            final BlockingQueue<HarvestedOAIRecord> harvestedRecordQueue,
+            final BlockingQueueWrapper<HarvestedOAIRecord> harvestedRecordQueue,
             final ExecutorService executorService,
-            final Duration offerTimeout,
-            final Duration pollTimeout,
             final int batchSize,
             final String name,
             final List<JobHarvestSpec> harvests,
@@ -278,8 +275,6 @@ public final class HarvestJob extends Observable {
         Objects.requireNonNull(mapper, "mapper");
         Objects.requireNonNull(harvestedRecordQueue, "harvestedRecordQueue");
         Objects.requireNonNull(executorService, "executorService");
-        Objects.requireNonNull(offerTimeout, "offerTimeout");
-        Objects.requireNonNull(pollTimeout, "pollTimeout");
         Objects.requireNonNull(harvests, "harvests");
         Objects.requireNonNull(harvestObservers, "harvestObservers");
         validateBatchSize(batchSize);
@@ -287,8 +282,6 @@ public final class HarvestJob extends Observable {
         this.mapper = mapper;
         this.harvestedRecordQueue = harvestedRecordQueue;
         this.executorService = executorService;
-        this.offerTimeout = offerTimeout;
-        this.pollTimeout = pollTimeout;
         this.batchSize = batchSize;
         this.name = name;
 
@@ -319,7 +312,7 @@ public final class HarvestJob extends Observable {
                 .build();
         observers.forEach(harvester::addObserver);
         final OAIResponseHandler handler = new JobOAIResponseHandler(
-                params.getBaseURI(), harvestedRecordQueue, offerTimeout);
+                params.getBaseURI(), harvestedRecordQueue);
         final Runnable harvest = () -> {
             final Map<String, String> t = new HashMap<>(tags);
             t.put("jobName", name);
@@ -387,8 +380,10 @@ public final class HarvestJob extends Observable {
         final Batch batch = new Batch(batchSize);
         while (!shouldStop()) {
             try {
-                final HarvestedOAIRecord record = poll();
+                final HarvestedOAIRecord record = harvestedRecordQueue.poll();
                 if (record == null) {
+                    LOGGER.info("Timed out waiting for a record after {}",
+                            harvestedRecordQueue.getPollTimeout());
                     continue;
                 }
                 state.recordsReceived++;
@@ -422,11 +417,6 @@ public final class HarvestJob extends Observable {
         }
         return !state.running || state.interrupted ||
                 (runningHarvesters.isEmpty() && harvestedRecordQueue.isEmpty());
-    }
-
-    private HarvestedOAIRecord poll() throws InterruptedException {
-        return harvestedRecordQueue.poll(pollTimeout.getNano(),
-                TimeUnit.NANOSECONDS);
     }
 
     /**
