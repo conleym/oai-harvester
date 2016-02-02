@@ -196,3 +196,10 @@ databaseChangeLog:
             columns:
               - column:
                   name: HARVEST_LAST_UPDATE
+
+        - sqlFile:
+            path: ../../sql/initial-data.sql
+            relativeToChangelogFile: true
+
+        - tagDatabase:
+            tag: version_1.0
