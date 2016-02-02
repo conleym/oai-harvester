@@ -17,6 +17,7 @@ import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.NuxeoClientConfiguration;
+import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;

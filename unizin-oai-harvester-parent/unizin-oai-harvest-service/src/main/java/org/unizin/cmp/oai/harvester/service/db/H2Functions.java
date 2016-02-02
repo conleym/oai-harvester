@@ -1,8 +1,9 @@
-package org.unizin.cmp.oai.harvester.service;
+package org.unizin.cmp.oai.harvester.service.db;
 
 import java.io.Serializable;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.skife.jdbi.v2.DBI;
@@ -22,11 +23,27 @@ public final class H2Functions {
     /**
      * Information about a newly-created job, including the identifiers of all
      * harvests which are part of it.
+     * <p>
+     * Instances are immutable.
+     * </p>
      */
     public static final class JobInfo implements Serializable {
         private static final long serialVersionUID = 1L;
-        long id;
-        List<Long> harvestIDs = new ArrayList<>();
+        private final long id;
+        private final List<Long> harvestIDs;
+
+        public JobInfo(final long id, final List<Long> harvestIDs) {
+            this.id = id;
+            this.harvestIDs = Collections.unmodifiableList(harvestIDs);
+        }
+
+        public long getID() {
+            return id;
+        }
+
+        public List<Long> getHarvestIDs() {
+            return harvestIDs;
+        }
     }
 
     /**
@@ -45,10 +62,9 @@ public final class H2Functions {
         final Handle h = DBI.open(c);
         final JobJDBI jdbi = h.attach(JobJDBI.class);
         final long jobID = jdbi.createJob();
-        final JobInfo info = new JobInfo();
-        info.id = jobID;
-        params.forEach(x -> info.harvestIDs.add(createHarvest(c, jobID, x)));
-        return info;
+        final List<Long> harvestIDs = new ArrayList<>();
+        params.forEach(x -> harvestIDs.add(createHarvest(c, jobID, x)));
+        return new JobInfo(jobID, harvestIDs);
     }
 
     /**
@@ -62,14 +78,15 @@ public final class H2Functions {
      *            the parameters of the harvest.
      * @return the new harvest's database identifier.
      */
-    public static long createHarvest(final Connection c,
+    private static long createHarvest(final Connection c,
             final long jobID, final HarvestParams params) {
         // Do not close the handle! causes exceptions.
         final Handle h = DBI.open(c);
         final JobJDBI jdbi = h.attach(JobJDBI.class);
         final long repositoryID = jdbi.findRepositoryIDByBaseURI(
                 params.getBaseURI().toString());
-        return jdbi.createHarvest(jobID, repositoryID,
+        final H2FunctionsJDBI h2dbi = h.attach(H2FunctionsJDBI.class);
+        return h2dbi.createHarvest(jobID, repositoryID,
                 params.getParameters().toString(), params.getVerb());
     }
 
@@ -87,8 +104,8 @@ public final class H2Functions {
             final List<OAIError> errors) {
         // Do not close the handle! causes exceptions.
         final Handle h = DBI.open(c);
-        final JobJDBI jdbi = h.attach(JobJDBI.class);
-        errors.forEach(e -> jdbi.insertHarvestProtocolError(harvestID,
+        final H2FunctionsJDBI h2dbi = h.attach(H2FunctionsJDBI.class);
+        errors.forEach(e -> h2dbi.insertHarvestProtocolError(harvestID,
                 e.getMessage(), e.getErrorCodeString()));
     }
 
@@ -106,9 +123,9 @@ public final class H2Functions {
             final long harvestID) {
        // Do not close the handle! causes exceptions.
        final Handle h = DBI.open(c);
-       final JobJDBI jdbi = h.attach(JobJDBI.class);
+       final H2FunctionsJDBI h2dbi = h.attach(H2FunctionsJDBI.class);
        final List<OAIError> errors = new ArrayList<>();
-       jdbi.readOAIErrors(harvestID).forEach(m -> {
+       h2dbi.readOAIErrors(harvestID).forEach(m -> {
            errors.add(new OAIError(
                    (String)m.get("HARVEST_PROTOCOL_ERROR_CODE"),
                    (String)m.get("HARVEST_PROTOCOL_ERROR_MESSAGE")));

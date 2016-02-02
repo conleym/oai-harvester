@@ -1,4 +1,4 @@
-package org.unizin.cmp.oai.harvester.service;
+package org.unizin.cmp.oai.harvester.service.db;
 
 import static org.unizin.cmp.oai.harvester.service.Status.formatHeaders;
 import static org.unizin.cmp.oai.harvester.service.Status.headerValue;
@@ -8,24 +8,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.Reader;
-import java.sql.Clob;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.skife.jdbi.v2.DefaultMapper;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.HashPrefixStatementRewriter;
-import org.skife.jdbi.v2.ResultSetMapperFactory;
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.exceptions.ResultSetException;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
@@ -35,16 +24,12 @@ import org.skife.jdbi.v2.sqlobject.customizers.OverrideStatementRewriterWith;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import org.skife.jdbi.v2.sqlobject.customizers.SingleValueResult;
 import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
 import org.slf4j.Logger;
-import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestStatistic;
 import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
-
-import com.google.common.io.CharStreams;
 
 /**
 * JDBI database access methods.
@@ -55,114 +40,6 @@ import com.google.common.io.CharStreams;
  */
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
 public abstract class JobJDBI implements AutoCloseable, GetHandle {
-    /**
-     * A minimal JDBI result set mapper.
-     * <p>
-     * This mapper differs from {@link org.skife.jdbi.v2.DefaultMapper} in the
-     * following ways:
-     * </p>
-     * <ul>
-     * <li>Jackson can serialize the maps produced by this mapper, whereas it
-     * seems unable to serialize those produced by the default mapper.</li>
-     * <li>The names of columns in the maps are capitalized here, whereas
-     * they're lower case in the default (this is just my personal preference to
-     * make field names more noticeable in the code).</li>
-     * <li>Timestamps are converted to Java 8 instants.</li>
-     * <li>Clobs are converted to strings.</li>
-     * <li>Outer joins are handled correctly -- the default mapper can overwrite
-     * a non-null value in the resulting map with null in some cases.</li>
-     * </ul>
-     */
-    public static final class Mapper
-    implements ResultSetMapper<Map<String, Object>> {
-        private static final String toUpper(final String str) {
-            return str == null ? null : str.toUpperCase();
-        }
-
-        /**
-         * Convert a clob to a string.
-         * <p>
-         * We use clobs for a variety of fields that could be somewhat large,
-         * but none so large that reading them into memory could cause problems.
-         * It makes sense, therefore, to simplify the database interface by
-         * converting them to strings.
-         * </p>
-         *
-         * @param clob
-         *            the clob to convert.
-         * @param ctx
-         *            the JDBI context.
-         * @return the contents of the given clob as a string.
-         * @throws SQLException
-         *             if there's an error reading the clob from the database.
-         */
-        private static final String fromClob(final Clob clob,
-                final StatementContext ctx) throws SQLException {
-            try (final Reader reader = clob.getCharacterStream()) {
-                return CharStreams.toString(reader);
-            } catch (final IOException e) {
-                throw new ResultSetException("Error reading clob", e, ctx);
-            }
-        }
-
-        @Override
-        public Map<String, Object> map(final int index, final ResultSet r,
-                final StatementContext ctx) {
-            Map<String, Object> row = new HashMap<>();
-            ResultSetMetaData m;
-            try {
-                m = r.getMetaData();
-            }
-            catch (SQLException e) {
-                throw new ResultSetException(
-                        "Unable to obtain metadata from result set", e, ctx);
-            }
-            try {
-                for (int i = 1; i <= m.getColumnCount(); i ++) {
-                    String key = toUpper(m.getColumnName(i));
-                    String alias = toUpper(m.getColumnLabel(i));
-                    Object value = r.getObject(i);
-                    if (value instanceof Clob) {
-                        value = fromClob((Clob)value, ctx);
-                    } else if (value instanceof Timestamp) {
-                        value = ((Timestamp)value).toInstant();
-                    }
-                    final String s = alias == null ? key : alias;
-                    /*
-                     * Use putIfAbsent to make outer joins sensible. Otherwise
-                     * null values of columns used to join can show up in
-                     * results.
-                     */
-                    row.putIfAbsent(s, value);
-                }
-            }
-            catch (final SQLException e) {
-                throw new ResultSetException(
-                        "Unable to access specific metadata from " +
-                                "result set metadata", e, ctx);
-            }
-            return row;
-        }
-    }
-
-    /** A factory that produces {@link Mapper} instances. */
-    @SuppressWarnings("rawtypes") // Alas, the interface specifies them.
-    public static final class MapperFactory implements ResultSetMapperFactory {
-        DefaultMapper dm;
-        private static final ResultSetMapper MAPPER = new Mapper();
-        @Override
-        public boolean accepts(final Class type, final StatementContext ctx) {
-            return Map.class.isAssignableFrom(type);
-        }
-
-        @Override
-        public ResultSetMapper mapperFor(final Class type,
-                final StatementContext ctx) {
-            return MAPPER ;
-        }
-    }
-
-
     private static final String JOB_UPDATE = "update JOB " +
             "set JOB_START = #start," +
             "JOB_END = #end, " +
@@ -194,20 +71,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             "values (#id, #statusCode, #responseBody, #contentEncoding, " +
             "#contentType, #headers)";
 
-    private static final String INSERT_HARVEST_PROTOCOL_ERROR = "insert into " +
-            "HARVEST_PROTOCOL_ERROR(HARVEST_ID, " +
-            "HARVEST_PROTOCOL_ERROR_MESSAGE, HARVEST_PROTOCOL_ERROR_CODE) " +
-            "values (#id, #errorMessage, #errorCode)";
-
-    private static final String PROTOCOL_ERROR_QUERY = "select " +
-            "HARVEST_PROTOCOL_ERROR_MESSAGE, HARVEST_PROTOCOL_ERROR_CODE " +
-            " from HARVEST_PROTOCOL_ERROR where HARVEST_ID = #id";
-
-    private static final String INSERT_HARVEST = "insert into HARVEST(" +
-            "JOB_ID, REPOSITORY_ID, HARVEST_INITIAL_PARAMETERS, " +
-            " HARVEST_VERB) values (#jobID, #repoID, #initialParameters, " +
-            "#verb)";
-
     private static final String JOB_QUERY = "select J.*, H.*, R.*, E.*, "
             + "OAI_ERRORS(H.HARVEST_ID) as HARVEST_PROTOCOL_ERRORS from " +
             "JOB J inner join HARVEST H on J.JOB_ID = H.JOB_ID " +
@@ -231,13 +94,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             @Bind("recordBytesReceived") long recordBytesReceived,
             @Bind("batchesAttempted") long batchesAttempted);
 
-    @SqlUpdate(INSERT_HARVEST)
-    @GetGeneratedKeys
-    public abstract long createHarvest(@Bind("jobID") long jobID,
-            @Bind("repoID") long repositoryID,
-            @Bind("initialParameters") String initialParameters,
-            @Bind("verb") OAIVerb verb);
-
     @SqlUpdate(HARVEST_UPDATE)
     public abstract void updateHarvest(@Bind("id") long id,
             @Bind("start") Instant start,
@@ -260,11 +116,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             @Bind("contentEncoding") Optional<String> contentEncoding,
             @Bind("responseBody") InputStream body);
 
-    @SqlUpdate(INSERT_HARVEST_PROTOCOL_ERROR)
-    public abstract void insertHarvestProtocolError(@Bind("id") long harvestID,
-            @Bind("errorMessage") String errorMessage,
-            @Bind("errorCode") String errorCode);
-
     @SqlQuery("select REPOSITORY_ID from REPOSITORY " +
             "where REPOSITORY_BASE_URI = #baseURI")
     public abstract long findRepositoryIDByBaseURI(
@@ -272,14 +123,8 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
 
     @SqlQuery(JOB_QUERY)
     @SingleValueResult(Map.class)
-    @RegisterMapperFactory(MapperFactory.class)
+    @RegisterMapperFactory(CMPMapperFactory.class)
     public abstract List<Map<String, Object>> findJobByID(@Bind("id") long id);
-
-    @SqlQuery(PROTOCOL_ERROR_QUERY)
-    @SingleValueResult(Map.class)
-    @RegisterMapperFactory(MapperFactory.class)
-    public abstract List<Map<String, Object>> readOAIErrors(
-            @Bind("id") long harvestID);
 
     @Override
     public abstract void close();

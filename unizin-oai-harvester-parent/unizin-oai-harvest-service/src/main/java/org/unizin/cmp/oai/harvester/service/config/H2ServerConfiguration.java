@@ -6,7 +6,7 @@ import java.util.List;
 import javax.validation.constraints.Min;
 
 import org.h2.tools.Server;
-import org.unizin.cmp.oai.harvester.service.ManagedH2Server;
+import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

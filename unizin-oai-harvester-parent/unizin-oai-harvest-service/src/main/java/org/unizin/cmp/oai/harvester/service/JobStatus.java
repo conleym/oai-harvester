@@ -30,6 +30,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
+import org.unizin.cmp.oai.harvester.service.db.JobJDBI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
