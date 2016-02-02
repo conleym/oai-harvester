@@ -127,6 +127,11 @@ extends Application<HarvestServiceConfiguration> {
             final Environment env, final DBI jdbi) throws Exception {
         final NuxeoClientConfiguration nxconf =
                 conf.getNuxeoClientConfiguration();
+        if (nxconf == null) {
+            LOGGER.warn("Nuxeo client not configured. Repository information " +
+                 "will not be read from Nuxeo.");
+            return;
+        }
         final NuxeoClient client = nxconf.client(env, objectMapper);
         final ScheduledExecutorService ses = nxconf.executorService(env);
         final Runnable r = () -> {
