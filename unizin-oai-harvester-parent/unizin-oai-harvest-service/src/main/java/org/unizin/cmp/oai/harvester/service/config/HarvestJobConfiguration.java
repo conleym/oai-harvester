@@ -2,11 +2,11 @@ package org.unizin.cmp.oai.harvester.service.config;
 
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Observer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.validation.constraints.Min;
 
@@ -15,14 +15,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 import org.unizin.cmp.oai.harvester.job.HarvestJob;
 import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
 import org.unizin.cmp.oai.harvester.job.JobHarvestSpec;
-import org.unizin.cmp.oai.harvester.job.Timeout;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.dropwizard.lifecycle.setup.ExecutorServiceBuilder;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
 
 
 /**
@@ -63,7 +61,7 @@ public final class HarvestJobConfiguration {
     @NotEmpty
     private String nameFormat = "harvest-job-%s";
 
-    public ExecutorService buildExecutorService(final Environment env) {
+    public ExecutorService executorService(final Environment env) {
         final ExecutorServiceBuilder b = env.lifecycle()
                 .executorService(nameFormat);
         if (minThreads != null) {
@@ -78,7 +76,7 @@ public final class HarvestJobConfiguration {
         return b.build();
     }
 
-    public HarvestJob buildJob(final HttpClient httpClient,
+    public HarvestJob job(final HttpClient httpClient,
             final DynamoDBMapper mapper,
             final ExecutorService executor,
             final String name,
@@ -96,14 +94,10 @@ public final class HarvestJobConfiguration {
                     recordQueueCapacity));
         }
         if (offerTimeout != null) {
-            final long millis = offerTimeout.toMilliseconds();
-            builder.withOfferTimeout(new Timeout(millis,
-                    TimeUnit.MILLISECONDS));
+            builder.withOfferTimeout(offerTimeout);
         }
         if (pollTimeout != null) {
-            final long millis = pollTimeout.toMilliseconds();
-            builder.withPollTimeout(new Timeout(millis,
-                    TimeUnit.MILLISECONDS));
+            builder.withPollTimeout(offerTimeout);
         }
         if (batchSize != null) {
             builder.withBatchSize(batchSize);

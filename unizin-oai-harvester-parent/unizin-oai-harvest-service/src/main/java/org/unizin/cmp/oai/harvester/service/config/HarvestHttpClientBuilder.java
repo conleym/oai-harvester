@@ -20,7 +20,8 @@ public final class HarvestHttpClientBuilder extends HttpClientBuilder {
     }
 
     @Override
-    public HarvestHttpClientBuilder using(final HttpClientConfiguration config) {
+    public HarvestHttpClientBuilder using(
+            final HttpClientConfiguration config) {
         this.config = config;
         super.using(config);
         return this;

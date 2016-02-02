@@ -5,6 +5,8 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
@@ -14,6 +16,7 @@ import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
 import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
+import org.unizin.cmp.oai.harvester.service.config.NuxeoClientConfiguration;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -120,6 +123,29 @@ extends Application<HarvestServiceConfiguration> {
         }
     }
 
+    private void setupNuxeoClient(final HarvestServiceConfiguration conf,
+            final Environment env, final DBI jdbi) throws Exception {
+        final NuxeoClientConfiguration nxconf =
+                conf.getNuxeoClientConfiguration();
+        final NuxeoClient client = nxconf.client(env, objectMapper);
+        final ScheduledExecutorService ses = nxconf.executorService(env);
+        final Runnable r = () -> {
+            try {
+                LOGGER.info("Getting repositories from Nuxeo.");
+                // TODO update the database instead of dumping to log.
+                for (final Object o : client.repositories()) {
+                    LOGGER.info("Page: {}", o);
+                }
+            } catch (final Exception e) {
+                /* Uncaught exceptions will cause the scheduler to stop running
+                 * this task, so catch them all. */
+                LOGGER.error("Error updating repositories from Nuxeo.", e);
+            }
+        };
+        ses.scheduleAtFixedRate(r, 0, nxconf.getPeriodMillis(),
+                TimeUnit.MILLISECONDS);
+    }
+
     @Override
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
@@ -129,11 +155,12 @@ extends Application<HarvestServiceConfiguration> {
                 .using(conf.getHttpClientConfiguration())
                 .build(HTTP_CLIENT_NAME);
         final ExecutorService executor = conf.getJobConfiguration()
-                .buildExecutorService(env);
+                .executorService(env);
         final DynamoDBConfiguration dynamo = conf.getDynamoDBConfiguration();
         createMapper(dynamo);
         createDynamoDBTable(dynamo);
         startH2Servers(conf, env);
+        setupNuxeoClient(conf, env, jdbi);
         final JobResource jr = new JobResource(jdbi,
                 conf.getJobConfiguration(), httpClient, dynamoDBMapper,
                 executor);

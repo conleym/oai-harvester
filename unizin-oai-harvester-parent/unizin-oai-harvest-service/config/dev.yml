@@ -44,6 +44,17 @@ dynamoDB:
   recordMapper:
     tableNameOverride: AppTestingTable
 
+nuxeoClient:
+  nuxeoURI: https://catskateboard.local/nuxeo/site/api/v1/query
+  user: Administrator
+  password: Administrator
+  pageSize: 2
+  httpClient:
+    defaultHeaders:
+      X-NXDocumentProperties: dublincore,remoterepository
+    tls:
+      trustSelfSignedCertificates: true
+
 server:
     applicationConnectors:
       - type: http
@@ -53,6 +64,7 @@ server:
         port: 9081
 
 logging:
+  level: INFO
   appenders:
     - type: console
       threshold: TRACE

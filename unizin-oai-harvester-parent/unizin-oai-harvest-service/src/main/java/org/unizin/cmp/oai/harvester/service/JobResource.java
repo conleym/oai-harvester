@@ -46,6 +46,9 @@ import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 
+/**
+ * Resource responsible for creating jobs and reporting on their statuses.
+ */
 @Path(JobResource.PATH)
 @Produces(MediaType.APPLICATION_JSON)
 public final class JobResource {
@@ -140,39 +143,13 @@ public final class JobResource {
         return new ArrayList<>(new HashSet<>(harvests));
     }
 
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response newJob(final List<Map<String, String>> request)
-            throws NoSuchAlgorithmException, URISyntaxException {
-        final Harvests h = params(request);
-        if (!h.invalid.isEmpty()) {
-            final Map<String, Object> m = new HashMap<>(1);
-            m.put("invalidHarvests", h.invalid);
-            return Response.status(Status.BAD_REQUEST)
-                    .entity(m).build();
+    private void harvestUpdate(final String jobName, final Object o,
+            final Object arg) {
+        if (o instanceof Harvester && arg instanceof HarvestNotification) {
+            final JobStatus status = jobStatus.get(jobName);
+            status.harvestUpdate((HarvestNotification)arg);
+            jobStatus.put(jobName, status);
         }
-        final JobInfo jobInfo = createJob(removeDuplicates(h.valid));
-        final String jobName = String.valueOf(jobInfo.id);
-        final Observer observeHarvests = (o, arg) -> {
-            harvestUpdate(jobName, o, arg);
-        };
-        final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo,
-                h.valid);
-        final HarvestJob job = jobConfig.buildJob(httpClient, mapper, executor,
-                jobName, specs, Collections.singletonList(observeHarvests));
-        job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
-        jobStatus.put(jobName, new JobStatus(dbi));
-        jobs.put(jobName, job);
-        try {
-            executor.submit(() -> {
-                MDC.put("jobName", jobName);
-                job.start();
-            });
-        } catch (final RejectedExecutionException e) {
-            return Response.status(Status.SERVICE_UNAVAILABLE).build();
-        }
-        return Response.created(new URI(PATH + jobName)).build();
     }
 
     private void jobUpdate(final String jobName, final Object o,
@@ -190,13 +167,37 @@ public final class JobResource {
         }
     }
 
-    private void harvestUpdate(final String jobName, final Object o,
-            final Object arg) {
-        if (o instanceof Harvester && arg instanceof HarvestNotification) {
-            final JobStatus status = jobStatus.get(jobName);
-            status.harvestUpdate((HarvestNotification)arg);
-            jobStatus.put(jobName, status);
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response newJob(final List<Map<String, String>> request)
+            throws NoSuchAlgorithmException, URISyntaxException {
+        final Harvests h = params(request);
+        if (!h.invalid.isEmpty()) {
+            final Map<String, Object> m = new HashMap<>(1);
+            m.put("invalidHarvests", h.invalid);
+            return Response.status(Status.BAD_REQUEST).entity(m).build();
         }
+        final JobInfo jobInfo = createJob(removeDuplicates(h.valid));
+        final String jobName = String.valueOf(jobInfo.id);
+        final Observer observeHarvests = (o, arg) -> {
+            harvestUpdate(jobName, o, arg);
+        };
+        final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo,
+                h.valid);
+        final HarvestJob job = jobConfig.job(httpClient, mapper, executor,
+                jobName, specs, Collections.singletonList(observeHarvests));
+        job.addObserver((o, arg) -> jobUpdate(jobName, o, arg));
+        jobStatus.put(jobName, new JobStatus(dbi));
+        jobs.put(jobName, job);
+        try {
+            executor.submit(() -> {
+                MDC.put("jobName", jobName);
+                job.start();
+            });
+        } catch (final RejectedExecutionException e) {
+            return Response.status(Status.SERVICE_UNAVAILABLE).build();
+        }
+        return Response.created(new URI(PATH + jobName)).build();
     }
 
     @GET
@@ -213,7 +214,7 @@ public final class JobResource {
     @GET
     @Path("{jobID}")
     public Response status(final @PathParam("jobID") long jobID) {
-        Object status = jobStatus.get(jobID);
+        Object status = jobStatus.get(String.valueOf(jobID));
         if (status == null) {
             status = readStatusFromDatabase(jobID);
             if (status == null) {

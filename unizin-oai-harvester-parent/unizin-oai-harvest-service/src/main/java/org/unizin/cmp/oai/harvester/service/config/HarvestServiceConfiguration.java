@@ -35,6 +35,9 @@ public final class HarvestServiceConfiguration extends Configuration {
     @JsonProperty("h2Server")
     private H2ServerConfiguration h2Server = new H2ServerConfiguration();
 
+    @Valid
+    @JsonProperty("nuxeoClient")
+    private NuxeoClientConfiguration nuxeoClient = null;
 
     public DataSourceFactory getDataSourceFactory() {
         return dsFactory;
@@ -54,5 +57,9 @@ public final class HarvestServiceConfiguration extends Configuration {
 
     public H2ServerConfiguration getH2ServerConfiguration() {
         return h2Server;
+    }
+
+    public NuxeoClientConfiguration getNuxeoClientConfiguration() {
+        return nuxeoClient;
     }
 }

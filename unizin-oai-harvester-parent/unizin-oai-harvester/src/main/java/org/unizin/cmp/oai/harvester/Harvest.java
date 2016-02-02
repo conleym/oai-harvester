@@ -3,7 +3,6 @@ package org.unizin.cmp.oai.harvester;
 import java.net.URI;
 import java.time.Instant;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
@@ -24,10 +23,22 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  */
 final class Harvest {
 
+    /**
+     * Boolean flags associated with the harvest.
+     * <p>
+     * These are grouped solely because it makes implementation slightly simpler
+     * (in particular, it simplifies
+     * {@link HarvestNotification#HarvestNotification(HarvestNotificationType, Map, State, Exception, ResumptionToken, Instant, HarvestParams, Map, URI, SortedMap, Instant, Instant)}).
+     */
     static final class State {
         volatile boolean running;
         volatile boolean explicitlyStopped;
         volatile boolean cancelled;
+        /*
+         * Doesn't need to be volatile, because this is only written from the
+         * same thread in which the harvester runs, and other threads see only
+         * copies created by that same thread.
+         */
         boolean interrupted;
     }
 
@@ -36,7 +47,7 @@ final class Harvest {
     private final Map<String, String> tags;
     private final State state = new State();
     private HttpUriRequest request;
-    private SortedMap<String, String> requestParams;
+    private SortedMap<String, String> lastRequestParams;
     private Exception exception;
     /**
      * The resumption token from the last response, if any.
@@ -68,14 +79,14 @@ final class Harvest {
 
     HarvestNotification createNotification(
             final HarvestNotificationType type) {
-        final Map<HarvestStatistic, Long> stats = new HashMap<>(2);
+        final Map<HarvestStatistic, Long> stats = new TreeMap<>();
         stats.put(HarvestStatistic.REQUEST_COUNT, requestCount);
         stats.put(HarvestStatistic.RESPONSE_COUNT, responseCount);
         stats.put(HarvestStatistic.XML_EVENT_COUNT, xmlEventCount);
         final URI uri = (request == null) ? null : request.getURI();
         return new HarvestNotification(type, tags, state, exception,
                 resumptionToken, lastResponseDate, params, stats,
-                uri, requestParams, started, ended);
+                uri, lastRequestParams, started, ended);
     }
 
     void setLastResponseDate(final Instant lastResponseDate) {
@@ -101,16 +112,15 @@ final class Harvest {
      */
     Map<String, String> getRequestParameters() {
         if (resumptionToken != null) {
-            final Map<String, String> m = new HashMap<>();
-            m.put(OAIRequestParameter.RESUMPTION_TOKEN.paramName(),
+            lastRequestParams = new TreeMap<>();
+            lastRequestParams.put(OAIRequestParameter.RESUMPTION_TOKEN.paramName(),
                     resumptionToken.getToken());
-            m.put(OAI2Constants.VERB_PARAM_NAME,
+            lastRequestParams.put(OAI2Constants.VERB_PARAM_NAME,
                     params.getVerb().localPart());
-            requestParams = new TreeMap<>(m);
         } else {
-            requestParams = params.getParameters();
+            lastRequestParams = params.getParameters();
         }
-        return requestParams;
+        return lastRequestParams;
     }
 
     URI getBaseURI() {
