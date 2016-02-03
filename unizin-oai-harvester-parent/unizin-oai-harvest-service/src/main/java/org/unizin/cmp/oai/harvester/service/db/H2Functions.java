@@ -46,6 +46,14 @@ public final class H2Functions {
         }
     }
 
+    private static H2FunctionsJDBI h2DBI(final Handle h) {
+        return h.attach(H2FunctionsJDBI.class);
+    }
+
+    private static JobJDBI jobDBI(final Handle h) {
+        return h.attach(JobJDBI.class);
+    }
+
     /**
      * Create a new JOB row and a corresponding HARVEST row for each set of
      * harvest parameters supplied.
@@ -60,7 +68,7 @@ public final class H2Functions {
             final List<HarvestParams> params) {
         // Do not close the handle! causes exceptions.
         final Handle h = DBI.open(c);
-        final JobJDBI jdbi = h.attach(JobJDBI.class);
+        final JobJDBI jdbi = jobDBI(h);
         final long jobID = jdbi.createJob();
         final List<Long> harvestIDs = new ArrayList<>();
         params.forEach(x -> harvestIDs.add(createHarvest(c, jobID, x)));
@@ -82,10 +90,10 @@ public final class H2Functions {
             final long jobID, final HarvestParams params) {
         // Do not close the handle! causes exceptions.
         final Handle h = DBI.open(c);
-        final JobJDBI jdbi = h.attach(JobJDBI.class);
+        final JobJDBI jdbi = jobDBI(h);
         final long repositoryID = jdbi.findRepositoryIDByBaseURI(
                 params.getBaseURI().toString());
-        final H2FunctionsJDBI h2dbi = h.attach(H2FunctionsJDBI.class);
+        final H2FunctionsJDBI h2dbi = h2DBI(h);
         return h2dbi.createHarvest(jobID, repositoryID,
                 params.getParameters().toString(), params.getVerb());
     }
@@ -104,7 +112,7 @@ public final class H2Functions {
             final List<OAIError> errors) {
         // Do not close the handle! causes exceptions.
         final Handle h = DBI.open(c);
-        final H2FunctionsJDBI h2dbi = h.attach(H2FunctionsJDBI.class);
+        final H2FunctionsJDBI h2dbi = h2DBI(h);
         errors.forEach(e -> h2dbi.insertHarvestProtocolError(harvestID,
                 e.getMessage(), e.getErrorCodeString()));
     }
@@ -121,16 +129,52 @@ public final class H2Functions {
      */
     public static List<OAIError> readOAIErrors(final Connection c,
             final long harvestID) {
-       // Do not close the handle! causes exceptions.
-       final Handle h = DBI.open(c);
-       final H2FunctionsJDBI h2dbi = h.attach(H2FunctionsJDBI.class);
-       final List<OAIError> errors = new ArrayList<>();
-       h2dbi.readOAIErrors(harvestID).forEach(m -> {
-           errors.add(new OAIError(
-                   (String)m.get("HARVEST_PROTOCOL_ERROR_CODE"),
-                   (String)m.get("HARVEST_PROTOCOL_ERROR_MESSAGE")));
-       });
-       return errors;
+        // Do not close the handle! causes exceptions.
+        final Handle h = DBI.open(c);
+        final H2FunctionsJDBI h2dbi = h2DBI(h);
+        final List<OAIError> errors = new ArrayList<>();
+        h2dbi.readOAIErrors(harvestID).forEach(m -> {
+            errors.add(new OAIError(
+                    (String)m.get("HARVEST_PROTOCOL_ERROR_CODE"),
+                    (String)m.get("HARVEST_PROTOCOL_ERROR_MESSAGE")));
+        });
+        return errors;
+    }
+
+    /**
+     * Updates the REPOSITORY table.
+     * <p>
+     * This function uses
+     * <a href="http://jdbi.org/sql_object_api_batching/">JDBI object
+     * batching</a>. Each column to be updated is represented by a separate
+     * list, with the elements of each list at index <i>i</i> corresponding to
+     * the elements of the <i>i<sup>th</sup></i> row.
+     * </p>
+     * <p>
+     * The given rows are inserted into a temporary table, which is then
+     * compared against the existing REPOSITORY entries. Those present only in
+     * REPOSITORY are disabled, those present only in the temporary table are
+     * added (enabled), and those present in both are updated.
+     * </p>
+     *
+     * @param c
+     *            the database connection (supplied by H2).
+     * @param names
+     *            the name of each repository, in order.
+     * @param baseURIs
+     *            the base URI of each repository, in order.
+     * @param institutions
+     *            the institution of each repository, in order.
+     */
+    public static void updateRepositories(final Connection c,
+            final List<String> names, final List<String> baseURIs,
+            final List<String> institutions) {
+        final Handle h = DBI.open(c);
+        final H2FunctionsJDBI h2dbi = h2DBI(h);
+        h2dbi.createReposTempTable();
+        h2dbi.addReposToTempTable(names, baseURIs, institutions);
+        h2dbi.disableReposNotInNuxeo();
+        h2dbi.addNewRepos();
     }
 
     /** No instances allowed. */

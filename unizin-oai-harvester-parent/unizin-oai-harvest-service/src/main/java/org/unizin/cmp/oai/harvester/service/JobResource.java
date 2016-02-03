@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response.Status;
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.HashPrefixStatementRewriter;
 import org.slf4j.MDC;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
@@ -42,6 +41,7 @@ import org.unizin.cmp.oai.harvester.job.JobHarvestSpec;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
+import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
 import org.unizin.cmp.oai.harvester.service.db.H2Functions.JobInfo;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -84,8 +84,7 @@ public final class JobResource {
     }
 
     private JobInfo createJob(final List<HarvestParams> harvests) {
-        try (final Handle handle = dbi.open()) {
-            handle.setStatementRewriter(new HashPrefixStatementRewriter());
+        try (final Handle handle = DBIUtils.handle(dbi)) {
             return handle.createCall("#info = call CREATE_JOB(#paramList)")
                     .bind("paramList", harvests)
                     .registerOutParameter("info", Types.OTHER)

@@ -1,6 +1,6 @@
 database:
   driverClass: org.h2.Driver
-  url: jdbc:h2:/tmp/oai-harvester-database;JMX=true
+  url: jdbc:h2:/tmp/oai-harvester-database;JMX=true;AUTO_RECONNECT=true
   user: user
   password: password
   validationQuery: SELECT 1
@@ -14,8 +14,8 @@ database:
   checkConnectionOnReturn: true
   autoCommentsEnabled: false
 
-#h2Server:
-#  jdbcPort: 6767
+h2Server:
+  jdbcPort: 6767
   # The web server really shouldn't be run in production, but can be useful for testing.
 #  webPort: 6969
 

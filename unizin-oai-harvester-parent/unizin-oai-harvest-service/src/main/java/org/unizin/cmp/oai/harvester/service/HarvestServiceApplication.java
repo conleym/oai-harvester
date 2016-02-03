@@ -3,13 +3,17 @@ package org.unizin.cmp.oai.harvester.service;
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.HttpClient;
+import org.skife.jdbi.v2.Call;
 import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
@@ -17,6 +21,7 @@ import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.NuxeoClientConfiguration;
+import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
 import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
@@ -124,8 +129,19 @@ extends Application<HarvestServiceConfiguration> {
         }
     }
 
+    private void addRepo(final DBI dbi, final Map<String, Object> entry,
+            final List<String> names, final List<String> baseURIs,
+            final List<String> institutions) {
+        @SuppressWarnings("unchecked")
+        final Map<String, Object> props =
+                (Map<String, Object>)entry.get("properties");
+        names.add((String)props.get("dc:title"));
+        baseURIs.add((String)props.get("repo:baseUrl"));
+        institutions.add((String)props.get("repo:owner"));
+    }
+
     private void setupNuxeoClient(final HarvestServiceConfiguration conf,
-            final Environment env, final DBI jdbi) throws Exception {
+            final Environment env, final DBI dbi) throws Exception {
         final NuxeoClientConfiguration nxconf =
                 conf.getNuxeoClientConfiguration();
         if (nxconf == null) {
@@ -138,10 +154,29 @@ extends Application<HarvestServiceConfiguration> {
         final Runnable r = () -> {
             try {
                 LOGGER.info("Getting repositories from Nuxeo.");
-                // TODO update the database instead of dumping to log.
-                for (final Object o : client.repositories()) {
-                    LOGGER.info("Page: {}", o);
+                // Accumulate all the info we're interested in, then call the
+                // update function.
+                final List<String> names = new ArrayList<>();
+                final List<String> uris = new ArrayList<>();
+                final List<String> institutions = new ArrayList<>();
+                client.repositories().forEach(page -> {
+                    @SuppressWarnings("unchecked")
+                    final List<Map<String, Object>> entries =
+                            (List<Map<String, Object>>)page.get("entries");
+                    entries.forEach(entry -> {
+                        addRepo(dbi, entry, names, uris, institutions);
+                    });
+                });
+                try (final Handle h = DBIUtils.handle(dbi)) {
+                    final Call c = h.createCall(
+                            "call UPDATE_REPOSITORIES(#names, #uris, " +
+                            "#institutions)");
+                    c.bind("names", names)
+                        .bind("uris", uris)
+                        .bind("institutions", institutions);
+                    c.invoke();
                 }
+                LOGGER.info("Done updating repositories.");
             } catch (final Exception e) {
                 /* Uncaught exceptions will cause the scheduler to stop running
                  * this task, so catch them all. */
@@ -165,8 +200,8 @@ extends Application<HarvestServiceConfiguration> {
         final DynamoDBConfiguration dynamo = conf.getDynamoDBConfiguration();
         createMapper(dynamo);
         createDynamoDBTable(dynamo);
-        startH2Servers(conf, env);
         setupNuxeoClient(conf, env, jdbi);
+        startH2Servers(conf, env);
         final JobResource jr = new JobResource(jdbi,
                 conf.getJobConfiguration(), httpClient, dynamoDBMapper,
                 executor);

@@ -30,6 +30,7 @@ import org.unizin.cmp.oai.harvester.exception.HarvesterHTTPStatusException;
 import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
 import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobStatistic;
+import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
 import org.unizin.cmp.oai.harvester.service.db.JobJDBI;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -151,7 +152,7 @@ public final class JobStatus {
     }
 
     public boolean loadFromDB(final long jobID) {
-        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
+        try (final JobJDBI jdbi = DBIUtils.jobDBI(dbi)) {
             return loadFromResults(jdbi.findJobByID(jobID));
         }
     }
@@ -264,7 +265,7 @@ public final class JobStatus {
                 Optional.empty(), Optional.empty(), oaiErrors);
         // Update running harvest status.
         lastHarvestNotifications.put(harvestName, status);
-        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
+        try (final JobJDBI jdbi = DBIUtils.jobDBI(dbi)) {
             jdbi.harvestDatabaseUpdate(harvestID, lastRequestURI,
                     lastRequestParameters, stackTrace, notification, LOGGER);
         } catch (final Exception e) {
@@ -300,7 +301,7 @@ public final class JobStatus {
         lastJobNotification = status;
 
         // Update the database.
-        try (final JobJDBI jdbi = dbi.open(JobJDBI.class)) {
+        try (final JobJDBI jdbi = DBIUtils.jobDBI(dbi)) {
             jdbi.updateJob(Long.valueOf(notification.getJobName()),
                     notification.getStarted(), notification.getEnded(),
                     stackTrace,
