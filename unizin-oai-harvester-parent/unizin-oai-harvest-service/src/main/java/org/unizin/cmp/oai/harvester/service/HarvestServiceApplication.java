@@ -53,7 +53,6 @@ extends Application<HarvestServiceConfiguration> {
 
     private AmazonDynamoDB dynamoDBClient;
     private DynamoDBMapper dynamoDBMapper;
-    private ObjectMapper objectMapper;
 
     @Override
     public void initialize(
@@ -68,7 +67,7 @@ extends Application<HarvestServiceConfiguration> {
                         return configuration.getDataSourceFactory();
                     }
                 });
-        objectMapper = bootstrap.getObjectMapper();
+        final ObjectMapper objectMapper = bootstrap.getObjectMapper();
         final SimpleModule m = new SimpleModule();
         m.addSerializer(new JsonSerializer<Blob>() {
             @Override
@@ -133,7 +132,7 @@ extends Application<HarvestServiceConfiguration> {
                  "will not be read from Nuxeo.");
             return;
         }
-        final NuxeoClient client = nxconf.client(env, objectMapper);
+        final NuxeoClient client = nxconf.client(env);
         final ScheduledExecutorService ses = nxconf.executorService(env);
         ses.scheduleAtFixedRate(new RepositoryUpdater(client, dbi), 0,
                 nxconf.getPeriodMillis(), TimeUnit.MILLISECONDS);

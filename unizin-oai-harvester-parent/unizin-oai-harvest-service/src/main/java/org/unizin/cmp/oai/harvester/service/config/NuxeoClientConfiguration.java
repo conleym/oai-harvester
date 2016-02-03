@@ -11,7 +11,6 @@ import org.apache.http.client.HttpClient;
 import org.unizin.cmp.oai.harvester.service.NuxeoClient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.setup.Environment;
@@ -45,13 +44,12 @@ public final class NuxeoClientConfiguration {
         new HarvestHttpClientConfiguration();
 
 
-    public NuxeoClient client(final Environment env,
-            final ObjectMapper mapper) {
+    public NuxeoClient client(final Environment env) {
         final HttpClientBuilder builder = new HarvestHttpClientBuilder(env)
                 .using(httpClient);
         final HttpClient httpClient = builder.build(NAME);
-        return new NuxeoClient(mapper, httpClient, nuxeoURI, user, password,
-                pageSize);
+        return new NuxeoClient(env.getObjectMapper(), httpClient, nuxeoURI,
+                user, password, pageSize);
     }
 
     public ScheduledExecutorService executorService(final Environment env) {
