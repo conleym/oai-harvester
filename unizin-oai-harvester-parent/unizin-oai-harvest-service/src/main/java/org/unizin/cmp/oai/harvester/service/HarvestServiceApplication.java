@@ -5,8 +5,6 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
@@ -132,10 +130,11 @@ extends Application<HarvestServiceConfiguration> {
                  "will not be read from Nuxeo.");
             return;
         }
-        final NuxeoClient client = nxconf.client(env);
-        final ScheduledExecutorService ses = nxconf.executorService(env);
-        ses.scheduleAtFixedRate(new RepositoryUpdater(client, dbi), 0,
-                nxconf.getPeriodMillis(), TimeUnit.MILLISECONDS);
+        if (!nxconf.isScheduleEnabled()) {
+            LOGGER.warn("Scheduled repository updates are disabled.");
+               return;
+        }
+        nxconf.schedule(env, dbi);
     }
 
     @Override

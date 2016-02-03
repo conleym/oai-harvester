@@ -1,0 +1,68 @@
+database:
+  driverClass: org.h2.Driver
+  url: jdbc:h2:/tmp/test-harvester-database;AUTO_RECONNECT=true
+  user: user
+  password: password
+  validationQuery: SELECT 1
+  validationQueryTimeout: 1s
+  logValidationErrors: true
+  minSize: 2
+  maxSize: 32
+  maxWaitForConnection: 1s
+  checkConnectionOnBorrow: true
+  checkConnectionOnConnect: true
+  checkConnectionOnReturn: true
+  autoCommentsEnabled: false
+
+job:
+  batchSize: 15
+  minThreads: 100
+  maxThreads: 1000
+  recordQueueCapacity: 100
+  workQueueCapacity: 1
+
+httpClient:
+  maxConnections: 2048
+  maxConnectionsPerRoute: 256
+  connectionRequestTimeout: 5s
+  connectionTimeout: 5s
+  timeout: 30s
+  defaultHeaders:
+    from: dev@unizin.org
+
+dynamoDB:
+  endpoint: config override goes here.
+  awsAccessKey: key
+  awsAccessKeyID: asdf
+  provisionedReadCapacity: 1
+  provisionedWriteCapacity: 1
+  recordMapper:
+    tableNameOverride: AppTestingTable
+
+nuxeoClient:
+  nuxeoURI: config override goes here.
+  user: Administrator
+  password: Administrator
+  pageSize: 2
+  scheduleEnabled: false
+  httpClient:
+    defaultHeaders:
+      X-NXDocumentProperties: dublincore,remoterepository
+    tls:
+      trustSelfSignedCertificates: true
+
+server:
+    applicationConnectors:
+      - type: http
+        port: 9080
+    adminConnectors:
+      - type: http
+        port: 9081
+
+logging:
+  level: INFO
+  appenders:
+    - type: console
+      threshold: TRACE
+      target: stdout
+      logFormat: "%level [%date][%thread][%mdc] %logger: %message %n%rEx"

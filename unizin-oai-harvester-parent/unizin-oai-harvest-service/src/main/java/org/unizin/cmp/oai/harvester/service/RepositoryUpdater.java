@@ -11,14 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
 
-final class RepositoryUpdater implements Runnable {
+public final class RepositoryUpdater implements Runnable {
     private final Logger LOGGER = LoggerFactory.getLogger(
             RepositoryUpdater.class);
 
     private final NuxeoClient nuxeoClient;
     private final DBI dbi;
 
-    RepositoryUpdater(final NuxeoClient nuxeoClient, final DBI dbi) {
+    public RepositoryUpdater(final NuxeoClient nuxeoClient, final DBI dbi) {
         this.nuxeoClient = nuxeoClient;
         this.dbi = dbi;
     }
