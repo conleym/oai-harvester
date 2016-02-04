@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
+import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.NuxeoClientConfiguration;
 import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
@@ -43,7 +44,6 @@ extends Application<HarvestServiceConfiguration> {
     private static final String HTTP_CLIENT_NAME =
             "HarvestService HTTP Client";
     private static final String DBI_NAME = "HarvestService Database Connection";
-
 
     @Override
     public void initialize(
@@ -125,17 +125,17 @@ extends Application<HarvestServiceConfiguration> {
         final HttpClient httpClient = new HarvestHttpClientBuilder(env)
                 .using(conf.getHttpClientConfiguration())
                 .build(HTTP_CLIENT_NAME);
-        final ExecutorService executor = conf.getJobConfiguration()
-                .executorService(env);
+        final HarvestJobConfiguration jobConfig = conf.getJobConfiguration();
+        final ExecutorService executor = jobConfig.executorService(env);
         final DynamoDBConfiguration dynamoConfig =
                 conf.getDynamoDBConfiguration();
         final DynamoDBClient dynamoDBClient = dynamoConfig.build();
         createDynamoDBTable(dynamoConfig, dynamoDBClient);
         setupNuxeoClient(conf, env, dbi);
         startH2Servers(conf, env);
-        final JobResource jr = new JobResource(dbi,
-                conf.getJobConfiguration(), httpClient,
-                dynamoDBClient.getMapper(), executor);
+        final JobManager jobManager = new JobManager(jobConfig, httpClient,
+                dynamoDBClient, dbi);
+        final JobResource jr = new JobResource(dbi, jobManager, executor);
         env.jersey().register(jr);
     }
 

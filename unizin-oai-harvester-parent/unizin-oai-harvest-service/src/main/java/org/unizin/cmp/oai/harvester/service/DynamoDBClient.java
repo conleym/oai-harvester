@@ -33,10 +33,15 @@ public class DynamoDBClient {
         dynamoDB.createTable(req);
     }
 
-    public void setProvisionedWriteCapacity(final long writeCapacity) {
+    public void setWriteCapacity(final long writeCapacity) {
         final ProvisionedThroughput throughput = new ProvisionedThroughput();
         throughput.setWriteCapacityUnits(writeCapacity);
         dynamoDB.updateTable(tableName, throughput);
+    }
+
+    public long getWriteCapacity() {
+        return dynamoDB.describeTable(tableName)
+                .getTable().getProvisionedThroughput().getWriteCapacityUnits();
     }
 
     public DynamoDBMapper getMapper() {
