@@ -8,6 +8,8 @@ import javax.validation.constraints.NotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
+import org.unizin.cmp.oai.harvester.service.DynamoDBClient;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -45,6 +47,11 @@ public class DynamoDBConfiguration {
             }
             return new DynamoDBMapper(client, config.build());
         }
+
+        boolean hasTableNameOverride() {
+            return tableNameOverride != null &&
+                    !"".equals(tableNameOverride.trim());
+        }
     }
 
     @JsonProperty
@@ -71,9 +78,10 @@ public class DynamoDBConfiguration {
     @Valid
     @NotNull
     private DynamoDBMapperConfiguration recordMapper =
-    new DynamoDBMapperConfiguration();
+        new DynamoDBMapperConfiguration();
 
-    public AmazonDynamoDB build() {
+
+    private AmazonDynamoDB buildDDB() {
         AWSCredentialsProvider provider = null;
         if (awsAccessKeyID == null || awsAccessKey == null) {
             LOGGER.info("Secret keys not defined in configuration. Trying" +
@@ -94,12 +102,16 @@ public class DynamoDBConfiguration {
         return db;
     }
 
-    public DynamoDBMapperConfiguration getRecordMapperConfiguration() {
-        return recordMapper;
-    }
-
     public ProvisionedThroughput buildThroughput() {
         return new ProvisionedThroughput(provisionedReadCapacity,
                 provisionedWriteCapacity);
+    }
+
+    public DynamoDBClient build() {
+        final AmazonDynamoDB ddb = buildDDB();
+        final DynamoDBMapper mapper = recordMapper.build(ddb);
+        final String tableName = recordMapper.hasTableNameOverride() ?
+                recordMapper.tableNameOverride : HarvestedOAIRecord.TABLE_NAME;
+        return new DynamoDBClient(tableName, ddb, mapper);
     }
 }

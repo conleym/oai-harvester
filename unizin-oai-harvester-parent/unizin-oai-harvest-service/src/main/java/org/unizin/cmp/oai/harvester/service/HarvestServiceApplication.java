@@ -10,20 +10,14 @@ import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
 import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.NuxeoClientConfiguration;
 import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
-import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.amazonaws.services.dynamodbv2.model.ResourceInUseException;
-import com.amazonaws.services.dynamodbv2.model.StreamSpecification;
-import com.amazonaws.services.dynamodbv2.model.StreamViewType;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -48,9 +42,8 @@ extends Application<HarvestServiceConfiguration> {
             HarvestServiceApplication.class);
     private static final String HTTP_CLIENT_NAME =
             "HarvestService HTTP Client";
+    private static final String DBI_NAME = "HarvestService Database Connection";
 
-    private AmazonDynamoDB dynamoDBClient;
-    private DynamoDBMapper dynamoDBMapper;
 
     @Override
     public void initialize(
@@ -87,24 +80,11 @@ extends Application<HarvestServiceConfiguration> {
         objectMapper.registerModule(m);
     }
 
-    private void createMapper(
-            final DynamoDBConfiguration configuration) {
-        dynamoDBClient = configuration.build();
-        dynamoDBMapper = configuration.getRecordMapperConfiguration().build(
-                dynamoDBClient);
-    }
-
-    private void createDynamoDBTable(final DynamoDBConfiguration config) {
+    private static void createDynamoDBTable(final DynamoDBConfiguration config,
+            final DynamoDBClient dynamoDBClient) {
         final ProvisionedThroughput throughput = config.buildThroughput();
-        final StreamSpecification streamSpec = new StreamSpecification()
-                .withStreamEnabled(true)
-                .withStreamViewType(StreamViewType.NEW_AND_OLD_IMAGES);
-        final CreateTableRequest req = dynamoDBMapper
-                .generateCreateTableRequest(HarvestedOAIRecord.class)
-                .withProvisionedThroughput(throughput)
-                .withStreamSpecification(streamSpec);
         try {
-            dynamoDBClient.createTable(req);
+            dynamoDBClient.createTable(throughput);
         } catch (final ResourceInUseException e) {
             LOGGER.warn("Exception creating DynamoDB table. It probably "
                     + "already exists.", e);
@@ -141,20 +121,21 @@ extends Application<HarvestServiceConfiguration> {
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
         final DBI dbi = new DBIFactory().build(env,
-                conf.getDataSourceFactory(), "database");
+                conf.getDataSourceFactory(), DBI_NAME);
         final HttpClient httpClient = new HarvestHttpClientBuilder(env)
                 .using(conf.getHttpClientConfiguration())
                 .build(HTTP_CLIENT_NAME);
         final ExecutorService executor = conf.getJobConfiguration()
                 .executorService(env);
-        final DynamoDBConfiguration dynamo = conf.getDynamoDBConfiguration();
-        createMapper(dynamo);
-        createDynamoDBTable(dynamo);
+        final DynamoDBConfiguration dynamoConfig =
+                conf.getDynamoDBConfiguration();
+        final DynamoDBClient dynamoDBClient = dynamoConfig.build();
+        createDynamoDBTable(dynamoConfig, dynamoDBClient);
         setupNuxeoClient(conf, env, dbi);
         startH2Servers(conf, env);
         final JobResource jr = new JobResource(dbi,
-                conf.getJobConfiguration(), httpClient, dynamoDBMapper,
-                executor);
+                conf.getJobConfiguration(), httpClient,
+                dynamoDBClient.getMapper(), executor);
         env.jersey().register(jr);
     }
 
