@@ -49,9 +49,9 @@ public final class TestRepositoryUpdate {
                 "REPOSITORY_INSTITUTION", institution);
     }
 
+    private static final String REPO_UPDATE_SCENARIO = "repo update";
     private static final String IU_BASE_URI =
             "http://scholarworks.iu.edu/dspace-oai/request";
-    private static final String REPO_UPDATE_SCENARIO = "repo update";
     private static final Collection<String> IGNORED_KEYS = Arrays.asList(
             "REPOSITORY_ID", "REPOSITORY_ENABLED");
     private static final Map<String, String> IU_EXPECTED = repoMap(
@@ -60,12 +60,14 @@ public final class TestRepositoryUpdate {
     private static final Map<String, String> OREGON_EXPECTED = repoMap(
             "http://ir.library.oregonstate.edu/oai/request",
             "ScholarsArchive@OSU", "Oregon State University");
+    private static final Map<String, String> IOWA_EXPECTED = repoMap(
+            "http://ir.uiowa.edu/do/oai/", "Iowa Research Online",
+            "University of Iowa");
     private static final Map<String, Map<String, String>> EXPECTED_BY_URI =
             ImmutableMap.of(
-                    IU_EXPECTED.get("REPOSITORY_BASE_URI"),
-                    IU_EXPECTED,
-                    OREGON_EXPECTED.get("REPOSITORY_BASE_URI"),
-                    OREGON_EXPECTED);
+                    baseURI(IU_EXPECTED), IU_EXPECTED,
+                    baseURI(OREGON_EXPECTED), OREGON_EXPECTED,
+                    baseURI(IOWA_EXPECTED), IOWA_EXPECTED);
 
     private static List<Map<String, Object>> readRepositories() {
         try (final Handle h = DBIUtils.handle(lazy.dbi())) {
@@ -146,10 +148,18 @@ public final class TestRepositoryUpdate {
                         .withStatus(HttpStatus.SC_OK)
                         .withBodyFile("nuxeo/first-nuxeo-response.json")));
 
+        stubFor(get(urlPathEqualTo(ServiceTests.MOCK_NUXEO_URI.getPath()))
+                .inScenario(REPO_UPDATE_SCENARIO)
+                .whenScenarioStateIs("4")
+                .willSetStateTo("5")
+                .willReturn(aResponse()
+                        .withStatus(HttpStatus.SC_OK)
+                        .withBodyFile("nuxeo/third-nuxeo-response.json")));
+
         runWithInitialExpectations();
 
         lazy.repositoryUpdater().update();
-        final List<Map<String, Object>> repos = readRepositories();
+        List<Map<String, Object>> repos = readRepositories();
         Assert.assertEquals(2, repos.size());
         repos.forEach(map -> {
             final String baseURI = baseURI(map);
@@ -165,6 +175,14 @@ public final class TestRepositoryUpdate {
         });
 
         runWithInitialExpectations();
+
+        lazy.repositoryUpdater().update();
+        repos = readRepositories();
+        Assert.assertEquals(3, repos.size());
+        repos.forEach(map -> {
+            compareResults(map);
+            Assert.assertTrue("Repository should be enabled.", enabled(map));
+        });
     }
 
     /**
