@@ -1,0 +1,63 @@
+{
+  "entity-type": "documents",
+  "isPaginable": true,
+  "resultsCount": 1,
+  "pageSize": 100,
+  "maxPageSize": 0,
+  "currentPageSize": 1,
+  "currentPageIndex": 0,
+  "numberOfPages": 1,
+  "isPreviousPageAvailable": false,
+  "isNextPageAvailable": false,
+  "isLastPageAvailable": false,
+  "isSortable": true,
+  "hasError": false,
+  "errorMessage": null,
+  "totalSize": 1,
+  "pageIndex": 0,
+  "pageCount": 1,
+  "entries": [
+    {
+      "entity-type": "document",
+      "repository": "default",
+      "uid": "4d49c55e-00f2-4243-b86a-6a0266f7e114",
+      "path": "/default-domain/Remote Repositories/IUScholarWorks Repository",
+      "type": "RemoteRepository",
+      "state": "undefined",
+      "parentRef": "1c089411-ab74-491c-a68e-7abab72c2b40",
+      "isCheckedOut": true,
+      "changeToken": "1454449844542",
+      "title": "IUScholarWorks Repository",
+      "lastModified": "2016-02-02T21:50:44.54Z",
+      "properties": {
+        "dc:description": null,
+        "dc:language": null,
+        "dc:coverage": null,
+        "dc:valid": null,
+        "dc:creator": "Administrator",
+        "dc:modified": "2016-02-02T21:50:44.54Z",
+        "dc:lastContributor": "Administrator",
+        "dc:rights": null,
+        "dc:expired": null,
+        "dc:format": null,
+        "dc:created": "2016-02-02T21:50:44.54Z",
+        "dc:title": "IUScholarWorks Repository",
+        "dc:issued": null,
+        "dc:nature": null,
+        "dc:subjects": [],
+        "dc:contributors": [
+          "Administrator"
+        ],
+        "dc:source": null,
+        "dc:publisher": null,
+        "repo:baseUrl": "http://scholarworks.iu.edu/dspace-oai/request",
+        "repo:owner": "Indiana University 2",
+        "repo:contact": "",
+        "repo:statusColor": "Green",
+        "repo:name": "IUScholarWorks Repository",
+        "repo:statusDescription": null
+      },
+      "facets": []
+    }
+  ]
+}

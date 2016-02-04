@@ -34,33 +34,37 @@ public final class RepositoryUpdater implements Runnable {
         institutions.add((String)props.get("repo:owner"));
     }
 
+    public void update() {
+        LOGGER.info("Getting repositories from Nuxeo.");
+        // Accumulate all the info we're interested in, then call the
+        // update function.
+        final List<String> names = new ArrayList<>();
+        final List<String> uris = new ArrayList<>();
+        final List<String> institutions = new ArrayList<>();
+        nuxeoClient.repositories().forEach(page -> {
+            @SuppressWarnings("unchecked")
+            final List<Map<String, Object>> entries =
+            (List<Map<String, Object>>)page.get("entries");
+            entries.forEach(entry -> {
+                addRepo(dbi, entry, names, uris, institutions);
+            });
+        });
+        try (final Handle h = DBIUtils.handle(dbi)) {
+            final Call c = h.createCall(
+                    "call UPDATE_REPOSITORIES(#names, #uris, " +
+                    "#institutions)");
+            c.bind("names", names)
+             .bind("uris", uris)
+             .bind("institutions", institutions)
+             .invoke();
+        }
+        LOGGER.info("Done updating repositories.");
+    }
+
     @Override
     public void run() {
         try {
-            LOGGER.info("Getting repositories from Nuxeo.");
-            // Accumulate all the info we're interested in, then call the
-            // update function.
-            final List<String> names = new ArrayList<>();
-            final List<String> uris = new ArrayList<>();
-            final List<String> institutions = new ArrayList<>();
-            nuxeoClient.repositories().forEach(page -> {
-                @SuppressWarnings("unchecked")
-                final List<Map<String, Object>> entries =
-                (List<Map<String, Object>>)page.get("entries");
-                entries.forEach(entry -> {
-                    addRepo(dbi, entry, names, uris, institutions);
-                });
-            });
-            try (final Handle h = DBIUtils.handle(dbi)) {
-                final Call c = h.createCall(
-                        "call UPDATE_REPOSITORIES(#names, #uris, " +
-                        "#institutions)");
-                c.bind("names", names)
-                 .bind("uris", uris)
-                 .bind("institutions", institutions)
-                 .invoke();
-            }
-            LOGGER.info("Done updating repositories.");
+            update();
         } catch (final Exception e) {
             /* Uncaught exceptions will cause the scheduler to stop running
              * this task, so catch them all. */

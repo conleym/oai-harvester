@@ -132,7 +132,7 @@ extends Application<HarvestServiceConfiguration> {
         }
         if (!nxconf.isScheduleEnabled()) {
             LOGGER.warn("Scheduled repository updates are disabled.");
-               return;
+            return;
         }
         nxconf.schedule(env, dbi);
     }

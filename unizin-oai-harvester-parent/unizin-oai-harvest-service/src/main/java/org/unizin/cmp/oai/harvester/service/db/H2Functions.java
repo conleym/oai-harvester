@@ -172,9 +172,12 @@ public final class H2Functions {
         final Handle h = DBI.open(c);
         final H2FunctionsJDBI h2dbi = h2DBI(h);
         h2dbi.createReposTempTable();
+        // It's somewhat troubling that this is required to make the test work.
+        // local temporary tables shouldn't survive their connections, right?
+        h2dbi.clearTempTable();
         h2dbi.addReposToTempTable(names, baseURIs, institutions);
         h2dbi.disableReposNotInNuxeo();
-        h2dbi.addNewRepos();
+        h2dbi.mergeNuxeoUpdates();
     }
 
     /** No instances allowed. */

@@ -56,7 +56,7 @@ abstract class H2FunctionsJDBI {
 
 
     private static final String CREATE_REPOSITORY_TMP = "create local " +
-            "temporary table " + REPO_TMP_TBL + "(" +
+            "temporary table if not exists " + REPO_TMP_TBL + "(" +
             "REPOSITORY_BASE_URI varchar(1024), " +
             "REPOSITORY_NAME varchar(1024), " +
             "REPOSITORY_INSTITUTION varchar(1024)" +
@@ -64,6 +64,8 @@ abstract class H2FunctionsJDBI {
     @SqlUpdate(CREATE_REPOSITORY_TMP)
     abstract void createReposTempTable();
 
+    @SqlUpdate("delete from " + REPO_TMP_TBL)
+    abstract void clearTempTable();
 
     private static final String REPOSITORY_TMP_INSERT = "insert into " +
             REPO_TMP_TBL + "(REPOSITORY_NAME, REPOSITORY_BASE_URI, " +
@@ -83,8 +85,10 @@ abstract class H2FunctionsJDBI {
 
 
     private static final String UPDATE_REPOS = "merge into REPOSITORY(" +
-            "REPOSITORY_BASE_URI, REPOSITORY_NAME, REPOSITORY_INSTITUTION) " +
-            " key (REPOSITORY_BASE_URI) (select * from " + REPO_TMP_TBL + ")";
+            "REPOSITORY_BASE_URI, REPOSITORY_NAME, REPOSITORY_INSTITUTION, " +
+            "REPOSITORY_ENABLED) key (REPOSITORY_BASE_URI) " +
+            "(select T.*, true as REPOSITORY_ENABLED from " + REPO_TMP_TBL +
+            " T)";
     @SqlUpdate(UPDATE_REPOS)
-    abstract void addNewRepos();
+    abstract void mergeNuxeoUpdates();
 }
