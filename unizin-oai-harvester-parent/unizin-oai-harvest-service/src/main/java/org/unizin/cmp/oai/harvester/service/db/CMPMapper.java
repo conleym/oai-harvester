@@ -36,7 +36,7 @@ import com.google.common.io.CharStreams;
  */
 public final class CMPMapper
 implements ResultSetMapper<Map<String, Object>> {
-    private static final String toUpper(final String str) {
+    private static String toUpper(final String str) {
         return str == null ? null : str.toUpperCase();
     }
 
@@ -57,7 +57,7 @@ implements ResultSetMapper<Map<String, Object>> {
      * @throws SQLException
      *             if there's an error reading the clob from the database.
      */
-    private static final String fromClob(final Clob clob,
+    private static String fromClob(final Clob clob,
             final StatementContext ctx) throws SQLException {
         try (final Reader reader = clob.getCharacterStream()) {
             return CharStreams.toString(reader);

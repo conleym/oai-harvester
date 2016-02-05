@@ -23,12 +23,12 @@ public final class RepositoryUpdater implements Runnable {
         this.dbi = dbi;
     }
 
-    private void addRepo(final DBI dbi, final Map<String, Object> entry,
+    private void addRepo(final Map<String, Object> entry,
             final List<String> names, final List<String> baseURIs,
             final List<String> institutions) {
         @SuppressWarnings("unchecked")
         final Map<String, Object> props =
-        (Map<String, Object>)entry.get("properties");
+            (Map<String, Object>)entry.get("properties");
         names.add((String)props.get("dc:title"));
         baseURIs.add((String)props.get("repo:baseUrl"));
         institutions.add((String)props.get("repo:owner"));
@@ -46,7 +46,7 @@ public final class RepositoryUpdater implements Runnable {
             final List<Map<String, Object>> entries =
             (List<Map<String, Object>>)page.get("entries");
             entries.forEach(entry -> {
-                addRepo(dbi, entry, names, uris, institutions);
+                addRepo(entry, names, uris, institutions);
             });
         });
         try (final Handle h = DBIUtils.handle(dbi)) {
