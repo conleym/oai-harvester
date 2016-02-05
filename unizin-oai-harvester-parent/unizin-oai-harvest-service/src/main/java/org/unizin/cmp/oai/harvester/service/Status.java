@@ -19,7 +19,7 @@ import org.unizin.cmp.oai.ResumptionToken;
 /**
  * Utilities for creating status service responses.
  */
-final class Status {
+public final class Status {
     private static <T, U> Optional<U> withOptional(final Optional<T> t,
             final Function<T, U> fun) {
         if (t.isPresent()) {
@@ -145,7 +145,7 @@ final class Status {
      * @return an array containing the string representation of each
      *         corresponding header.
      */
-    static String[] formatHeaders(final Header[] headers) {
+    public static String[] formatHeaders(final Header[] headers) {
         final Comparator<Header> cmp = (a, b) -> {
             return b.getName().compareTo(b.getName());
         };
@@ -164,7 +164,7 @@ final class Status {
      * @return the value of the header, or an empty optional if the header is
      *         {@code null}.
      */
-    static Optional<String> headerValue(final Header h) {
+    public static Optional<String> headerValue(final Header h) {
         if (h == null) {
             return Optional.empty();
         }

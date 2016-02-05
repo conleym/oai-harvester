@@ -34,10 +34,13 @@ call DROP_ALL_ALIASES();
 --------------------------------
 
 create alias CREATE_JOB for
-       "org.unizin.cmp.oai.harvester.service.H2Functions.createJob";
+ "org.unizin.cmp.oai.harvester.service.db.H2Functions.createJob";
 
 create alias INSERT_OAI_ERRORS for
- "org.unizin.cmp.oai.harvester.service.H2Functions.insertOAIErrors";
+ "org.unizin.cmp.oai.harvester.service.db.H2Functions.insertOAIErrors";
 
 create alias OAI_ERRORS for
- "org.unizin.cmp.oai.harvester.service.H2Functions.readOAIErrors";
+ "org.unizin.cmp.oai.harvester.service.db.H2Functions.readOAIErrors";
+
+create alias UPDATE_REPOSITORIES for
+ "org.unizin.cmp.oai.harvester.service.db.H2Functions.updateRepositories";

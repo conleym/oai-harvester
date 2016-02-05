@@ -102,7 +102,7 @@
       <plugin>
         <groupId>com.jcabi</groupId>
         <artifactId>jcabi-dynamodb-maven-plugin</artifactId>
-        <version>0.7.1</version>
+        <version>0.7.2</version>
         <configuration>
           <port>${dynamodblocal.port}</port>
           <dist>${project.build.directory}/dynamodb-dist</dist>
@@ -230,6 +230,12 @@
       <version>${dropwizard.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-testing</artifactId>
+      <version>${dropwizard.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <version>1.4.190</version>
@@ -258,6 +264,7 @@
       <groupId>com.github.tomakehurst</groupId>
       <artifactId>wiremock</artifactId>
     </dependency>
+    <!-- These should be removed when we upgrade to dropwizard 1.0. -->
     <dependency>
       <groupId>io.dropwizard.modules</groupId>
       <artifactId>dropwizard-java8-jdbi</artifactId>

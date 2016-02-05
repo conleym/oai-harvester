@@ -5,8 +5,6 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
@@ -17,6 +15,7 @@ import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.NuxeoClientConfiguration;
+import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
 
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
@@ -52,7 +51,6 @@ extends Application<HarvestServiceConfiguration> {
 
     private AmazonDynamoDB dynamoDBClient;
     private DynamoDBMapper dynamoDBMapper;
-    private ObjectMapper objectMapper;
 
     @Override
     public void initialize(
@@ -67,7 +65,7 @@ extends Application<HarvestServiceConfiguration> {
                         return configuration.getDataSourceFactory();
                     }
                 });
-        objectMapper = bootstrap.getObjectMapper();
+        final ObjectMapper objectMapper = bootstrap.getObjectMapper();
         final SimpleModule m = new SimpleModule();
         m.addSerializer(new JsonSerializer<Blob>() {
             @Override
@@ -124,7 +122,7 @@ extends Application<HarvestServiceConfiguration> {
     }
 
     private void setupNuxeoClient(final HarvestServiceConfiguration conf,
-            final Environment env, final DBI jdbi) throws Exception {
+            final Environment env, final DBI dbi) throws Exception {
         final NuxeoClientConfiguration nxconf =
                 conf.getNuxeoClientConfiguration();
         if (nxconf == null) {
@@ -132,29 +130,17 @@ extends Application<HarvestServiceConfiguration> {
                  "will not be read from Nuxeo.");
             return;
         }
-        final NuxeoClient client = nxconf.client(env, objectMapper);
-        final ScheduledExecutorService ses = nxconf.executorService(env);
-        final Runnable r = () -> {
-            try {
-                LOGGER.info("Getting repositories from Nuxeo.");
-                // TODO update the database instead of dumping to log.
-                for (final Object o : client.repositories()) {
-                    LOGGER.info("Page: {}", o);
-                }
-            } catch (final Exception e) {
-                /* Uncaught exceptions will cause the scheduler to stop running
-                 * this task, so catch them all. */
-                LOGGER.error("Error updating repositories from Nuxeo.", e);
-            }
-        };
-        ses.scheduleAtFixedRate(r, 0, nxconf.getPeriodMillis(),
-                TimeUnit.MILLISECONDS);
+        if (!nxconf.isScheduleEnabled()) {
+            LOGGER.warn("Scheduled repository updates are disabled.");
+            return;
+        }
+        nxconf.schedule(env, dbi);
     }
 
     @Override
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
-        final DBI jdbi = new DBIFactory().build(env,
+        final DBI dbi = new DBIFactory().build(env,
                 conf.getDataSourceFactory(), "database");
         final HttpClient httpClient = new HarvestHttpClientBuilder(env)
                 .using(conf.getHttpClientConfiguration())
@@ -164,9 +150,9 @@ extends Application<HarvestServiceConfiguration> {
         final DynamoDBConfiguration dynamo = conf.getDynamoDBConfiguration();
         createMapper(dynamo);
         createDynamoDBTable(dynamo);
+        setupNuxeoClient(conf, env, dbi);
         startH2Servers(conf, env);
-        setupNuxeoClient(conf, env, jdbi);
-        final JobResource jr = new JobResource(jdbi,
+        final JobResource jr = new JobResource(dbi,
                 conf.getJobConfiguration(), httpClient, dynamoDBMapper,
                 executor);
         env.jersey().register(jr);

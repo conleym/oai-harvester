@@ -22,12 +22,16 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.OAIRequestFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public final class NuxeoClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+            NuxeoClient.class);
     private static final String REPOSITORY_NXQL =
             "select * from RemoteRepository";
 
@@ -115,7 +119,9 @@ public final class NuxeoClient {
             final HttpContext context = new BasicHttpContext();
             context.setAttribute(HttpClientContext.CREDS_PROVIDER,
                     credentialsProvider);
+            LOGGER.trace("Sending request {}", request);
             final HttpResponse response = httpClient.execute(request, context);
+            LOGGER.debug("Got response {} to request {}", response, request);
             final int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != HttpStatus.SC_OK) {
                 throw new NuxeoClientException(
@@ -132,6 +138,7 @@ public final class NuxeoClient {
                 final Map<String, Object> map =
                         (Map<String, Object>)objectMapper.readValue(r,
                                 Map.class);
+                LOGGER.debug("Map for request {} is {}", request, map);
                 return map;
             }
         } catch (final IOException e) {

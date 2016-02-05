@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: mconley
+      changes:
+        - addColumn:
+            tableName: REPOSITORY
+            columns:
+              - column:
+                  name: REPOSITORY_NAME
+                  type: varchar(1024)
+              - column:
+                  name: REPOSITORY_INSTITUTION
+                  type: varchar(1024)
+
+        - tagDatabase:
+            tag: version_1.3
