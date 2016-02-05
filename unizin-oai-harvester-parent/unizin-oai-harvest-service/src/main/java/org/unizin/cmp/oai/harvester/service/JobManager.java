@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Observer;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
@@ -108,7 +109,7 @@ public final class JobManager {
      */
     public String newJob(final ExecutorService executor,
             final List<HarvestParams> params)
-            throws URISyntaxException, NoSuchAlgorithmException {
+                    throws URISyntaxException, NoSuchAlgorithmException {
         final JobInfo jobInfo = addJobToDatabase(params);
         final String jobName = String.valueOf(jobInfo.getID());
         final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo, params);
@@ -138,5 +139,16 @@ public final class JobManager {
 
     public JobStatus getStatus(final String jobName) {
         return jobStatus.get(jobName);
+    }
+
+    public long getMaxQueueSize() {
+        final Optional<Long> l = jobStatus.values().stream()
+                .map(x -> x.getQueueSize())
+                .filter(x -> x != null)
+                .max((x,y) -> Long.compare(x, y));
+        if (l.isPresent()) {
+            return l.get();
+        }
+        return 0;
     }
 }

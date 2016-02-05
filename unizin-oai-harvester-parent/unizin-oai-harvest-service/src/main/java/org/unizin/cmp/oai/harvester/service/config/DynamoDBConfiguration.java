@@ -1,6 +1,7 @@
 package org.unizin.cmp.oai.harvester.service.config;
 
 import java.net.URI;
+import java.time.Duration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -75,6 +76,30 @@ public class DynamoDBConfiguration {
     private long provisionedWriteCapacity = 1;
 
     @JsonProperty
+    private Duration capacityAdjustmentInterval = Duration.ofSeconds(20);
+
+    /**
+     * If the maximum queue size of all jobs exceeds this number, we increase
+     * the DynamoDB write capacity, provided it's not already at the configured
+     * {@link #maxWriteCapacity maximum}.
+     */
+    @JsonProperty
+    @Min(1)
+    private Long increaseCapacityThreshold;
+
+    @JsonProperty
+    @Min(1)
+    private Long decreaseCapacityThreshold;
+
+    @JsonProperty
+    @Min(100)
+    private long maxWriteCapacity = 1200;
+
+    @JsonProperty
+    @Min(1)
+    private long minWriteCapacity = 1;
+
+    @JsonProperty
     @Valid
     @NotNull
     private DynamoDBMapperConfiguration recordMapper =
@@ -113,5 +138,25 @@ public class DynamoDBConfiguration {
         final String tableName = recordMapper.hasTableNameOverride() ?
                 recordMapper.tableNameOverride : HarvestedOAIRecord.TABLE_NAME;
         return new DynamoDBClient(tableName, ddb, mapper);
+    }
+
+    public Long getIncreaseCapacityThreshold() {
+        return increaseCapacityThreshold;
+    }
+
+    public Long getDecreaseCapacityThreshold() {
+        return decreaseCapacityThreshold;
+    }
+
+    public long getMaxCapacity() {
+        return maxWriteCapacity;
+    }
+
+    public long getMinCapacity() {
+        return minWriteCapacity;
+    }
+
+    public Duration getCapacityAdjustmentInterval() {
+        return capacityAdjustmentInterval;
     }
 }
