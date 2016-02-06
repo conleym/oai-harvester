@@ -41,6 +41,8 @@ dynamoDB:
   region: us-west-2
   provisionedReadCapacity: 20
   provisionedWriteCapacity: 20
+  increaseCapacityThreshold: 500
+  decreaseCapacityThreshold: 50
 
 server:
     applicationConnectors:
