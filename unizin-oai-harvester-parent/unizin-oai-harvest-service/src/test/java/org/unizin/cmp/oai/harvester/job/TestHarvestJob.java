@@ -63,9 +63,8 @@ public final class TestHarvestJob {
              * things up.
              */
         }
-        dynamoDBTestClient.createTable(HarvestedOAIRecord.class);
-        Assert.assertEquals(0,
-                dynamoDBTestClient.countItems(HarvestedOAIRecord.class));
+        dynamoDBTestClient.createTable();
+        Assert.assertEquals(0, dynamoDBTestClient.countItems());
     }
 
     private HarvestJob.Builder newJobBuilder() {
@@ -107,7 +106,7 @@ public final class TestHarvestJob {
                         .withBody(serverResponseBody)));
         job.start();
         final List<HarvestedOAIRecord> actualRecords =
-                dynamoDBTestClient.scan(HarvestedOAIRecord.class);
+                dynamoDBTestClient.scan();
         Assert.assertEquals(expectedRecords.size(), actualRecords.size());
 
         final Map<String, HarvestedOAIRecord> map = new HashMap<>();

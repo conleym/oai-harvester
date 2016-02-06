@@ -42,29 +42,29 @@ public final class DynamoDBTestClient {
         dynamoDB.deleteTable(tableName);
     }
 
-    public void createTable(final Class<?> mappedClass) {
+    public void createTable() {
         // Throughput: ignored by local, but still required.
         final ProvisionedThroughput throughput = new ProvisionedThroughput(1L,
                 1L);
         final CreateTableRequest req = mapper.generateCreateTableRequest(
-                mappedClass)
+                HarvestedOAIRecord.class)
                 .withProvisionedThroughput(throughput)
                 .withTableName(tableName);
         dynamoDB.createTable(req);
     }
 
-    public int countItems(final Class<?> mappedClass) {
+    public int countItems() {
         final DynamoDBScanExpression scanExpression =
                 new DynamoDBScanExpression();
-        return countItems(mappedClass, scanExpression);
+        return countItems(scanExpression);
     }
 
-    public int countItems(final Class<?> mappedClass,
-            final DynamoDBScanExpression scanExpression) {
-        return mapper.count(mappedClass, scanExpression);
+    public int countItems(final DynamoDBScanExpression scanExpression) {
+        return mapper.count(HarvestedOAIRecord.class, scanExpression);
     }
 
-    public <T> List<T> scan(final Class<T> mappedClass) {
-        return mapper.scan(mappedClass, new DynamoDBScanExpression());
+    public List<HarvestedOAIRecord> scan() {
+        return mapper.scan(HarvestedOAIRecord.class,
+                new DynamoDBScanExpression());
     }
 }
