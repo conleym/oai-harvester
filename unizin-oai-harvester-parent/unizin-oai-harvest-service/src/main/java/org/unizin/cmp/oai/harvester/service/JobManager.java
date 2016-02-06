@@ -32,6 +32,13 @@ import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
 import org.unizin.cmp.oai.harvester.service.db.H2Functions.JobInfo;
 
+/**
+ * Responsible for creating and providing status on all running jobs in the
+ * system.
+ * <p>
+ * Instances are safe for use in multiple threads.
+ * </p>
+ */
 public final class JobManager {
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
@@ -98,14 +105,18 @@ public final class JobManager {
     }
 
     /**
+     * Create a new harvest job.
      *
      * @param executor
+     *            the executor service that will manage the job's threads.
      * @param specs
+     *            specifications of harvests to include in the job.
      * @return the name of the newly-created job.
      *
      * @throws URISyntaxException
      * @throws NoSuchAlgorithmException
      * @throws java.util.concurrent.RejectedExecutionException
+     *             if the executor cannot run the new job for some reason.
      */
     public String newJob(final ExecutorService executor,
             final List<HarvestParams> params)
@@ -144,7 +155,9 @@ public final class JobManager {
     public long getMaxQueueSize() {
         final Optional<Long> l = jobStatus.values().stream()
                 .map(x -> x.getQueueSize())
+                // Will be null until first notification is sent.
                 .filter(x -> x != null)
+                // Autounboxes, so throws NPE if given null.
                 .max((x,y) -> Long.compare(x, y));
         if (l.isPresent()) {
             return l.get();

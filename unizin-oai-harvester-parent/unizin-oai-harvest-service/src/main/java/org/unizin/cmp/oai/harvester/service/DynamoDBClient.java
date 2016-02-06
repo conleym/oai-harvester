@@ -34,8 +34,8 @@ public class DynamoDBClient {
     }
 
     public void setWriteCapacity(final long writeCapacity) {
-        final ProvisionedThroughput throughput = new ProvisionedThroughput();
-        throughput.setWriteCapacityUnits(writeCapacity);
+        final ProvisionedThroughput throughput = new ProvisionedThroughput()
+                .withWriteCapacityUnits(writeCapacity);
         dynamoDB.updateTable(tableName, throughput);
     }
 

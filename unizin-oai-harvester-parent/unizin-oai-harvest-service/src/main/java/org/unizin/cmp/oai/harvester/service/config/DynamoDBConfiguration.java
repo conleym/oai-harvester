@@ -2,6 +2,8 @@ package org.unizin.cmp.oai.harvester.service.config;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -11,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.job.HarvestedOAIRecord;
 import org.unizin.cmp.oai.harvester.service.DynamoDBClient;
+import org.unizin.cmp.oai.harvester.service.DynamoDBMonitor;
+import org.unizin.cmp.oai.harvester.service.JobManager;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -25,6 +29,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.Consi
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import io.dropwizard.setup.Environment;
 
 public class DynamoDBConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(
@@ -76,6 +82,7 @@ public class DynamoDBConfiguration {
     private long provisionedWriteCapacity = 1;
 
     @JsonProperty
+    @NotNull
     private Duration capacityAdjustmentInterval = Duration.ofSeconds(20);
 
     /**
@@ -94,10 +101,6 @@ public class DynamoDBConfiguration {
     @JsonProperty
     @Min(100)
     private long maxWriteCapacity = 1200;
-
-    @JsonProperty
-    @Min(1)
-    private long minWriteCapacity = 1;
 
     @JsonProperty
     @Valid
@@ -132,7 +135,7 @@ public class DynamoDBConfiguration {
                 provisionedWriteCapacity);
     }
 
-    public DynamoDBClient build() {
+    public DynamoDBClient buildClient() {
         final AmazonDynamoDB ddb = buildDDB();
         final DynamoDBMapper mapper = recordMapper.build(ddb);
         final String tableName = recordMapper.hasTableNameOverride() ?
@@ -140,23 +143,24 @@ public class DynamoDBConfiguration {
         return new DynamoDBClient(tableName, ddb, mapper);
     }
 
-    public Long getIncreaseCapacityThreshold() {
-        return increaseCapacityThreshold;
+    public boolean isMonitorConfigured() {
+        return increaseCapacityThreshold != null &&
+                decreaseCapacityThreshold != null;
     }
 
-    public Long getDecreaseCapacityThreshold() {
-        return decreaseCapacityThreshold;
+    private DynamoDBMonitor buildMonitor(final DynamoDBClient client,
+            final JobManager jobManager) {
+        return new DynamoDBMonitor(client, jobManager,
+                increaseCapacityThreshold, decreaseCapacityThreshold,
+                provisionedWriteCapacity, maxWriteCapacity);
     }
 
-    public long getMaxCapacity() {
-        return maxWriteCapacity;
-    }
-
-    public long getMinCapacity() {
-        return minWriteCapacity;
-    }
-
-    public Duration getCapacityAdjustmentInterval() {
-        return capacityAdjustmentInterval;
+    public void scheduleMonitor(final Environment env,
+            final DynamoDBClient client, final JobManager jobManager) {
+        final ScheduledExecutorService ses = env.lifecycle()
+                .scheduledExecutorService("DynamoDB write capacity monitor.")
+                .build();
+        ses.scheduleAtFixedRate(buildMonitor(client, jobManager), 0,
+                capacityAdjustmentInterval.toMillis(), TimeUnit.MILLISECONDS);
     }
 }

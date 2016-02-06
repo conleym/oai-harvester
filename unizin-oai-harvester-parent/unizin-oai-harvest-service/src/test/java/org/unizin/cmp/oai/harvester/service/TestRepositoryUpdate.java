@@ -187,7 +187,6 @@ public final class TestRepositoryUpdate {
 
     /**
      * This is just here to ensure that more tests could be written if needed.
-     * <p></p>
      */
     @Test
     public void testZ() throws Exception {

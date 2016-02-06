@@ -5,8 +5,6 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
@@ -122,23 +120,12 @@ extends Application<HarvestServiceConfiguration> {
     private void setupDynamoDBMonitor(final Environment env,
             final DynamoDBConfiguration config, final DynamoDBClient client,
             final JobManager jobManager) {
-        final Long increaseThreshold = config.getIncreaseCapacityThreshold();
-        final Long decreaseThreshold = config.getDecreaseCapacityThreshold();
-        if (increaseThreshold == null || decreaseThreshold == null) {
-            LOGGER.warn("Queue thresholds for DynamoDB write capacity " +
-                    "adjustment not set. Cannot automatically adjust " +
-                    "write capacity.");
+        if (! config.isMonitorConfigured()) {
+            LOGGER.warn("DynamoDB write capacity monitor is not configured. " +
+                    "Cannot automatically adjust write capacity.");
             return;
         }
-        final DynamoDBMonitor monitor = new DynamoDBMonitor(client,
-                jobManager, increaseThreshold, decreaseThreshold,
-                1, config.getMaxCapacity());
-        final ScheduledExecutorService ses = env.lifecycle()
-                .scheduledExecutorService("DynamoDB write capacity monitor.")
-                .build();
-        ses.scheduleAtFixedRate(monitor, 0,
-                config.getCapacityAdjustmentInterval().toMillis(),
-                TimeUnit.MILLISECONDS);
+        config.scheduleMonitor(env, client, jobManager);
     }
 
     @Override
@@ -153,7 +140,7 @@ extends Application<HarvestServiceConfiguration> {
         final ExecutorService executor = jobConfig.executorService(env);
         final DynamoDBConfiguration dynamoDBConfig =
                 conf.getDynamoDBConfiguration();
-        final DynamoDBClient dynamoDBClient = dynamoDBConfig.build();
+        final DynamoDBClient dynamoDBClient = dynamoDBConfig.buildClient();
         createDynamoDBTable(dynamoDBConfig, dynamoDBClient);
         setupNuxeoClient(conf, env, dbi);
         startH2Servers(conf, env);

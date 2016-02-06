@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Wrapper around a blocking queue that exposes only {@code poll} and
- * {@code offer} with timeouts and throw exceptions.
+ * {@code offer} with timeouts.
  *
  * @param <T> the type of the blocking queue's elements.
  */
