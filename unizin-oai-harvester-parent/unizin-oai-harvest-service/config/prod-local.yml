@@ -43,6 +43,7 @@ dynamoDB:
   provisionedWriteCapacity: 20
   increaseCapacityThreshold: 500
   decreaseCapacityThreshold: 50
+  maxWriteCapacity: 1200
 
 server:
     applicationConnectors:
