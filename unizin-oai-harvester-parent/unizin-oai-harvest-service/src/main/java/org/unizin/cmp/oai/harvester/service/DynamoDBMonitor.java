@@ -41,7 +41,7 @@ public final class DynamoDBMonitor implements Runnable {
             final long currentWriteCapacity = client.getWriteCapacity();
             if (currentWriteCapacity < maxWriteCapacity) {
                 LOGGER.info("Increasing DynamoDB provisioned write capacity.");
-                final long newWriteCapacity = Math.max(2 * currentWriteCapacity,
+                final long newWriteCapacity = Math.min(2 * currentWriteCapacity,
                         maxWriteCapacity);
                 client.setWriteCapacity(newWriteCapacity);
                 LOGGER.info("Increased write capacity from {} to {}.",
