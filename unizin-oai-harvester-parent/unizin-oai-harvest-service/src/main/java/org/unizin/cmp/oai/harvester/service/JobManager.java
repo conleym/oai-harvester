@@ -155,9 +155,6 @@ public final class JobManager {
     public long getMaxQueueSize() {
         final Optional<Long> l = jobStatus.values().stream()
                 .map(x -> x.getQueueSize())
-                // Will be null until first notification is sent.
-                .filter(x -> x != null)
-                // Autounboxes, so throws NPE if given null.
                 .max((x,y) -> Long.compare(x, y));
         if (l.isPresent()) {
             return l.get();

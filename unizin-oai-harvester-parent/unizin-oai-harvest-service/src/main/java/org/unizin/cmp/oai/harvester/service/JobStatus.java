@@ -314,7 +314,7 @@ public final class JobStatus {
         }
     }
 
-    Long getQueueSize() {
-        return queueSize;
+    long getQueueSize() {
+        return queueSize == null ? 0 : queueSize;
     }
 }
