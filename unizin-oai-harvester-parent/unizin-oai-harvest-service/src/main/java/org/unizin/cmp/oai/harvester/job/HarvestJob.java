@@ -364,7 +364,7 @@ public final class HarvestJob extends Observable {
         sendNotification(JobNotificationType.STARTED);
         /*
          * No reason to hold onto these. Let them get collected when they're
-         * done rather than when this thread is done.
+         * done rather than when this job is collected.
          */
         tasks.clear();
         try {
