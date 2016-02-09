@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.unizin.cmp</groupId>
     <artifactId>unizin-oai-harvester-parent</artifactId>
-    <version>1.0.12</version>
+    <version>1.0.11</version>
     <relativePath>..</relativePath>
   </parent>
   <artifactId>unizin-oai-harvester</artifactId>
@@ -120,4 +120,8 @@
       </dependencies>
     </profile>
   </profiles>
+
+  <scm>
+    <tag>1.0.11</tag>
+  </scm>
 </project>
