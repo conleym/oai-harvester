@@ -23,6 +23,8 @@ job:
   batchSize: 15
   minThreads: 100
   maxThreads: 1000
+  offerTimeout: PT2M
+  pollTimeout: PT30S
   recordQueueCapacity: 100
   workQueueCapacity: 1
 
