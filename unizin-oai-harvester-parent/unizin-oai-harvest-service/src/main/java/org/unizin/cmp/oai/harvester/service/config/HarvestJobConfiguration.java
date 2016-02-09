@@ -1,6 +1,5 @@
 package org.unizin.cmp.oai.harvester.service.config;
 
-import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.List;
@@ -82,7 +81,7 @@ public final class HarvestJobConfiguration {
             final String name,
             final List<JobHarvestSpec> specs,
             final List<Observer> harvestObservers)
-            throws NoSuchAlgorithmException, URISyntaxException {
+            throws NoSuchAlgorithmException {
         final HarvestJob.Builder builder = new HarvestJob.Builder(mapper)
                 .withHttpClient(httpClient)
                 .withExecutorService(executor)

@@ -1,6 +1,5 @@
 package org.unizin.cmp.oai.harvester.service;
 
-import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -109,18 +108,19 @@ public final class JobManager {
      *
      * @param executor
      *            the executor service that will manage the job's threads.
-     * @param specs
-     *            specifications of harvests to include in the job.
+     * @param params
+     *            parameters of harvests to include in the job.
      * @return the name of the newly-created job.
      *
-     * @throws URISyntaxException
      * @throws NoSuchAlgorithmException
+     *             if the JDK in use does not support the standard MD5 hashing
+     *             algorithm (very unlikely).
      * @throws java.util.concurrent.RejectedExecutionException
      *             if the executor cannot run the new job for some reason.
      */
     public String newJob(final ExecutorService executor,
             final List<HarvestParams> params)
-                    throws URISyntaxException, NoSuchAlgorithmException {
+                    throws NoSuchAlgorithmException {
         final JobInfo jobInfo = addJobToDatabase(params);
         final String jobName = String.valueOf(jobInfo.getID());
         final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo, params);

@@ -1,6 +1,5 @@
 package org.unizin.cmp.oai.harvester.job;
 
-import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
@@ -154,8 +153,7 @@ public final class HarvestJob extends Observable {
             return this;
         }
 
-        public HarvestJob build() throws NoSuchAlgorithmException,
-        URISyntaxException {
+        public HarvestJob build() throws NoSuchAlgorithmException {
             if (httpClient == null) {
                 httpClient = Harvester.defaultHttpClient()
                         .setDefaultHeaders(DEFAULT_HEADERS)
@@ -225,18 +223,12 @@ public final class HarvestJob extends Observable {
      *            the DynamoDB mapper to use to write records received from the
      *            harvest.
      * @param harvestedRecordQueue
-     *            a blocking queue used to transfer records from producer
-     *            threads to the consumer thread. It should have a reasonable
-     *            size limit to limit memory use.
+     *            a blocking queue wrapper used to transfer records from
+     *            producer threads to the consumer thread. It should have a
+     *            reasonable size limit and timeouts to limit memory use.
      * @param executorService
      *            the executor service that will run each harvest in a separate
      *            producer thread.
-     * @param offerTimeout
-     *            the maximum time producers should wait before giving up when
-     *            putting a record onto the queue.
-     * @param pollTimeout
-     *            the maximum time the consumer should wait before giving up
-     *            when reading a record from the queue.
      * @param batchSize
      *            the number of records to write at a time to DynamoDB. Note
      *            that the DynamoDB mapper may split batches up into smaller
@@ -258,9 +250,6 @@ public final class HarvestJob extends Observable {
      * @throws NoSuchAlgorithmException
      *             in the extraordinary event that the JVM in which this is
      *             executed does not support the <tt>MD5</tt> digest algorithm.
-     * @throws URISyntaxException
-     *             if a harvest in this batch has parameters that would produce
-     *             an invalid URI.
      */
     public HarvestJob(final HttpClient httpClient,
             final DynamoDBMapper mapper,
@@ -270,7 +259,7 @@ public final class HarvestJob extends Observable {
             final String name,
             final List<JobHarvestSpec> harvests,
             final List<Observer> harvestObservers)
-                    throws NoSuchAlgorithmException, URISyntaxException {
+                    throws NoSuchAlgorithmException {
         Objects.requireNonNull(httpClient, "httpClient");
         Objects.requireNonNull(mapper, "mapper");
         Objects.requireNonNull(harvestedRecordQueue, "harvestedRecordQueue");
@@ -306,7 +295,7 @@ public final class HarvestJob extends Observable {
 
     private Runnable createHarvestRunnable(final HarvestParams params,
             final Map<String, String> tags, final Iterable<Observer> observers)
-                    throws NoSuchAlgorithmException, URISyntaxException {
+                    throws NoSuchAlgorithmException {
         final Harvester harvester = new Harvester.Builder()
                 .withHttpClient(httpClient)
                 .build();
