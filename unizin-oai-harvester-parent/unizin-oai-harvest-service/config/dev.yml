@@ -41,6 +41,8 @@ dynamoDB:
   awsAccessKeyID: asdf
   provisionedReadCapacity: 1
   provisionedWriteCapacity: 1
+  increaseCapacityThreshold: 500
+  decreaseCapacityThreshold: 50
   recordMapper:
     tableNameOverride: AppTestingTable
 

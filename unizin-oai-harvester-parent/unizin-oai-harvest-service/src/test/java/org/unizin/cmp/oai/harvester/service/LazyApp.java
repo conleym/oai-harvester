@@ -22,6 +22,8 @@ public final class LazyApp {
     private DBI dbi;
     private NuxeoClient nuxeoClient;
     private RepositoryUpdater repositoryUpdater;
+    private DynamoDBClient dynamoDBClient;
+
 
     public LazyApp(final DropwizardAppRule<HarvestServiceConfiguration> app) {
         this.app = app;
@@ -47,5 +49,13 @@ public final class LazyApp {
             repositoryUpdater = new RepositoryUpdater(nuxeoClient(), dbi());
         }
         return repositoryUpdater;
+    }
+
+    public DynamoDBClient dynamoClient() {
+        if (dynamoDBClient == null) {
+            dynamoDBClient = app.getConfiguration().getDynamoDBConfiguration()
+                    .buildClient();
+        }
+        return dynamoDBClient;
     }
 }

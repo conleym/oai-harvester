@@ -53,7 +53,7 @@ public final class JobStatus {
 
     @JsonProperty
     private volatile Map<String, Object> lastJobNotification;
-
+    private volatile Long queueSize;
     private final DBI dbi;
 
     JobStatus(final DBI dbi) {
@@ -289,6 +289,7 @@ public final class JobStatus {
     }
 
     void jobUpdate(final JobNotification notification) {
+        queueSize = notification.getStat(JobStatistic.QUEUE_SIZE);
         final Optional<String> stackTrace = formatStackTrace(
                 notification.getException());
         final Map<String, Object> status = jobStatusMap(
@@ -311,5 +312,9 @@ public final class JobStatus {
         } catch (final Exception e) {
             LOGGER.error("Error updating job status database.", e);
         }
+    }
+
+    long getQueueSize() {
+        return queueSize == null ? 0 : queueSize;
     }
 }

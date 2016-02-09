@@ -113,7 +113,8 @@ final class Harvest {
     Map<String, String> getRequestParameters() {
         if (resumptionToken != null) {
             lastRequestParams = new TreeMap<>();
-            lastRequestParams.put(OAIRequestParameter.RESUMPTION_TOKEN.paramName(),
+            lastRequestParams.put(
+                    OAIRequestParameter.RESUMPTION_TOKEN.paramName(),
                     resumptionToken.getToken());
             lastRequestParams.put(OAI2Constants.VERB_PARAM_NAME,
                     params.getVerb().localPart());

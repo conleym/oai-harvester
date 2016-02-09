@@ -36,7 +36,7 @@ public final class TestRepositoryUpdate {
     /** Starts the application only once. */
     @ClassRule
     public static final DropwizardAppRule<HarvestServiceConfiguration> app =
-    ServiceTests.newAppRule();
+        ServiceTests.newAppRule();
 
     private static final LazyApp lazy = new LazyApp(app);
 
@@ -187,7 +187,6 @@ public final class TestRepositoryUpdate {
 
     /**
      * This is just here to ensure that more tests could be written if needed.
-     * <p></p>
      */
     @Test
     public void testZ() throws Exception {
