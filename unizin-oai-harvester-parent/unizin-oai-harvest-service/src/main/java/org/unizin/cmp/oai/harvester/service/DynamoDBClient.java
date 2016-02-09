@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughputDescription;
 import com.amazonaws.services.dynamodbv2.model.StreamSpecification;
 import com.amazonaws.services.dynamodbv2.model.StreamViewType;
 
@@ -33,15 +34,16 @@ public class DynamoDBClient {
         dynamoDB.createTable(req);
     }
 
-    public void setWriteCapacity(final long writeCapacity) {
-        final ProvisionedThroughput throughput = new ProvisionedThroughput()
-                .withWriteCapacityUnits(writeCapacity);
-        dynamoDB.updateTable(tableName, throughput);
+    public ProvisionedThroughputDescription getThroughputDescription() {
+        return dynamoDB.describeTable(tableName)
+                .getTable().getProvisionedThroughput();
     }
 
-    public long getWriteCapacity() {
-        return dynamoDB.describeTable(tableName)
-                .getTable().getProvisionedThroughput().getWriteCapacityUnits();
+    public void setThroughput(final long newReadCapacity,
+            final long newWriteCapacity) {
+        final ProvisionedThroughput throughput = new ProvisionedThroughput(
+                newReadCapacity, newWriteCapacity);
+        dynamoDB.updateTable(tableName, throughput);
     }
 
     public DynamoDBMapper getMapper() {

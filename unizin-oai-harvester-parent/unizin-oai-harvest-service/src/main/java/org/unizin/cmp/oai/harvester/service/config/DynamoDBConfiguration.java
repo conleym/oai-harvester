@@ -158,7 +158,7 @@ public class DynamoDBConfiguration {
     public void scheduleMonitor(final Environment env,
             final DynamoDBClient client, final JobManager jobManager) {
         final ScheduledExecutorService ses = env.lifecycle()
-                .scheduledExecutorService("DynamoDB write capacity monitor.")
+                .scheduledExecutorService("DynamoDB write capacity monitor")
                 .build();
         ses.scheduleAtFixedRate(buildMonitor(client, jobManager), 0,
                 capacityAdjustmentInterval.toMillis(), TimeUnit.MILLISECONDS);

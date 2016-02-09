@@ -3,6 +3,8 @@ package org.unizin.cmp.oai.harvester.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughputDescription;
+
 public final class DynamoDBMonitor implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             DynamoDBMonitor.class);
@@ -38,12 +40,16 @@ public final class DynamoDBMonitor implements Runnable {
 
     private void increaseWriteCapacity() {
         try {
-            final long currentWriteCapacity = client.getWriteCapacity();
+            final ProvisionedThroughputDescription throughput =
+                    client.getThroughputDescription();
+            final long currentWriteCapacity =
+                    throughput.getWriteCapacityUnits();
             if (currentWriteCapacity < maxWriteCapacity) {
                 LOGGER.info("Increasing DynamoDB provisioned write capacity.");
                 final long newWriteCapacity = Math.min(2 * currentWriteCapacity,
                         maxWriteCapacity);
-                client.setWriteCapacity(newWriteCapacity);
+                client.setThroughput(throughput.getReadCapacityUnits(),
+                        newWriteCapacity);
                 LOGGER.info("Increased write capacity from {} to {}.",
                         currentWriteCapacity, newWriteCapacity);
             } else {
@@ -58,12 +64,16 @@ public final class DynamoDBMonitor implements Runnable {
 
     private void decreaseWriteCapacity() {
         try {
-            final long currentWriteCapacity = client.getWriteCapacity();
+            final ProvisionedThroughputDescription throughput =
+                    client.getThroughputDescription();
+            final long currentWriteCapacity =
+                    throughput.getWriteCapacityUnits();
             if (currentWriteCapacity > minWriteCapacity) {
                 LOGGER.info("Decreasing DynamoDB provisioned write capacity.");
                 final long newWriteCapacity = Math.max(currentWriteCapacity / 2,
                         minWriteCapacity);
-                client.setWriteCapacity(newWriteCapacity);
+                client.setThroughput(throughput.getReadCapacityUnits(),
+                        newWriteCapacity);
                 LOGGER.info("Decreased write capacity from {} to {}.",
                         currentWriteCapacity, newWriteCapacity);
             } else {
