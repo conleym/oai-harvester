@@ -41,7 +41,7 @@ public final class JobResource {
     }
 
     public static final String PATH = "/job/";
-    public static final String JOB_ID_PARAM = "jobID";
+    private static final String JOB_ID_PARAM = "jobID";
 
     private final DBI dbi;
     private final JobManager jobManager;
@@ -121,12 +121,6 @@ public final class JobResource {
     @Path("running")
     public Response runningJobs() {
         return Response.ok(jobManager.getRunningStatus()).build();
-    }
-
-    @GET
-    @Path("poop")
-    public Response poop() {
-        return Response.serverError().build();
     }
 
     private JobStatus readStatusFromDatabase(final long jobID) {

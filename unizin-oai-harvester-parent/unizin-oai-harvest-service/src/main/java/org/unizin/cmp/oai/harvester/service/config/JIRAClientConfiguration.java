@@ -36,7 +36,7 @@ public final class JIRAClientConfiguration {
 
     private HttpClient buildHttpClient(final Environment env) {
         return new HttpClientBuilder(env).using(httpClient)
-                .build("JIRA");
+                .build("jira-client");
     }
 
     public JIRAClient build(final Environment env) {
