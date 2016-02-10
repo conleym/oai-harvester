@@ -70,7 +70,7 @@ public final class HarvestFailureListener implements Consumer<HarvestNotificatio
         final Map<String, Object> postData = ImmutableMap.of(
                 "fields", ImmutableMap.of(
                             "project", ImmutableMap.of("key", "SD"),
-                            "issuetype", ImmutableMap.of("name", "help"),
+                            "issuetype", ImmutableMap.of("name", "Help"),
                             "summary", summary(t),
                             "description", description(t),
                             "customfield_10104", institution(t)));
