@@ -116,11 +116,6 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
             @Bind("contentEncoding") Optional<String> contentEncoding,
             @Bind("responseBody") InputStream body);
 
-    @SqlQuery("select REPOSITORY_ID from REPOSITORY " +
-            "where REPOSITORY_BASE_URI = #baseURI")
-    public abstract long findRepositoryIDByBaseURI(
-            @Bind("baseURI") String baseURI);
-
     @SqlQuery(JOB_QUERY)
     @SingleValueResult(Map.class)
     @RegisterMapperFactory(CMPMapperFactory.class)

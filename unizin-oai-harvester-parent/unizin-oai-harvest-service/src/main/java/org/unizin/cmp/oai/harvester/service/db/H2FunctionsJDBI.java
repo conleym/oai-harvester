@@ -55,6 +55,12 @@ abstract class H2FunctionsJDBI {
             @Bind("id") long harvestID);
 
 
+    @SqlQuery("select * from REPOSITORY where REPOSITORY_BASE_URI = #baseURI")
+    @RegisterMapperFactory(CMPMapperFactory.class)
+    public abstract Map<String, Object> findRepositoryIDByBaseURI(
+            @Bind("baseURI") String baseURI);
+
+
     private static final String CREATE_REPOSITORY_TMP = "create local " +
             "temporary table if not exists " + REPO_TMP_TBL + "(" +
             "REPOSITORY_BASE_URI varchar(1024), " +

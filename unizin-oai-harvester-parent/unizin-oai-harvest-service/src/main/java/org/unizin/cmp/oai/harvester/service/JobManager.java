@@ -31,6 +31,7 @@ import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
+import org.unizin.cmp.oai.harvester.service.db.H2Functions.HarvestInfo;
 import org.unizin.cmp.oai.harvester.service.db.H2Functions.JobInfo;
 
 /**
@@ -41,6 +42,21 @@ import org.unizin.cmp.oai.harvester.service.db.H2Functions.JobInfo;
  * </p>
  */
 public final class JobManager {
+
+    public static final class JobCreationException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+        private final List<String> invalidBaseURIs;
+        public JobCreationException(final List<String> invalidBaseURIs) {
+            this.invalidBaseURIs = invalidBaseURIs;
+        }
+
+        public List<String> getInvalidBaseURIs() {
+            return invalidBaseURIs;
+        }
+    }
+
+
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
     private final DynamoDBClient dynamoClient;
@@ -75,10 +91,13 @@ public final class JobManager {
     private List<JobHarvestSpec> buildSpecs(final String jobName,
             final JobInfo jobInfo, final List<HarvestParams> params) {
         final List<JobHarvestSpec> specs = new ArrayList<>();
-        final Iterator<Long> harvestIDs = jobInfo.getHarvestIDs().iterator();
+        final Iterator<HarvestInfo> harvests = jobInfo.getHarvests().iterator();
         params.forEach(x -> {
             final Map<String, String> tags = new HashMap<>(1);
-            tags.put("harvestName", String.valueOf(harvestIDs.next()));
+            final HarvestInfo harvestInfo = harvests.next();
+            tags.put("harvestName", harvestInfo.getName());
+            tags.put("institution", harvestInfo.getRepositoryInstitution());
+            tags.put("repositoryName", harvestInfo.getRepositoryName());
             specs.add(new JobHarvestSpec(x, tags));
         });
         return specs;
@@ -127,11 +146,18 @@ public final class JobManager {
      *             algorithm (very unlikely).
      * @throws java.util.concurrent.RejectedExecutionException
      *             if the executor cannot run the new job for some reason.
+     * @throws JobCreationException
+     *             if any of the harvests specify an invalid repository base
+     *             URI.
      */
     public String newJob(final ExecutorService executor,
             final List<HarvestParams> params)
                     throws NoSuchAlgorithmException {
         final JobInfo jobInfo = addJobToDatabase(params);
+        final List<String> invalidURIs = jobInfo.getInvalidRepositoryBaseURIs();
+        if (! invalidURIs.isEmpty()) {
+            throw new JobCreationException(invalidURIs);
+        }
         final String jobName = String.valueOf(jobInfo.getID());
         final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo, params);
         final Observer observeHarvests = (o, arg) -> {
