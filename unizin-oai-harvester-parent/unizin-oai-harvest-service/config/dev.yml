@@ -37,6 +37,9 @@ httpClient:
   defaultHeaders:
     from: dev@unizin.org
 
+jiraClient:
+  endpoint: https://resources.unizin.org/jira/rest/api/2/issue/
+
 dynamoDB:
   endpoint: http://localhost:8000
   awsAccessKey: key

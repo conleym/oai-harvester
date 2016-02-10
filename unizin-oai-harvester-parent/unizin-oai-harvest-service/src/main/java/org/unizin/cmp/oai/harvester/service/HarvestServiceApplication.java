@@ -14,6 +14,7 @@ import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
+import org.unizin.cmp.oai.harvester.service.config.JIRAClientConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.NuxeoClientConfiguration;
 import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
 
@@ -128,6 +129,18 @@ extends Application<HarvestServiceConfiguration> {
         config.scheduleMonitor(env, client, jobManager);
     }
 
+    private JIRAClient jiraClient(final Environment env,
+            final HarvestServiceConfiguration conf) {
+        final JIRAClientConfiguration jiraConfig =
+                conf.getJIRAClientConfiguration();
+        if (jiraConfig == null) {
+            LOGGER.warn("JIRA client not configured. Issues will not be " +
+                    "created for failed harvests.");
+            return null;
+        }
+        return jiraConfig.build(env);
+    }
+
     @Override
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
@@ -144,6 +157,7 @@ extends Application<HarvestServiceConfiguration> {
         createDynamoDBTable(dynamoDBConfig, dynamoDBClient);
         setupNuxeoClient(conf, env, dbi);
         startH2Servers(conf, env);
+        final JIRAClient jiraClient = jiraClient(env, conf);
         final JobManager jobManager = new JobManager(jobConfig, httpClient,
                 dynamoDBClient, dbi);
         setupDynamoDBMonitor(env, dynamoDBConfig, dynamoDBClient, jobManager);
