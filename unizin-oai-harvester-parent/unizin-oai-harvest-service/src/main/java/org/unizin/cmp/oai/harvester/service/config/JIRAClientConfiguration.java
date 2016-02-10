@@ -7,7 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.apache.http.client.HttpClient;
-import org.unizin.cmp.oai.harvester.service.JIRAClient;
+import org.unizin.cmp.oai.harvester.service.client.JIRAClient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -19,6 +19,14 @@ public final class JIRAClientConfiguration {
     @JsonProperty
     @NotNull
     private URI endpoint;
+
+    @JsonProperty
+    @NotNull
+    private String username;
+
+    @JsonProperty
+    @NotNull
+    private String password;
 
     @JsonProperty("httpClient")
     @Nonnull
@@ -32,7 +40,7 @@ public final class JIRAClientConfiguration {
     }
 
     public JIRAClient build(final Environment env) {
-        return new JIRAClient(endpoint, buildHttpClient(env),
-                env.getObjectMapper());
+        return new JIRAClient(endpoint, buildHttpClient(env), username,
+                password, env.getObjectMapper());
     }
 }

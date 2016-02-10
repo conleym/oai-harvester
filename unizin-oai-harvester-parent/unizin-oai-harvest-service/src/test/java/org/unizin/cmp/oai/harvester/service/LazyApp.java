@@ -1,6 +1,7 @@
 package org.unizin.cmp.oai.harvester.service;
 
 import org.skife.jdbi.v2.DBI;
+import org.unizin.cmp.oai.harvester.service.client.NuxeoClient;
 import org.unizin.cmp.oai.harvester.service.config.HarvestServiceConfiguration;
 
 import io.dropwizard.testing.junit.DropwizardAppRule;

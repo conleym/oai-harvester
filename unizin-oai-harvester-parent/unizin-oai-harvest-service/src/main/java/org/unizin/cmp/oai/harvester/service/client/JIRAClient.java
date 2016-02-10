@@ -1,18 +1,17 @@
-package org.unizin.cmp.oai.harvester.service;
+package org.unizin.cmp.oai.harvester.service.client;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Map;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class JIRAClient {
 
-    public final class JIRAClientException extends RuntimeException {
+    public static final class JIRAClientException extends RuntimeException {
         private static final long serialVersionUID = 1L;
 
         public JIRAClientException(final String message) {
@@ -38,13 +37,29 @@ public final class JIRAClient {
             JIRAClient.class);
 
     private final URI endpoint;
-    private final HttpClient httpClient;
+    private final ServiceHttpClientWrapper httpClientWrapper;
     private final ObjectMapper objectMapper;
 
+
+    private static JIRAClientException statusException(final int statusCode,
+            final String responseBody) {
+        return new JIRAClientException(String.format(
+                "Got status %d. Response %s", statusCode, responseBody));
+    }
+
     public JIRAClient(final URI endpoint, final HttpClient httpClient,
+            final String username, final String password,
             final ObjectMapper objectMapper) {
         this.endpoint = endpoint;
-        this.httpClient = httpClient;
+        final BasicAuthHttpClient basicAuthHttpClient =
+                new BasicAuthHttpClient(httpClient, endpoint.getHost(),
+                        username, password);
+        this.httpClientWrapper = new ServiceHttpClientWrapper(LOGGER,
+                basicAuthHttpClient,
+                Collections.singleton(HttpStatus.SC_CREATED),
+                JIRAClient::statusException,
+                () -> new JIRAClientException("Got null entity from JIRA."),
+                e -> new JIRAClientException(e));
         this.objectMapper = objectMapper;
     }
 
@@ -52,10 +67,12 @@ public final class JIRAClient {
         try {
             final HttpPost post = new HttpPost(endpoint);
             final String body = objectMapper.writeValueAsString(issue);
+            LOGGER.debug("Post body: {}", body);
             final BasicHttpEntity entity = new BasicHttpEntity();
             entity.setContent(new ByteArrayInputStream(body.getBytes(
                     StandardCharsets.UTF_8)));
             entity.setContentEncoding(StandardCharsets.UTF_8.name());
+            entity.setContentType(ContentType.APPLICATION_JSON.getMimeType());
             post.setEntity(entity);
             return post;
         } catch (final JsonProcessingException e) {
@@ -72,23 +89,6 @@ public final class JIRAClient {
      *             if there's an error creating the issue.
      */
     public void createIssue(final Map<String, Object> issue) {
-        final HttpUriRequest request = createRequest(issue);
-        LOGGER.trace("Posting {}", request);
-        try {
-            final HttpResponse response = httpClient.execute(request);
-            LOGGER.debug("Got response {} for request {}", response, request);
-            final int status = response.getStatusLine().getStatusCode();
-            // TODO figure out actual acceptable status codes.
-            if (status != HttpStatus.SC_CREATED) {
-                throw new JIRAClientException(String.format("Got status %d",
-                        status));
-            }
-            final HttpEntity entity = response.getEntity();
-            if (entity == null) {
-                throw new JIRAClientException("Got null entity from JIRA.");
-            }
-        } catch (final IOException e) {
-            throw new JIRAClientException(e);
-        }
+        httpClientWrapper.execute(createRequest(issue));
     }
 }

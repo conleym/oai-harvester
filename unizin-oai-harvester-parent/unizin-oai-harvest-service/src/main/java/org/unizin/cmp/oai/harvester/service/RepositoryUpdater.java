@@ -9,6 +9,7 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.unizin.cmp.oai.harvester.service.client.NuxeoClient;
 import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
 
 public final class RepositoryUpdater implements Runnable {

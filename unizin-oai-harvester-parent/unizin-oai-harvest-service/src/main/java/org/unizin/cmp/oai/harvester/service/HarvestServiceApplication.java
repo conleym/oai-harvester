@@ -4,14 +4,18 @@ import java.io.IOException;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
+
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
+import org.unizin.cmp.oai.harvester.service.client.JIRAClient;
 import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
@@ -33,9 +37,13 @@ import io.dropwizard.Application;
 import io.dropwizard.db.DataSourceFactory;
 import io.dropwizard.java8.Java8Bundle;
 import io.dropwizard.java8.jdbi.DBIFactory;
+import io.dropwizard.jetty.ConnectorFactory;
+import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.migrations.MigrationsBundle;
+import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+
 
 /**
  * The dropwizard application class for the harvest service.
@@ -143,10 +151,32 @@ extends Application<HarvestServiceConfiguration> {
         return jiraConfig.build(env);
     }
 
+    private Optional<UriBuilder> uriBuilder(
+            final HarvestServiceConfiguration conf)
+                    throws ReflectiveOperationException {
+        final DefaultServerFactory server =
+                (DefaultServerFactory)conf.getServerFactory();
+        final List<ConnectorFactory> connectors =
+                server.getApplicationConnectors();
+        if (connectors.size() != 1) {
+            return Optional.empty();
+        }
+        final HttpConnectorFactory factory =
+                (HttpConnectorFactory)connectors.get(0);
+        return Optional.of(UriBuilder.fromResource(JobResource.class)
+                .path(JobResource.class.getMethod("status", long.class))
+                .host(factory.getBindHost())
+                .port(factory.getPort())
+                .scheme("http"));
+    }
+
     private Consumer<HarvestNotification> failureListener(final Environment env,
-            final HarvestServiceConfiguration conf) {
+            final HarvestServiceConfiguration conf)
+                    throws ReflectiveOperationException {
         final JIRAClient jiraClient = jiraClient(env, conf);
-        return (jiraClient == null) ? x -> {} : new FailureListener(jiraClient);
+        final Optional<UriBuilder> uriBuilder = uriBuilder(conf);
+        return (jiraClient == null) ? x -> {} :
+            new HarvestFailureListener(jiraClient, uriBuilder);
     }
 
 

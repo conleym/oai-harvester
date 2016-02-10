@@ -1,11 +1,10 @@
-package org.unizin.cmp.oai.harvester.service;
+package org.unizin.cmp.oai.harvester.service.client;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -13,15 +12,8 @@ import java.util.TreeMap;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.unizin.cmp.oai.harvester.OAIRequestFactory;
@@ -89,59 +81,49 @@ public final class NuxeoClient {
 
 
     private final ObjectMapper objectMapper;
-    private final HttpClient httpClient;
+    private final ServiceHttpClientWrapper httpClientWrapper;
     private final URI nuxeoURI;
     private final int pageSize;
-    private final CredentialsProvider credentialsProvider;
 
 
-    public NuxeoClient(final ObjectMapper mapper, final HttpClient httpClient,
-            final URI nuxeoURI, final String user, final String password,
-            final int pageSize) {
-        this.objectMapper = mapper;
-        this.httpClient = httpClient;
-        this.nuxeoURI = nuxeoURI;
-        this.pageSize = pageSize;
-        this.credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(
-                new AuthScope(nuxeoURI.getHost(), AuthScope.ANY_PORT,
-                        AuthScope.ANY_REALM, "basic"),
-                new UsernamePasswordCredentials(user, password));
+    private static NuxeoClientException statusException(final int statusCode,
+            final String responseBody) {
+        return new NuxeoClientException(String.format(
+                "Got status %d. Response %s", statusCode, responseBody));
     }
 
-    private String contentEncoding(final HttpEntity entity) {
-        return Status.headerValue(entity.getContentEncoding())
-                .orElse(StandardCharsets.ISO_8859_1.name());
+    public NuxeoClient(final ObjectMapper mapper, final HttpClient httpClient,
+            final URI nuxeoURI, final String username, final String password,
+            final int pageSize) {
+        this.objectMapper = mapper;
+        final BasicAuthHttpClient basicAuthHttpClient =
+                new BasicAuthHttpClient(httpClient, nuxeoURI.getHost(),
+                        username, password);
+        this.httpClientWrapper = new ServiceHttpClientWrapper(LOGGER,
+                basicAuthHttpClient,
+                Collections.singleton(HttpStatus.SC_OK),
+                NuxeoClient::statusException,
+                () -> new NuxeoClientException("Got null entity from Nuxeo."),
+                e -> new NuxeoClientException(e));
+        this.nuxeoURI = nuxeoURI;
+        this.pageSize = pageSize;
     }
 
     private Map<String, Object> execute(final HttpUriRequest request) {
-        try {
-            final HttpContext context = new BasicHttpContext();
-            context.setAttribute(HttpClientContext.CREDS_PROVIDER,
-                    credentialsProvider);
-            LOGGER.trace("Sending request {}", request);
-            final HttpResponse response = httpClient.execute(request, context);
-            LOGGER.debug("Got response {} to request {}", response, request);
-            final int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode != HttpStatus.SC_OK) {
-                throw new NuxeoClientException(
-                        String.format("Got status %s from Nuxeo.", statusCode));
-            }
-            final HttpEntity entity = response.getEntity();
-            if (entity == null) {
-                throw new NuxeoClientException("Got null entity from Nuxeo.");
-            }
-            try (final InputStream in = entity.getContent();
-                    final Reader r = new InputStreamReader(in,
-                            contentEncoding(entity))) {
-                @SuppressWarnings("unchecked")
-                final Map<String, Object> map =
-                        (Map<String, Object>)objectMapper.readValue(r,
-                                Map.class);
-                LOGGER.debug("Map for request {} is {}", request, map);
-                return map;
-            }
-        } catch (final IOException e) {
+        final HttpResponse response = httpClientWrapper.execute(request);
+        final HttpEntity entity = response.getEntity();
+        try (final InputStream in = entity.getContent();
+                final Reader r = new InputStreamReader(in,
+                        httpClientWrapper.contentEncoding(entity))) {
+            @SuppressWarnings("unchecked")
+            final Map<String, Object> map =
+            (Map<String, Object>)objectMapper.readValue(r,
+                    Map.class);
+            LOGGER.debug("Map for request {} is {}", request, map);
+            return map;
+        } catch (final RuntimeException e) {
+            throw e;
+        } catch (final Exception e) {
             throw new NuxeoClientException(e);
         }
     }

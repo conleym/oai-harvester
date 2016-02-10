@@ -41,6 +41,7 @@ public final class JobResource {
     }
 
     public static final String PATH = "/job/";
+    public static final String JOB_ID_PARAM = "jobID";
 
     private final DBI dbi;
     private final JobManager jobManager;
@@ -122,14 +123,20 @@ public final class JobResource {
         return Response.ok(jobManager.getRunningStatus()).build();
     }
 
+    @GET
+    @Path("poop")
+    public Response poop() {
+        return Response.serverError().build();
+    }
+
     private JobStatus readStatusFromDatabase(final long jobID) {
         final JobStatus status = new JobStatus(dbi);
         return status.loadFromDB(jobID) ? status : null;
     }
 
     @GET
-    @Path("{jobID}")
-    public Response status(final @PathParam("jobID") long jobID) {
+    @Path("{" + JOB_ID_PARAM + "}")
+    public Response status(final @PathParam(JOB_ID_PARAM) long jobID) {
         JobStatus status = jobManager.getStatus(String.valueOf(jobID));
         if (status == null) {
             status = readStatusFromDatabase(jobID);
@@ -141,8 +148,8 @@ public final class JobResource {
     }
 
     @PUT
-    @Path("{jobID}/stop")
-    public Response stop(final @PathParam("jobID") String jobID) {
+    @Path("{" + JOB_ID_PARAM + "}/stop")
+    public Response stop(final @PathParam(JOB_ID_PARAM) String jobID) {
         final HarvestJob job = jobManager.getJob(jobID);
         if (job == null) {
             return Response.status(Status.NOT_FOUND).build();

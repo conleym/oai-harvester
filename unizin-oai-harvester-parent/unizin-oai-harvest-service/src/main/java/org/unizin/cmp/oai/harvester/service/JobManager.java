@@ -56,6 +56,11 @@ public final class JobManager {
         }
     }
 
+    public static final String REPOSITORY_NAME = "repositoryName";
+    public static final String REPOSITORY_INSTITUTION = "repositoryInstitution";
+    public static final String HARVEST_NAME = "harvestName";
+    public static final String JOB_NAME = "jobName";
+
 
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
@@ -95,9 +100,11 @@ public final class JobManager {
         params.forEach(x -> {
             final Map<String, String> tags = new HashMap<>(1);
             final HarvestInfo harvestInfo = harvests.next();
-            tags.put("harvestName", harvestInfo.getName());
-            tags.put("institution", harvestInfo.getRepositoryInstitution());
-            tags.put("repositoryName", harvestInfo.getRepositoryName());
+            tags.put(HARVEST_NAME, harvestInfo.getName());
+            tags.put(REPOSITORY_INSTITUTION,
+                    harvestInfo.getRepositoryInstitution());
+            tags.put(REPOSITORY_NAME, harvestInfo.getRepositoryName());
+            tags.put(JOB_NAME, jobName);
             specs.add(new JobHarvestSpec(x, tags));
         });
         return specs;
@@ -170,7 +177,7 @@ public final class JobManager {
         jobStatus.put(jobName, new JobStatus(dbi));
         jobs.put(jobName, job);
         executor.submit(() -> {
-            MDC.put("jobName", jobName);
+            MDC.put(JOB_NAME, jobName);
             job.start();
         });
         return jobName;
