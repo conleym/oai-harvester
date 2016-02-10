@@ -5,11 +5,13 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.unizin.cmp.oai.harvester.HarvestNotification;
 import org.unizin.cmp.oai.harvester.service.config.DynamoDBConfiguration;
 import org.unizin.cmp.oai.harvester.service.config.HarvestHttpClientBuilder;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
@@ -141,6 +143,13 @@ extends Application<HarvestServiceConfiguration> {
         return jiraConfig.build(env);
     }
 
+    private Consumer<HarvestNotification> failureListener(final Environment env,
+            final HarvestServiceConfiguration conf) {
+        final JIRAClient jiraClient = jiraClient(env, conf);
+        return (jiraClient == null) ? x -> {} : new FailureListener(jiraClient);
+    }
+
+
     @Override
     public void run(final HarvestServiceConfiguration conf,
             final Environment env) throws Exception {
@@ -157,9 +166,8 @@ extends Application<HarvestServiceConfiguration> {
         createDynamoDBTable(dynamoDBConfig, dynamoDBClient);
         setupNuxeoClient(conf, env, dbi);
         startH2Servers(conf, env);
-        final JIRAClient jiraClient = jiraClient(env, conf);
         final JobManager jobManager = new JobManager(jobConfig, httpClient,
-                dynamoDBClient, dbi);
+                dynamoDBClient, dbi, failureListener(env, conf));
         setupDynamoDBMonitor(env, dynamoDBConfig, dynamoDBClient, jobManager);
         final JobResource jr = new JobResource(dbi, jobManager, executor);
         env.jersey().register(jr);
