@@ -45,7 +45,7 @@ public final class HarvestFailureListener implements Consumer<HarvestNotificatio
 
     private String summary(final HarvestNotification hn) {
         return String.format("Failed harvest of %s",
-                hn.getTag(JobManager.JOB_NAME));
+                hn.getTag(JobManager.REPOSITORY_NAME));
     }
 
     private String description(final HarvestNotification hn) {

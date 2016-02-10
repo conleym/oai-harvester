@@ -54,7 +54,7 @@ nuxeoClient:
 server:
     applicationConnectors:
       - type: http
-        port: 9080
+        port: 0 # override this.
 
 logging:
   level: INFO

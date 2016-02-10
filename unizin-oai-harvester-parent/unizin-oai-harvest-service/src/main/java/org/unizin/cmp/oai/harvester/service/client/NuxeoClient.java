@@ -98,7 +98,7 @@ public final class NuxeoClient {
         this.objectMapper = mapper;
         final BasicAuthHttpClient basicAuthHttpClient =
                 new BasicAuthHttpClient(httpClient, nuxeoURI.getHost(),
-                        username, password);
+                        username, password, false);
         this.httpClientWrapper = new ServiceHttpClientWrapper(LOGGER,
                 basicAuthHttpClient,
                 Collections.singleton(HttpStatus.SC_OK),

@@ -92,6 +92,7 @@
               <portNames>
                 <portName>dynamodblocal.port</portName>
                 <portName>wiremock.port</portName>
+                <portName>dropwizard.port</portName>
               </portNames>
             </configuration>
           </execution>
@@ -136,6 +137,7 @@
           <systemPropertyVariables>
             <dynamodb.port>${dynamodblocal.port}</dynamodb.port>
             <wiremock.port>${wiremock.port}</wiremock.port>
+            <dropwizard.port>${dropwizard.port}</dropwizard.port>
           </systemPropertyVariables>
         </configuration>
       </plugin>

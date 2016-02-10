@@ -53,7 +53,7 @@ public final class JIRAClient {
         this.endpoint = endpoint;
         final BasicAuthHttpClient basicAuthHttpClient =
                 new BasicAuthHttpClient(httpClient, endpoint.getHost(),
-                        username, password);
+                        username, password, true);
         this.httpClientWrapper = new ServiceHttpClientWrapper(LOGGER,
                 basicAuthHttpClient,
                 Collections.singleton(HttpStatus.SC_CREATED),
