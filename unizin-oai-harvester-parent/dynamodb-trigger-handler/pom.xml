@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.unizin.cmp</groupId>
     <artifactId>unizin-oai-harvester-parent</artifactId>
-    <version>1.0.12-SNAPSHOT</version>
+    <version>1.0.12</version>
   </parent>
   <artifactId>dynamodb-trigger-handler</artifactId>
   <build>
