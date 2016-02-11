@@ -37,7 +37,12 @@ public final class HarvestServiceConfiguration extends Configuration {
 
     @Valid
     @JsonProperty("nuxeoClient")
-    private NuxeoClientConfiguration nuxeoClient = null;
+    private NuxeoClientConfiguration nuxeoClient;
+
+    @Valid
+    @JsonProperty("jiraClient")
+    private JIRAClientConfiguration jiraClient;
+
 
     public DataSourceFactory getDataSourceFactory() {
         return dsFactory;
@@ -61,5 +66,9 @@ public final class HarvestServiceConfiguration extends Configuration {
 
     public NuxeoClientConfiguration getNuxeoClientConfiguration() {
         return nuxeoClient;
+    }
+
+    public JIRAClientConfiguration getJIRAClientConfiguration() {
+        return jiraClient;
     }
 }

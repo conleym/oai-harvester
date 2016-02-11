@@ -24,6 +24,14 @@ public final class ServiceTests {
         }
     }
 
+    private static final String DEFAULT_DROPWIZARD_PORT = "9999";
+    public static final String DROPWIZARD_PORT;
+    static {
+        final String port = System.getProperty("dropwizard.port");
+        DROPWIZARD_PORT = (port == null || "".equals(port.trim())) ?
+                DEFAULT_DROPWIZARD_PORT : port;
+    }
+
     public static final String TEST_CONFIG_PATH = ResourceHelpers
             .resourceFilePath("test-config.yml");
 
@@ -34,7 +42,9 @@ public final class ServiceTests {
                         MOCK_NUXEO_URI.toString()),
                 ConfigOverride.config("dynamoDB.endpoint",
                         String.format("http://localhost:%s",
-                                Tests.DYNAMO_PORT)));
+                                Tests.DYNAMO_PORT)),
+                ConfigOverride.config("server.applicationConnectors[0].port",
+                        DROPWIZARD_PORT));
     }
 
     public static void migrateDatabase(

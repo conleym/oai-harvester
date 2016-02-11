@@ -10,8 +10,8 @@ import javax.validation.Valid;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
-import org.unizin.cmp.oai.harvester.service.NuxeoClient;
 import org.unizin.cmp.oai.harvester.service.RepositoryUpdater;
+import org.unizin.cmp.oai.harvester.service.client.NuxeoClient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

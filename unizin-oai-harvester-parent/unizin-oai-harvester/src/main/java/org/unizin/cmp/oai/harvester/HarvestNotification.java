@@ -138,6 +138,10 @@ public final class HarvestNotification {
         return tags;
     }
 
+    public String getTag(final String tag) {
+        return tags.get(tag);
+    }
+
     public Optional<ResumptionToken> getResumptionToken() {
         return resumptionToken;
     }

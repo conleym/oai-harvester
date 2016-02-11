@@ -26,6 +26,7 @@ import org.skife.jdbi.v2.DBI;
 import org.unizin.cmp.oai.OAIVerb;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.job.HarvestJob;
+import org.unizin.cmp.oai.harvester.service.JobManager.JobCreationException;
 
 /**
  * Resource responsible for creating jobs and reporting on their statuses.
@@ -40,6 +41,7 @@ public final class JobResource {
     }
 
     public static final String PATH = "/job/";
+    private static final String JOB_ID_PARAM = "jobID";
 
     private final DBI dbi;
     private final JobManager jobManager;
@@ -108,6 +110,10 @@ public final class JobResource {
             return Response.created(new URI(PATH + jobName)).build();
         } catch (final RejectedExecutionException e) {
             return Response.status(Status.SERVICE_UNAVAILABLE).build();
+        } catch (final JobCreationException e) {
+            final Map<String, Object> m = new HashMap<>(1);
+            m.put("invalidURIs", e.getInvalidBaseURIs());
+            return Response.status(Status.BAD_REQUEST).entity(m).build();
         }
     }
 
@@ -123,8 +129,8 @@ public final class JobResource {
     }
 
     @GET
-    @Path("{jobID}")
-    public Response status(final @PathParam("jobID") long jobID) {
+    @Path("{" + JOB_ID_PARAM + "}")
+    public Response status(final @PathParam(JOB_ID_PARAM) long jobID) {
         JobStatus status = jobManager.getStatus(String.valueOf(jobID));
         if (status == null) {
             status = readStatusFromDatabase(jobID);
@@ -136,8 +142,8 @@ public final class JobResource {
     }
 
     @PUT
-    @Path("{jobID}/stop")
-    public Response stop(final @PathParam("jobID") String jobID) {
+    @Path("{" + JOB_ID_PARAM + "}/stop")
+    public Response stop(final @PathParam(JOB_ID_PARAM) String jobID) {
         final HarvestJob job = jobManager.getJob(jobID);
         if (job == null) {
             return Response.status(Status.NOT_FOUND).build();

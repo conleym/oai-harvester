@@ -10,9 +10,7 @@ import org.unizin.cmp.oai.harvester.service.db.ManagedH2Server;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.dropwizard.Configuration;
-
-public final class H2ServerConfiguration extends Configuration {
+public final class H2ServerConfiguration {
 
     @JsonProperty
     @Min(1)

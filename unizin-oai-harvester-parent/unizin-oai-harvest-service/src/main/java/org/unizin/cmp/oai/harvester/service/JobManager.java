@@ -15,12 +15,14 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 import org.apache.http.client.HttpClient;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.slf4j.MDC;
 import org.unizin.cmp.oai.harvester.HarvestNotification;
+import org.unizin.cmp.oai.harvester.HarvestNotification.HarvestNotificationType;
 import org.unizin.cmp.oai.harvester.HarvestParams;
 import org.unizin.cmp.oai.harvester.Harvester;
 import org.unizin.cmp.oai.harvester.job.HarvestJob;
@@ -29,6 +31,7 @@ import org.unizin.cmp.oai.harvester.job.JobNotification;
 import org.unizin.cmp.oai.harvester.job.JobNotification.JobNotificationType;
 import org.unizin.cmp.oai.harvester.service.config.HarvestJobConfiguration;
 import org.unizin.cmp.oai.harvester.service.db.DBIUtils;
+import org.unizin.cmp.oai.harvester.service.db.H2Functions.HarvestInfo;
 import org.unizin.cmp.oai.harvester.service.db.H2Functions.JobInfo;
 
 /**
@@ -39,10 +42,31 @@ import org.unizin.cmp.oai.harvester.service.db.H2Functions.JobInfo;
  * </p>
  */
 public final class JobManager {
+
+    public static final class JobCreationException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+        private final List<String> invalidBaseURIs;
+        public JobCreationException(final List<String> invalidBaseURIs) {
+            this.invalidBaseURIs = invalidBaseURIs;
+        }
+
+        public List<String> getInvalidBaseURIs() {
+            return invalidBaseURIs;
+        }
+    }
+
+    public static final String REPOSITORY_NAME = "repositoryName";
+    public static final String REPOSITORY_INSTITUTION = "repositoryInstitution";
+    public static final String HARVEST_NAME = "harvestName";
+    public static final String JOB_NAME = "jobName";
+
+
     private final HarvestJobConfiguration jobConfig;
     private final HttpClient httpClient;
     private final DynamoDBClient dynamoClient;
     private final DBI dbi;
+    private final Consumer<HarvestNotification> harvestFailureListener;
     private final ConcurrentMap<String, JobStatus> jobStatus =
             new ConcurrentHashMap<>();
     private final ConcurrentMap<String, HarvestJob> jobs =
@@ -51,11 +75,13 @@ public final class JobManager {
 
     public JobManager(final HarvestJobConfiguration jobConfig,
             final HttpClient httpClient, final DynamoDBClient dynamoClient,
-            final DBI dbi) {
+            final DBI dbi,
+            final Consumer<HarvestNotification> harvestFailureListener) {
         this.jobConfig = jobConfig;
         this.httpClient = httpClient;
         this.dynamoClient = dynamoClient;
         this.dbi = dbi;
+        this.harvestFailureListener = harvestFailureListener;
     }
 
     private JobInfo addJobToDatabase(final List<HarvestParams> harvests) {
@@ -70,10 +96,15 @@ public final class JobManager {
     private List<JobHarvestSpec> buildSpecs(final String jobName,
             final JobInfo jobInfo, final List<HarvestParams> params) {
         final List<JobHarvestSpec> specs = new ArrayList<>();
-        final Iterator<Long> harvestIDs = jobInfo.getHarvestIDs().iterator();
+        final Iterator<HarvestInfo> harvests = jobInfo.getHarvests().iterator();
         params.forEach(x -> {
             final Map<String, String> tags = new HashMap<>(1);
-            tags.put("harvestName", String.valueOf(harvestIDs.next()));
+            final HarvestInfo harvestInfo = harvests.next();
+            tags.put(HARVEST_NAME, harvestInfo.getName());
+            tags.put(REPOSITORY_INSTITUTION,
+                    harvestInfo.getRepositoryInstitution());
+            tags.put(REPOSITORY_NAME, harvestInfo.getRepositoryName());
+            tags.put(JOB_NAME, jobName);
             specs.add(new JobHarvestSpec(x, tags));
         });
         return specs;
@@ -83,7 +114,12 @@ public final class JobManager {
             final Object arg) {
         if (o instanceof Harvester && arg instanceof HarvestNotification) {
             final JobStatus status = jobStatus.get(jobName);
-            status.harvestUpdate((HarvestNotification)arg);
+            final HarvestNotification hn = (HarvestNotification)arg;
+            if (hn.getType() == HarvestNotificationType.HARVEST_ENDED &&
+                    hn.hasError()) {
+                harvestFailureListener.accept(hn);
+            }
+            status.harvestUpdate(hn);
             jobStatus.put(jobName, status);
         }
     }
@@ -117,11 +153,18 @@ public final class JobManager {
      *             algorithm (very unlikely).
      * @throws java.util.concurrent.RejectedExecutionException
      *             if the executor cannot run the new job for some reason.
+     * @throws JobCreationException
+     *             if any of the harvests specify an invalid repository base
+     *             URI.
      */
     public String newJob(final ExecutorService executor,
             final List<HarvestParams> params)
                     throws NoSuchAlgorithmException {
         final JobInfo jobInfo = addJobToDatabase(params);
+        final List<String> invalidURIs = jobInfo.getInvalidRepositoryBaseURIs();
+        if (! invalidURIs.isEmpty()) {
+            throw new JobCreationException(invalidURIs);
+        }
         final String jobName = String.valueOf(jobInfo.getID());
         final List<JobHarvestSpec> specs = buildSpecs(jobName, jobInfo, params);
         final Observer observeHarvests = (o, arg) -> {
@@ -134,7 +177,7 @@ public final class JobManager {
         jobStatus.put(jobName, new JobStatus(dbi));
         jobs.put(jobName, job);
         executor.submit(() -> {
-            MDC.put("jobName", jobName);
+            MDC.put(JOB_NAME, jobName);
             job.start();
         });
         return jobName;
@@ -154,7 +197,7 @@ public final class JobManager {
 
     public long getMaxQueueSize() {
         final Optional<Long> l = jobStatus.values().stream()
-                .map(x -> x.getQueueSize())
+                .map(JobStatus::getQueueSize)
                 .max((x,y) -> Long.compare(x, y));
         if (l.isPresent()) {
             return l.get();

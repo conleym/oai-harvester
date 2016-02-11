@@ -4,7 +4,10 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
@@ -21,7 +24,7 @@ import org.unizin.cmp.oai.harvester.HarvestParams;
  */
 public final class H2Functions {
     /**
-     * Information about a newly-created job, including the identifiers of all
+     * Information about a newly-created job, including information about the
      * harvests which are part of it.
      * <p>
      * Instances are immutable.
@@ -30,21 +33,76 @@ public final class H2Functions {
     public static final class JobInfo implements Serializable {
         private static final long serialVersionUID = 1L;
         private final long id;
-        private final List<Long> harvestIDs;
+        private final List<HarvestInfo> harvests;
+        private final List<String> invalidRepositoryBaseURIs;
 
-        public JobInfo(final long id, final List<Long> harvestIDs) {
+        public JobInfo(final long id, final List<HarvestInfo> harvests,
+                final List<String> invalidRepositoryBaseURIs) {
             this.id = id;
-            this.harvestIDs = Collections.unmodifiableList(harvestIDs);
+            this.harvests = Collections.unmodifiableList(harvests);
+            this.invalidRepositoryBaseURIs = Collections.unmodifiableList(
+                    invalidRepositoryBaseURIs);
         }
 
         public long getID() {
             return id;
         }
 
-        public List<Long> getHarvestIDs() {
-            return harvestIDs;
+        public List<HarvestInfo> getHarvests() {
+            return harvests;
+        }
+
+        public List<String> getInvalidRepositoryBaseURIs() {
+            return invalidRepositoryBaseURIs;
         }
     }
+
+    /**
+     * Information about a harvest that is part of a newly-created job.
+     * <p>
+     * Instances are immutable.
+     * </p>
+     */
+    public static final class HarvestInfo implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private final String name;
+        private final String repositoryInstitution;
+        private final String repositoryName;
+        private final String repositoryBaseURI;
+        private final boolean repositoryExists;
+
+        public HarvestInfo(final Map<String, Object> row,
+                final boolean repositoryExists) {
+            final Long id = (Long)row.get("HARVEST_ID");
+            name = id == null ? null : String.valueOf(id);
+            repositoryInstitution = (String)row.get("REPOSITORY_INSTITUTION");
+            repositoryName = (String)row.get("REPOSITORY_NAME");
+            repositoryBaseURI = (String)row.get("REPOSITORY_BASE_URI");
+            this.repositoryExists = repositoryExists;
+        }
+
+        public String getRepositoryInstitution() {
+            return repositoryInstitution;
+        }
+
+        public String getRepositoryName() {
+            return repositoryName;
+        }
+
+        public String getRepositoryBaseURI() {
+            return repositoryBaseURI;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean repositoryExists() {
+            return repositoryExists;
+        }
+    }
+
 
     private static H2FunctionsJDBI h2DBI(final Handle h) {
         return h.attach(H2FunctionsJDBI.class);
@@ -62,7 +120,7 @@ public final class H2Functions {
      *            the database connection (supplied by H2).
      * @param params
      *            the list of parameters for harvests in this job.
-     * @return the id of the new JOB row and of each of the HARVEST rows.
+     * @return information about the job.
      */
     public static JobInfo createJob(final Connection c,
             final List<HarvestParams> params) {
@@ -70,9 +128,16 @@ public final class H2Functions {
         final Handle h = DBI.open(c);
         final JobJDBI jdbi = jobDBI(h);
         final long jobID = jdbi.createJob();
-        final List<Long> harvestIDs = new ArrayList<>();
-        params.forEach(x -> harvestIDs.add(createHarvest(c, jobID, x)));
-        return new JobInfo(jobID, harvestIDs);
+        final List<HarvestInfo> harvests = new ArrayList<>();
+        params.forEach(x -> harvests.add(createHarvest(c, jobID, x)));
+        final List<String> invalidURIs = harvests.stream()
+                .filter(x -> !x.repositoryExists())
+                .map(HarvestInfo::getRepositoryBaseURI)
+                .collect(Collectors.toList());
+        if (!invalidURIs.isEmpty()) {
+            h.rollback();
+        }
+        return new JobInfo(jobID, harvests, invalidURIs);
     }
 
     /**
@@ -84,18 +149,27 @@ public final class H2Functions {
      *            the id of the job of which this harvest is a part.
      * @param params
      *            the parameters of the harvest.
-     * @return the new harvest's database identifier.
+     * @return information about the harvest.
      */
-    private static long createHarvest(final Connection c,
+    private static HarvestInfo createHarvest(final Connection c,
             final long jobID, final HarvestParams params) {
         // Do not close the handle! causes exceptions.
         final Handle h = DBI.open(c);
-        final JobJDBI jdbi = jobDBI(h);
-        final long repositoryID = jdbi.findRepositoryIDByBaseURI(
-                params.getBaseURI().toString());
         final H2FunctionsJDBI h2dbi = h2DBI(h);
-        return h2dbi.createHarvest(jobID, repositoryID,
+        final String baseURI = params.getBaseURI().toString();
+        Map<String, Object> repo = h2dbi.findRepositoryIDByBaseURI(
+                baseURI);
+        if (repo == null) {
+            repo = new HashMap<>();
+            // So it's available even if the repository doesn't exist.
+            repo.put("REPOSITORY_BASE_URI", baseURI);
+            return new HarvestInfo(repo, false);
+        }
+        final long repositoryID = (long)repo.get("REPOSITORY_ID");
+        final long id =  h2dbi.createHarvest(jobID, repositoryID,
                 params.getParameters().toString(), params.getVerb());
+        repo.put("HARVEST_ID", id);
+        return new HarvestInfo(repo, true);
     }
 
     /**

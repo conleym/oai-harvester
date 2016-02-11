@@ -85,7 +85,7 @@ public final class TestDynamoDBMonitor {
         final DynamoDBMonitor monitor = new DynamoDBMonitor(client,
                 new JobManager(app.getConfiguration().getJobConfiguration(),
                         // not making any jobs => don't need httpclient.
-                        null, client, lazy.dbi()), 500, 50, 1, 1200);
+                        null, client, lazy.dbi(), x -> {}), 500, 50, 1, 1200);
         final int numRuns = runRepeatedly(monitor, client, CAPACITY, 1, 12);
         Assert.assertEquals(11, numRuns);
     }
