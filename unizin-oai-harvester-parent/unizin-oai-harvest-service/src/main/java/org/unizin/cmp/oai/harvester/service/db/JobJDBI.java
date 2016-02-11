@@ -3,6 +3,7 @@ package org.unizin.cmp.oai.harvester.service.db;
 import static org.unizin.cmp.oai.harvester.service.Status.formatHeaders;
 import static org.unizin.cmp.oai.harvester.service.Status.headerValue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,6 +41,9 @@ import org.unizin.cmp.oai.harvester.exception.OAIProtocolException;
  */
 @OverrideStatementRewriterWith(HashPrefixStatementRewriter.class)
 public abstract class JobJDBI implements AutoCloseable, GetHandle {
+    private static final ByteArrayInputStream EMPTY
+        = new ByteArrayInputStream(new byte[]{});
+
     private static final String JOB_UPDATE = "update JOB " +
             "set JOB_START = #start," +
             "JOB_END = #end, " +
@@ -140,18 +144,24 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
     }
 
     private static InputStream responseBody(
-            final HarvesterHTTPStatusException ex, final Logger logger) {
-        final PipedInputStream pis = new PipedInputStream();
-        final PipedOutputStream pos = new PipedOutputStream();
-        new Thread(() -> {
-            try (final OutputStream out = pos) {
-                pos.connect(pis);
-                ex.writeResponseBodyTo(out);
-            } catch (final IOException e) {
-                logger.error("Error writing response body to database.", e);
-            }
-        }).start();
-        return pis;
+            final HarvesterHTTPStatusException ex, final Logger logger)
+                    throws IOException {
+        try {
+            final PipedInputStream pis = new PipedInputStream();
+            final PipedOutputStream pos = new PipedOutputStream(pis);
+            new Thread(() -> {
+                try (final OutputStream out = pos) {
+                    ex.writeResponseBodyTo(out);
+                } catch (final IOException e) {
+                    logger.error("Error writing response body to database.", e);
+                }
+            }).start();
+            return pis;
+        } catch (final IOException e) {
+            // Don't throw this so that the database can be updated anyway.
+            logger.error("Error connecting pipe to read response body.", e);
+            return EMPTY;
+        }
     }
 
     @Transaction
@@ -184,9 +194,9 @@ public abstract class JobJDBI implements AutoCloseable, GetHandle {
                         headerValue(hhse.getContentEncoding()),
                         in);
                 } catch (final IOException e) {
-                    logger.warn(
-                            "Error closing HTTP error response body stream.",
-                            e);
+                    final String msg =
+                            "Error closing HTTP error response body stream.";
+                    logger.warn(msg, e);
                 }
             } else if (ex instanceof OAIProtocolException) {
                 final OAIProtocolException ope = (OAIProtocolException)ex;
