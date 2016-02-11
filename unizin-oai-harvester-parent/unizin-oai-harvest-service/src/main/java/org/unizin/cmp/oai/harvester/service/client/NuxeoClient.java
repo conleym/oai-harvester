@@ -104,7 +104,7 @@ public final class NuxeoClient {
                 Collections.singleton(HttpStatus.SC_OK),
                 NuxeoClient::statusException,
                 () -> new NuxeoClientException("Got null entity from Nuxeo."),
-                e -> new NuxeoClientException(e));
+                NuxeoClientException::new);
         this.nuxeoURI = nuxeoURI;
         this.pageSize = pageSize;
     }

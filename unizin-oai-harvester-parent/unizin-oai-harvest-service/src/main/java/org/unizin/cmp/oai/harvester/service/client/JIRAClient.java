@@ -59,7 +59,7 @@ public final class JIRAClient {
                 Collections.singleton(HttpStatus.SC_CREATED),
                 JIRAClient::statusException,
                 () -> new JIRAClientException("Got null entity from JIRA."),
-                e -> new JIRAClientException(e));
+                JIRAClientException::new);
         this.objectMapper = objectMapper;
     }
 

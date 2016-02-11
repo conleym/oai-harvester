@@ -32,7 +32,7 @@ final class ServiceHttpClientWrapper {
 
     @FunctionalInterface
     static interface IOExceptionHandler<T extends RuntimeException>
-        extends Function<IOException, T> {  }
+        extends Function<IOException, T> { }
 
 
     private final Logger logger;

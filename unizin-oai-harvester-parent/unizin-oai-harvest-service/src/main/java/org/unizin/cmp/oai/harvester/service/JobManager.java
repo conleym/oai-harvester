@@ -197,7 +197,7 @@ public final class JobManager {
 
     public long getMaxQueueSize() {
         final Optional<Long> l = jobStatus.values().stream()
-                .map(x -> x.getQueueSize())
+                .map(JobStatus::getQueueSize)
                 .max((x,y) -> Long.compare(x, y));
         if (l.isPresent()) {
             return l.get();

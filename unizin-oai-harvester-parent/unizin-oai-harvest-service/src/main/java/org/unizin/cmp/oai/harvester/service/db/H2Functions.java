@@ -132,7 +132,7 @@ public final class H2Functions {
         params.forEach(x -> harvests.add(createHarvest(c, jobID, x)));
         final List<String> invalidURIs = harvests.stream()
                 .filter(x -> !x.repositoryExists())
-                .map(x -> x.getRepositoryBaseURI())
+                .map(HarvestInfo::getRepositoryBaseURI)
                 .collect(Collectors.toList());
         if (!invalidURIs.isEmpty()) {
             h.rollback();
