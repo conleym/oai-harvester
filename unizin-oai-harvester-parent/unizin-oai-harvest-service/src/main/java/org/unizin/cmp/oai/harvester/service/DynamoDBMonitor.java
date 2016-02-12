@@ -1,5 +1,8 @@
 package org.unizin.cmp.oai.harvester.service;
 
+import java.time.Duration;
+import java.time.Instant;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,29 +15,54 @@ public final class DynamoDBMonitor implements Runnable {
     private final DynamoDBClient client;
     private final JobManager jobManager;
     private final long increaseThreshold;
+    private final Duration increaseCooldownInterval;
     private final long decreaseThreshold;
+    private final Duration decreaseCooldownInterval;
     private final long minWriteCapacity;
     private final long maxWriteCapacity;
+    private Instant lastIncrease;
+    private Instant lastDecrease;
+
 
     public DynamoDBMonitor(final DynamoDBClient client,
             final JobManager jobManager, final long increaseThreshold,
-            final long decreaseThreshold, final long minWriteCapacity,
-            final long maxWriteCapacity) {
+            final Duration increaseCooldownInterval,
+            final long decreaseThreshold,
+            final Duration decreaseCooldownInterval,
+            final long minWriteCapacity, final long maxWriteCapacity) {
         this.client = client;
         this.jobManager = jobManager;
         this.increaseThreshold = increaseThreshold;
+        this.increaseCooldownInterval = increaseCooldownInterval;
         this.decreaseThreshold = decreaseThreshold;
+        this.decreaseCooldownInterval = decreaseCooldownInterval;
         this.minWriteCapacity = minWriteCapacity;
         this.maxWriteCapacity = maxWriteCapacity;
+        // Prevent immediate decreases on startup.
+        lastDecrease = Instant.now();
+        // Allow immediate increases.
+        lastIncrease = Instant.EPOCH;
     }
 
     @Override
     public void run() {
         final long maxQueueSize = jobManager.getMaxQueueSize();
+        final Instant now = Instant.now();
         if (maxQueueSize >= increaseThreshold) {
-            increaseWriteCapacity();
+            if (Duration.between(lastIncrease, now)
+                    .compareTo(increaseCooldownInterval) > 0) {
+                increaseWriteCapacity();
+                lastIncrease = now;
+            }
         } else if (maxQueueSize <= decreaseThreshold) {
-            decreaseWriteCapacity();
+            final int cmpDecrease = Duration.between(lastDecrease, now)
+                    .compareTo(decreaseCooldownInterval);
+            final int cmpIncrease = Duration.between(lastIncrease, now)
+                    .compareTo(decreaseCooldownInterval);
+            if (cmpDecrease > 0 && cmpIncrease > 0) {
+                decreaseWriteCapacity();
+                lastDecrease = now;
+            }
         }
     }
 

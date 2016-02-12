@@ -1,5 +1,7 @@
 package org.unizin.cmp.oai.harvester.service;
 
+import java.time.Duration;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -79,14 +81,36 @@ public final class TestDynamoDBMonitor {
         return numRuns;
     }
 
+    private JobManager jobManager(final DynamoDBClient client) {
+        return new JobManager(
+                app.getConfiguration().getJobConfiguration(),
+                // not making any jobs => don't need httpclient.
+                null, client, lazy.dbi(), x -> {});
+    }
+
+    private DynamoDBMonitor monitor(final DynamoDBClient client,
+            final Duration cooldown) {
+        return new DynamoDBMonitor(client, jobManager(client), 500, cooldown,
+                50, cooldown, 1, 1200);
+    }
+
     @Test
     public void testDecreasesToMinimum() {
         final DynamoDBClient client = lazy.dynamoClient();
-        final DynamoDBMonitor monitor = new DynamoDBMonitor(client,
-                new JobManager(app.getConfiguration().getJobConfiguration(),
-                        // not making any jobs => don't need httpclient.
-                        null, client, lazy.dbi(), x -> {}), 500, 50, 1, 1200);
+        final DynamoDBMonitor monitor = monitor(client, Duration.ofSeconds(0));
         final int numRuns = runRepeatedly(monitor, client, CAPACITY, 1, 12);
         Assert.assertEquals(11, numRuns);
+    }
+
+    @Test
+    public void testObeysCooldown() throws Exception {
+        final DynamoDBClient client = lazy.dynamoClient();
+        final DynamoDBMonitor monitor = monitor(client, Duration.ofSeconds(10));
+        client.setThroughput(1, CAPACITY);
+        monitor.run();
+        assertCapacity(client, CAPACITY);
+        Thread.sleep(1000 * 15); // more than 10s.
+        monitor.run();
+        assertCapacity(client, CAPACITY / 2);
     }
 }
