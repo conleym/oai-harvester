@@ -127,13 +127,12 @@ public final class JobManager {
     private void jobUpdate(final String jobName, final Object o,
             final Object arg) {
         if (o instanceof HarvestJob && arg instanceof JobNotification) {
+            final JobStatus status = jobStatus.get(jobName);
             final JobNotification notification = (JobNotification)arg;
+            status.jobUpdate(notification);
             if (notification.getType() == JobNotificationType.STOPPED) {
-                jobStatus.get(jobName).jobUpdate(notification);
                 jobStatus.remove(jobName);
             } else {
-                final JobStatus status = jobStatus.get(jobName);
-                status.jobUpdate(notification);
                 jobStatus.put(jobName, status);
             }
         }
