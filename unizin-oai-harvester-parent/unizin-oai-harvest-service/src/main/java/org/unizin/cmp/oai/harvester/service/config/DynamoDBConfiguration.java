@@ -85,6 +85,23 @@ public class DynamoDBConfiguration {
     @NotNull
     private Duration capacityAdjustmentInterval = Duration.ofSeconds(20);
 
+    @JsonProperty
+    @NotNull
+    private Duration increaseCooldownInterval = Duration.ofMinutes(2);
+
+    /**
+     * Minimum amount of time between two consecutive decrease capacity
+     * requests.
+     * <p>
+     * Since this is intended to help us avoid the daily decrease limit, the
+     * duration should be less than a day.
+     * </p>
+     */
+    @JsonProperty
+    @Valid
+    private Duration decreaseCooldownInterval = Duration.ofHours(1);
+
+
     /**
      * If the maximum queue size of all jobs exceeds this number, we increase
      * the DynamoDB write capacity, provided it's not already at the configured
@@ -151,7 +168,8 @@ public class DynamoDBConfiguration {
     private DynamoDBMonitor buildMonitor(final DynamoDBClient client,
             final JobManager jobManager) {
         return new DynamoDBMonitor(client, jobManager,
-                increaseCapacityThreshold, decreaseCapacityThreshold,
+                increaseCapacityThreshold, increaseCooldownInterval,
+                decreaseCapacityThreshold, decreaseCooldownInterval,
                 provisionedWriteCapacity, maxWriteCapacity);
     }
 
