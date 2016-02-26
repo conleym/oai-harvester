@@ -64,6 +64,18 @@ public final class OAIXMLUtils {
         return (attr == null) ? null : attr.getValue();
     }
 
+    /**
+     * Create an event writer that writes UTF-8 encoded events to a stream.
+     *
+     * @param outputFactory
+     *            the output factory to use to create the event writer.
+     * @param out
+     *            the stream to which output should be written.
+     * @return an event writer created by the given factory that will write
+     *         UTF-8 encoded events to the given stream.
+     * @throws XMLStreamException
+     *             if there's an error creating the event writer.
+     */
     public static XMLEventWriter createEventWriter(
             final XMLOutputFactory outputFactory, final OutputStream out)
                     throws XMLStreamException {
