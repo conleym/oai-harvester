@@ -65,7 +65,8 @@ public final class HarvestedOAIRecord {
     private String datestamp;
 
     /**
-     * The record's XML (everything from &lt;record&gt; to &lt;/record&gt;).
+     * The record's XML (everything from &lt;record&gt; to &lt;/record&gt;),
+     * encoded in UTF-8.
      */
     @DynamoDBAttribute(attributeName = XML_ATTRIB)
     private byte[] xml;

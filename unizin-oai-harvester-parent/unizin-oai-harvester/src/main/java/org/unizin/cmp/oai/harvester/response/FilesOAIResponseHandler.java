@@ -56,6 +56,10 @@ public final class FilesOAIResponseHandler extends AbstractOAIResponseHandler {
      * of the harvest. The given output factory will be used to create the event
      * writers to which received events will be written.
      * </p>
+     * <p>
+     * Output will be UTF-8 encoded, regardless of the encoding of the
+     * repository's responses.
+     * </p>
      */
     public static final class DirectoryEventHandlerProvider
         implements EventHandlerProvider {
