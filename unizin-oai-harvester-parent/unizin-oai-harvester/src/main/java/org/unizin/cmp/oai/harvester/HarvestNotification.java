@@ -14,7 +14,8 @@ import org.unizin.cmp.oai.ResumptionToken;
 import org.unizin.cmp.oai.harvester.Harvest.State;
 
 /**
- * Immutable snapshot of harvest state.
+ * Immutable snapshot of harvest state, sent to observers to notify them of
+ * harvest events.
  *
  */
 public final class HarvestNotification {
