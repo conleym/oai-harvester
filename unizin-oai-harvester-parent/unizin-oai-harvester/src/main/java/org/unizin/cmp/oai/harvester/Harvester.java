@@ -136,6 +136,9 @@ public final class Harvester extends Observable {
     }
 
 
+    /**
+     * Builder for {@code Harvester} instances.
+     */
     public static final class Builder {
         private HttpClient httpClient;
         private OAIRequestFactory requestFactory =

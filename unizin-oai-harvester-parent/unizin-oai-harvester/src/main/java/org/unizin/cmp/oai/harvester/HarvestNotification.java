@@ -19,6 +19,7 @@ import org.unizin.cmp.oai.harvester.Harvest.State;
  */
 public final class HarvestNotification {
 
+    /** Enumeration of notification types. */
     public static enum HarvestNotificationType {
         /** Notification type sent when a harvest is started. */
         HARVEST_STARTED,
@@ -45,6 +46,7 @@ public final class HarvestNotification {
     }
 
 
+    /** Enumeration of available harvest statistics. */
     public static enum HarvestStatistic {
         /** The number of requests sent so far during this harvest. */
         REQUEST_COUNT,
