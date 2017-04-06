@@ -39,11 +39,22 @@ import org.unizin.cmp.oai.harvester.response.OAIResponseHandler;
  * Each instance is a wrapper around an instance of {@link HttpClient}, together
  * with a mutable state object representing the state of the current harvest.
  * </p>
+ * <h2>Running a Harvest</h2>
+ * For simple cases, these steps will suffice:
+ * <ol>
+ *  <li>Create a {@code Harvester} instance.</li>
+ *  <li>Create a {@link HarvestParams} instance with the appropriate
+ *   parameters.</li>
+ *  <li>Create a {@link OAIResponseHandler} instance to handle the repository's
+ *   responses.</li>
+ *  <li>Pass these last two objects to the
+ *   {@link Harvester#start(HarvestParams, OAIResponseHandler)} method.</li>
+ * </ol>
+ * <h2>Use in Multiple Threads</h2>
  * <p>
  * Instances are mutable, but public methods can be safely called from multiple
  * threads.
  * </p>
- * <h2>Use in Multiple Threads</h2>
  * <p>
  * The harvester itself does not start or manage threads, leaving this up to the
  * client. Harvester instances can be used in multiple threads by creating a
