@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * {@link OAIEventHandler} with and optional list of event filters. Events
- * accepted by all filters will be sent a delegate event handler.
+ * accepted by all filters will be sent to a delegate event handler.
  * <p>
  * The filters are applied in order, and each event is sent to every filter in
  * the list.
