@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/** XML utilities. */
 public final class OAIXMLUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(
             OAIXMLUtils.class);

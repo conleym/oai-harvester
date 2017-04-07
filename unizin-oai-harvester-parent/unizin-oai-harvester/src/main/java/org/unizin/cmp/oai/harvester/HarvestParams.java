@@ -18,8 +18,8 @@ import org.unizin.cmp.oai.ResumptionToken;
 
 
 /**
- * Convenience class for assembling and optionally validating OAI harvest
- * request parameters.
+ * Convenience class for assembling and optionally validating standard OAI
+ * harvest request parameters.
  * <p>
  * Instances are immutable.
  * </p>
@@ -27,6 +27,9 @@ import org.unizin.cmp.oai.ResumptionToken;
 public final class HarvestParams implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Builder for {@code HarvestParams}.
+     */
     public static final class Builder {
         private final URI baseURI;
         private final OAIVerb verb;
