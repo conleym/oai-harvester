@@ -58,7 +58,7 @@ implements Consumer<HarvestedOAIRecord> {
         } catch (final InterruptedException e) {
             // Interrupting the thread ensures that the harvest ends
             // after the current response is processed.
-            Thread.interrupted();
+            Thread.currentThread().interrupt();
             // This will stop the harvest _now_. We'll preserve the interrupted
             // status anyway.
             throw new HarvesterException(e);
